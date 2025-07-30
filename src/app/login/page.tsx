@@ -32,12 +32,12 @@ export default function LoginPage() {
     setIsLoggingIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // The useEffect above will handle the redirect upon successful state change.
+      // The user state will be updated by the UserProvider, triggering the useEffect
       toast({
           title: "Login Successful",
           description: "Redirecting to the admin panel...",
       });
-      // The user state will be updated by the UserProvider, triggering the useEffect
+      router.push('/admin'); // Force redirect on successful login
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -64,10 +64,15 @@ export default function LoginPage() {
     }
   };
   
-  // This prevents a flash of the login page if the user is already an admin
-  if (loading || (!loading && user && isAdmin)) {
+  if (loading) {
     return <div className='text-center p-12'>Loading...</div>;
   }
+  
+  if (isAdmin) {
+    // This will be handled by the effect, but can prevent a flash of the login page
+    return <div className='text-center p-12'>Redirecting to dashboard...</div>
+  }
+
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">

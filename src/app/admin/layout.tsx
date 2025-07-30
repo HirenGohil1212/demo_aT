@@ -1,11 +1,11 @@
 
 "use client";
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useUser } from '@/hooks/use-user';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Home, PackagePlus, Users, Image as ImageIcon, LayoutGrid, LogOut, Shield } from 'lucide-react';
+import { Home, PackagePlus, Image as ImageIcon, LayoutGrid, LogOut, Shield } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarTrigger, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarContent, SidebarFooter, SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
@@ -18,7 +18,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, isAdmin, loading } = useUser();
   const router = useRouter();
   const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (loading) {
@@ -30,7 +29,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }, [user, isAdmin, loading, router]);
 
 
-  if (loading || !user || !isAdmin) {
+  if (loading || !isAdmin) {
     return (
         <div className="flex justify-center items-center h-screen">
             <div className="text-xl">Loading Admin Panel...</div>
@@ -44,7 +43,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   };
 
   return (
-    <SidebarProvider defaultOpen={!isMobile} onOpenChange={setSidebarOpen} open={sidebarOpen}>
+    <SidebarProvider defaultOpen={!isMobile}>
         <Sidebar>
             <SidebarHeader>
                  <div className="flex items-center gap-2">
