@@ -26,10 +26,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import Image from "next/image";
+import type { Banner, Product } from "@/types";
+
+// Helper function to create a lookup map for products
+function createProductMap(products: Product[]): Map<string, Product> {
+  return new Map(products.map((p) => [p.id, p]));
+}
 
 export default async function BannersPage() {
   const products = await getProducts();
   const banners = await getBanners();
+  const productMap = createProductMap(products);
 
   return (
     <div className="grid gap-6">
@@ -88,8 +95,8 @@ export default async function BannersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {banners.map(async (banner) => {
-                const product = await getProductById(banner.productId);
+              {banners.map((banner) => {
+                const product = productMap.get(banner.productId);
                 return (
                   <TableRow key={banner.id}>
                     <TableCell>
@@ -112,10 +119,4 @@ export default async function BannersPage() {
       </Card>
     </div>
   );
-}
-
-// Helper to get product by ID, needed for rendering the banner list
-async function getProductById(productId: string) {
-    const product = await getProducts().then(products => products.find(p => p.id === productId));
-    return product;
 }
