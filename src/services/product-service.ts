@@ -10,20 +10,13 @@ import { z } from 'zod'
 function getDb() {
   if (admin.apps.length === 0) {
     try {
-      const privateKey = process.env.FIREBASE_PRIVATE_KEY;
-      if (!privateKey) {
-        throw new Error("FIREBASE_PRIVATE_KEY environment variable is not set.");
-      }
-      admin.initializeApp({
-        credential: admin.credential.cert({
-          project_id: process.env.FIREBASE_PROJECT_ID,
-          client_email: process.env.FIREBASE_CLIENT_EMAIL,
-          private_key: privateKey.replace(/\\n/g, '\n'),
-        }),
-      });
+      // The GOOGLE_APPLICATION_CREDENTIALS env var points to the service account file.
+      // Firebase Admin SDK automatically finds and uses it.
+      admin.initializeApp();
     } catch (error: any) {
       console.error('Firebase admin initialization error:', error.message);
-      throw new Error('Firebase admin initialization failed. Please check your server environment variables.');
+      // Don't throw, as it could be a transient issue.
+      // Functions below will handle the case where db is not initialized.
     }
   }
   return admin.firestore();
