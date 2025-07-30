@@ -21,46 +21,59 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Redirect if a logged-in admin lands on the login page
+    // If loading is done and we have an admin user, redirect them to the dashboard.
+    // This handles the case where a logged-in admin lands on the login page.
     if (!loading && user && isAdmin) {
       router.push('/admin');
     }
   }, [user, isAdmin, loading, router]);
-
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // On successful login, the useEffect above will handle the redirect.
-      // We can also push directly here for a faster redirect.
+      // On successful login, the useEffect hook will handle redirection
+      // to the admin panel after the user state (including claims) is confirmed.
+      toast({
+        title: "Login Successful",
+        description: "Redirecting to the admin dashboard...",
+      });
+      // We can also optimistically redirect here for a faster user experience.
+      // The admin layout's guard will handle any non-admin users.
       router.push('/admin');
     } catch (error: any) {
+      console.error("Login failed:", error);
       toast({
         variant: "destructive",
         title: "Login Failed",
         description: "Please check your email and password.",
       });
+    } finally {
       setIsSubmitting(false);
     }
   };
-  
-  // Show a loading spinner while checking auth state
+
+  // Show a loading spinner while the auth state is being determined.
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
-    </div>
-  }
-  
-  // If user is already an admin, show a redirecting message
-  if (user && isAdmin) {
-     return <div className="flex justify-center items-center min-h-screen">
-      <p>Redirecting to dashboard...</p>
-    </div>
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  // Otherwise, show the login form
+  // If an admin is already logged in, show a redirecting message.
+  if (user && isAdmin) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="ml-2">Redirecting to dashboard...</p>
+      </div>
+    );
+  }
+
+  // Otherwise, show the login form.
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background">
       <Card className="w-full max-w-sm">
@@ -77,10 +90,11 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                placeholder="admin@example.com"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
               />
             </div>
             <div className="grid gap-2">
@@ -91,13 +105,14 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
               />
             </div>
           </CardContent>
           <CardFooter>
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign in
+              Sign In
             </Button>
           </CardFooter>
         </form>

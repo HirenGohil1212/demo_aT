@@ -25,72 +25,67 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Wait until the loading is complete before checking for user/admin status
+    // We only want to check for redirection after the initial loading is complete.
     if (!loading) {
-      if (!user) {
-        // If no user, redirect to login
+      // If there's no user or the user is not an admin, redirect to login.
+      if (!user || !isAdmin) {
         router.push("/login");
-      } else if (!isAdmin) {
-        // If user is not an admin, redirect to home page
-        router.push("/");
       }
     }
   }, [user, isAdmin, loading, router]);
 
-  // While loading, show a spinner to prevent flicker and premature redirects
+  // While loading, show a full-screen spinner. This prevents content flashing
+  // or premature redirects before the admin status is confirmed.
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading Admin Panel...</p>
-      </div>
-    );
-  }
-
-  // If loading is finished, but user is not an admin, show a message while redirecting
-  if (!isAdmin) {
-    return (
-       <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <p className="ml-2">Verifying permissions...</p>
       </div>
     );
   }
 
-  // If user is an admin, render the layout
-  return (
-    <SidebarProvider>
-      <Sidebar>
-        <SidebarHeader>
-          <div className="flex items-center gap-2 p-2">
-            <h1 className="font-headline text-2xl font-bold text-primary">
-              Admin
-            </h1>
-          </div>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <Link href="/admin" passHref legacyBehavior>
-                <SidebarMenuButton isActive={pathname === "/admin"}>
-                  <Home />
-                  Dashboard
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarContent>
-        <SidebarFooter>
-          {/* Footer content if any */}
-        </SidebarFooter>
-      </Sidebar>
-      <SidebarInset>
-        <header className="flex h-12 items-center justify-between border-b px-4 lg:justify-end">
-          <SidebarTrigger className="lg:hidden" />
-          {/* Potentially add user profile button here */}
-        </header>
-        <main className="p-4">{children}</main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+  // If loading is finished and the user is an admin, render the layout.
+  // The useEffect above will handle redirecting non-admins.
+  if (user && isAdmin) {
+    return (
+      <SidebarProvider>
+        <Sidebar>
+          <SidebarHeader>
+            <div className="flex items-center gap-2 p-2">
+              <h1 className="font-headline text-2xl font-bold text-primary">
+                Admin
+              </h1>
+            </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <Link href="/admin" passHref legacyBehavior>
+                  <SidebarMenuButton isActive={pathname === "/admin"}>
+                    <Home />
+                    Dashboard
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarContent>
+          <SidebarFooter>
+            {/* Footer content if any */}
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset>
+          <header className="flex h-12 items-center justify-between border-b px-4 lg:justify-end">
+            <SidebarTrigger className="lg:hidden" />
+            {/* Potentially add user profile button here */}
+          </header>
+          <main className="p-4">{children}</main>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
+
+  // If we've finished loading but don't have an admin user, we show nothing.
+  // The redirect in useEffect will handle navigation.
+  return null;
 }
