@@ -4,6 +4,7 @@ import { getSettings } from "@/services/product-service";
 import { SettingsForm } from "./_components/settings-form";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
