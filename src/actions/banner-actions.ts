@@ -86,13 +86,22 @@ export async function addBanner(prevState: unknown, formData: FormData) {
  */
 export async function getBanners(): Promise<Banner[]> {
   try {
-    const snapshot = await db.collection('banners').orderBy("createdAt", "desc").where("active", "==", true).get();
+    const snapshot = await db.collection('banners').where("active", "==", true).get();
     
     if (snapshot.empty) {
       return [];
     }
     
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+    const banners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+
+    // Sort by createdAt timestamp in descending order (newest first)
+    banners.sort((a, b) => {
+        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+        return dateB.getTime() - dateA.getTime();
+    });
+
+    return banners;
 
   } catch (error) {
     console.error("Error in getBanners:", error);
