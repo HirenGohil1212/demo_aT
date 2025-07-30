@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { cn } from '@/lib/utils';
 
 export default function Header() {
   const { itemCount } = useCart();
@@ -39,21 +40,21 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-card shadow-md sticky top-0 z-40">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <Link href="/" className="font-headline text-2xl font-bold text-primary">
+    <header className="bg-card shadow-lg sticky top-0 z-40 border-b-2 border-primary/50">
+      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+        <Link href="/" className="font-headline text-3xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
           LuxeLiquor
         </Link>
         
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-8">
           {navLinks.map(link => (
-            <Link key={link.href} href={link.href} className="text-sm font-medium hover:text-primary transition-colors">
+            <Link key={link.href} href={link.href} className="text-base font-medium hover:text-primary transition-colors duration-300">
               {link.label}
             </Link>
           ))}
           {isAdmin && (
-             <Link href="/admin" className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1">
-              <Shield className="h-4 w-4" />
+             <Link href="/admin" className="text-base font-medium hover:text-primary transition-colors duration-300 flex items-center gap-2">
+              <Shield className="h-5 w-5" />
               Admin
             </Link>
           )}
@@ -72,11 +73,11 @@ export default function Header() {
             </Link>
           </Button>
 
-          {!loading && isAdmin && user && (
+          {!loading && user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
+                <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                  <Avatar className="h-9 w-9">
                       <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
                       <AvatarFallback>{user.displayName?.[0] ?? user.email?.[0]}</AvatarFallback>
                   </Avatar>
