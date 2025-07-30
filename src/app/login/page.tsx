@@ -22,12 +22,13 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // This effect will handle redirection for an admin who is already logged in
-    // and visits the login page by mistake.
+    // If the user is already logged in and is an admin, redirect to the dashboard.
+    // This prevents showing the login page to an already authenticated admin.
     if (!loading && user && ADMIN_UIDS.includes(user.uid)) {
       router.push('/admin');
     }
   }, [user, loading, router]);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,8 +39,7 @@ export default function LoginPage() {
           title: "Login Successful",
           description: "Redirecting to the admin panel...",
       });
-      // The useEffect will now handle the redirect to /admin
-      // This simplifies the logic here.
+      // The redirect is now handled by the useEffect above, which waits for user state to be confirmed.
       router.push('/admin');
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
@@ -65,12 +65,18 @@ export default function LoginPage() {
         });
     }
   };
-
-  // While loading or if an already logged-in admin is being redirected, show loading.
-  if (loading || (user && ADMIN_UIDS.includes(user.uid))) {
+  
+  // Show a loading state while checking user auth
+  if (loading) {
     return <div className='text-center p-12'>Loading...</div>;
   }
-  
+
+  // If the user is logged in, the useEffect will handle the redirect.
+  // We don't want to render the form if they are already an admin.
+  if (user && ADMIN_UIDS.includes(user.uid)) {
+     return <div className='text-center p-12'>Redirecting to admin panel...</div>;
+  }
+
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
       <Card className="w-full max-w-sm">

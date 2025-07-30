@@ -21,19 +21,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  // We need to wait for loading to finish before we can check for admin status
-  const isAdmin = !loading && user && ADMIN_UIDS.includes(user.uid);
-
   useEffect(() => {
-    // If loading is finished and the user is not an admin, redirect them.
-    if (!loading && !isAdmin) {
+    // This effect runs when the loading status or user object changes.
+    // If loading is finished and there's no user, or the user is not an admin, redirect.
+    if (!loading && (!user || !ADMIN_UIDS.includes(user.uid))) {
       router.push('/login');
     }
-  }, [user, loading, isAdmin, router]);
+  }, [user, loading, router]);
 
-  // While loading or if the user is not yet determined to be an admin, show a loading screen.
-  // The useEffect above will handle redirection if they are not an admin.
-  if (loading || !isAdmin) {
+
+  // While loading, show a full-screen loading indicator to prevent flashing content.
+  if (loading) {
     return (
         <div className="flex justify-center items-center h-screen">
             <div className="text-xl">Loading Admin Panel...</div>
@@ -41,6 +39,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  // If not loading, but the user is still not valid (e.g., logged out, not an admin),
+  // show the loading screen as well, as the useEffect above will handle the redirection.
+  // This prevents the admin layout from briefly appearing before the redirect.
+  if (!user || !ADMIN_UIDS.includes(user.uid)) {
+       return (
+        <div className="flex justify-center items-center h-screen">
+            <div className="text-xl">Redirecting...</div>
+        </div>
+    );
+  }
 
   const handleSignOut = async () => {
     await signOut(auth);
