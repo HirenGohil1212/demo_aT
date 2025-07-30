@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import Link from 'next/link';
+import { ADMIN_UIDS } from '@/lib/admins';
 
 export default function LoginPage() {
   const { user, loading } = useUser();
@@ -21,7 +21,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && user) {
+    // Redirect only if loading is complete and user is a logged-in admin.
+    if (!loading && user && ADMIN_UIDS.includes(user.uid)) {
       router.push('/admin');
     }
   }, [user, loading, router]);
@@ -35,13 +36,14 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Welcome back, admin!",
       });
-      // Let the UserProvider and useEffect handle the redirect
+      // The useEffect hook will handle the redirect to /admin upon successful login.
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
         switch (error.code) {
             case 'auth/user-not-found':
             case 'auth/wrong-password':
+            case 'auth/invalid-credential':
                 errorMessage = "Invalid email or password. Please try again.";
                 break;
             case 'auth/invalid-email':
@@ -60,10 +62,14 @@ export default function LoginPage() {
     }
   };
 
-  if (loading || user) {
+  // Show a loading indicator while Firebase auth state is being determined.
+  // Prevents flashing the login form for an already logged-in admin.
+  if (loading) {
     return <div className='text-center p-12'>Loading...</div>;
   }
   
+  // If user is loaded and is an admin, they will be redirected by the useEffect.
+  // For non-admins or logged-out users, render the login form.
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
       <Card className="w-full max-w-sm">

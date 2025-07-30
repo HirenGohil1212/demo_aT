@@ -18,10 +18,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useUser();
   const router = useRouter();
-  const isAdmin = user && ADMIN_UIDS.includes(user.uid);
   const isMobile = useIsMobile();
-  
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // We need to wait for loading to finish before we can check for admin status
+  const isAdmin = !loading && user && ADMIN_UIDS.includes(user.uid);
 
   useEffect(() => {
     // If loading is finished and the user is not an admin, redirect them.
