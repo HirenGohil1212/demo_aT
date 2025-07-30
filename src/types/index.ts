@@ -1,13 +1,13 @@
 export type Product = {
   id: string;
   name: string;
-  category: 'Whiskey' | 'Gin' | 'Vodka' | 'Rum' | 'Tequila';
+  category: string;
   price: number;
   image: string;
   description: string;
   details: string[];
   featured?: boolean;
-  recipe: {
+  recipe?: {
     name: string;
     ingredients: string[];
     instructions: string[];
@@ -17,4 +17,9 @@ export type Product = {
 export type CartItem = {
   product: Product;
   quantity: number;
+};
+
+export type Category = {
+  id: string;
+  name: string;
 };

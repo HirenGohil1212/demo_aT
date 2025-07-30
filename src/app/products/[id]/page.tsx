@@ -7,6 +7,10 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle, ShoppingCart } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import type { Product } from '@/types';
+import { getProductById } from '@/services/product-service';
+import { Loader2 } from 'lucide-react';
 
 type ProductPageProps = {
   params: {
@@ -14,10 +18,32 @@ type ProductPageProps = {
   };
 };
 
-// This page is a client component to use the useCart hook
 export default function ProductPage({ params }: ProductPageProps) {
   const { addToCart } = useCart();
-  const product = products.find((p) => p.id === params.id);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      setLoading(true);
+      // This is a workaround to call an async function in a Client Component.
+      // We are fetching the product data on the client side.
+      const productData = await getProductById(params.id);
+      setProduct(productData);
+      setLoading(false);
+    };
+
+    fetchProduct();
+  }, [params.id]);
+
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12 flex justify-center items-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!product) {
     notFound();
@@ -45,7 +71,7 @@ export default function ProductPage({ params }: ProductPageProps) {
           <div className="mb-8">
             <h3 className="font-bold text-lg mb-2">Details</h3>
             <ul className="space-y-1 text-muted-foreground">
-              {product.details.map((detail, index) => (
+              {product.details?.map((detail, index) => (
                 <li key={index} className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 text-accent" />
                   <span>{detail}</span>
@@ -60,29 +86,31 @@ export default function ProductPage({ params }: ProductPageProps) {
         </div>
       </div>
 
-      <div className="mt-16 pt-12 border-t">
-        <h2 className="font-headline text-3xl font-bold text-center text-primary mb-8">
-          Featured Cocktail: {product.recipe.name}
-        </h2>
-        <div className="grid md:grid-cols-2 gap-12">
-          <div className="bg-card p-6 rounded-lg shadow-md">
-            <h3 className="font-bold text-xl mb-4">Ingredients</h3>
-            <ul className="space-y-2">
-              {product.recipe.ingredients.map((ing, index) => (
-                <li key={index}>{ing}</li>
-              ))}
-            </ul>
-          </div>
-          <div className="bg-card p-6 rounded-lg shadow-md">
-            <h3 className="font-bold text-xl mb-4">Instructions</h3>
-            <ol className="space-y-2 list-decimal list-inside">
-              {product.recipe.instructions.map((inst, index) => (
-                <li key={index}>{inst}</li>
-              ))}
-            </ol>
+      {product.recipe && (
+        <div className="mt-16 pt-12 border-t">
+          <h2 className="font-headline text-3xl font-bold text-center text-primary mb-8">
+            Featured Cocktail: {product.recipe.name}
+          </h2>
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="bg-card p-6 rounded-lg shadow-md">
+              <h3 className="font-bold text-xl mb-4">Ingredients</h3>
+              <ul className="space-y-2">
+                {product.recipe.ingredients.map((ing, index) => (
+                  <li key={index}>{ing}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-card p-6 rounded-lg shadow-md">
+              <h3 className="font-bold text-xl mb-4">Instructions</h3>
+              <ol className="space-y-2 list-decimal list-inside">
+                {product.recipe.instructions.map((inst, index) => (
+                  <li key={index}>{inst}</li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/use-user";
-import { Loader2, Home } from "lucide-react";
+import { Loader2, Home, ShoppingBag, Tag } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -24,17 +24,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // We only want to check for redirection after the initial loading is complete.
     if (!loading) {
-      // If there's no user or the user is not an admin, redirect to login.
       if (!user || !isAdmin) {
         router.push("/login");
       }
     }
   }, [user, isAdmin, loading, router]);
 
-  // While loading, show a full-screen spinner. This prevents content flashing
-  // or premature redirects before the admin status is confirmed.
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
@@ -44,8 +40,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // If loading is finished and the user is an admin, render the layout.
-  // The useEffect above will handle redirecting non-admins.
   if (user && isAdmin) {
     return (
       <SidebarProvider>
@@ -67,6 +61,22 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <Link href="/admin/products">
+                  <SidebarMenuButton isActive={pathname.startsWith("/admin/products")}>
+                    <ShoppingBag />
+                    Products
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <Link href="/admin/categories">
+                  <SidebarMenuButton isActive={pathname.startsWith("/admin/categories")}>
+                    <Tag />
+                    Categories
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
         </Sidebar>
@@ -80,7 +90,5 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
-  // If we've finished loading but don't have an admin user, we show nothing.
-  // The redirect in useEffect will handle navigation.
   return null;
 }

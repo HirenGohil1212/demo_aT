@@ -1,16 +1,35 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { products, categories } from '@/lib/products';
+import { useState, useMemo, useEffect } from 'react';
+import type { Product, Category } from '@/types';
+import { getProducts, getCategories } from '@/services/product-service';
 import ProductCard from '@/components/product-card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search } from 'lucide-react';
+import { Search, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      const [productsData, categoriesData] = await Promise.all([
+        getProducts(),
+        getCategories(),
+      ]);
+      setProducts(productsData);
+      setCategories(categoriesData);
+      setLoading(false);
+    };
+    fetchData();
+  }, []);
 
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
@@ -21,7 +40,7 @@ export default function ProductsPage() {
         product.description.toLowerCase().includes(searchTerm.toLowerCase());
       return matchesCategory && matchesSearch;
     });
-  }, [searchTerm, selectedCategory]);
+  }, [searchTerm, selectedCategory, products]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -50,26 +69,42 @@ export default function ProductsPage() {
           </Button>
           {categories.map((category) => (
             <Button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              variant={selectedCategory === category ? 'default' : 'outline'}
-              className={cn(selectedCategory === category && "bg-primary")}
+              key={category.id}
+              onClick={() => setSelectedCategory(category.name)}
+              variant={selectedCategory === category.name ? 'default' : 'outline'}
+              className={cn(selectedCategory === category.name && "bg-primary")}
             >
-              {category}
+              {category.name}
             </Button>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-        {filteredProducts.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-      {filteredProducts.length === 0 && (
-        <p className="text-center col-span-full text-muted-foreground mt-8">
-          No products found. Try adjusting your search or filters.
-        </p>
+      {loading ? (
+         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="flex flex-col space-y-3">
+                <Skeleton className="h-[250px] w-full rounded-lg" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-[200px]" />
+                  <Skeleton className="h-4 w-[150px]" />
+                </div>
+              </div>
+            ))}
+          </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+          {filteredProducts.length === 0 && (
+            <p className="text-center col-span-full text-muted-foreground mt-8">
+              No products found. Try adjusting your search or filters.
+            </p>
+          )}
+        </>
       )}
     </div>
   );

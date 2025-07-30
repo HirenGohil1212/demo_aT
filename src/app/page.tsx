@@ -1,6 +1,7 @@
+"use server";
 import Image from 'next/image';
 import Link from 'next/link';
-import { products, categories } from '@/lib/products';
+import { getProducts, getCategories } from '@/services/product-service';
 import ProductCard from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,8 +13,11 @@ import {
   CarouselPrevious,
 } from '@/components/ui/carousel';
 
-export default function Home() {
-  const featuredProducts = products.filter((p) => p.featured);
+export default async function Home() {
+  const allProducts = await getProducts();
+  const allCategories = await getCategories();
+
+  const featuredProducts = allProducts.filter((p) => p.featured);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -67,14 +71,14 @@ export default function Home() {
 
       {/* Products by Category */}
       <section>
-        {categories.map((category) => (
-          <div key={category} className="mb-12">
+        {allCategories.map((category) => (
+          <div key={category.id} className="mb-12">
             <h2 className="font-headline text-3xl font-bold mb-6 text-center text-primary">
-              {category}
+              {category.name}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {products
-                .filter((p) => p.category === category)
+              {allProducts
+                .filter((p) => p.category === category.name)
                 .slice(0, 4)
                 .map((product) => (
                   <ProductCard key={product.id} product={product} />
