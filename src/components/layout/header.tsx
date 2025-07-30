@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -21,15 +20,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { itemCount } = useCart();
   const { user, isAdmin } = useUser();
+  const router = useRouter();
 
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/products', label: 'All Products' },
   ];
+
+  const handleLogout = async () => {
+    await auth.signOut();
+    router.push('/');
+  }
   
   return (
     <header className="bg-card shadow-lg sticky top-0 z-40 border-b-2 border-primary/50">
@@ -76,15 +82,20 @@ export default function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => auth.signOut()}>
+                <DropdownMenuItem onClick={handleLogout}>
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild>
-              <Link href="/login">Login</Link>
-            </Button>
+            <div className="flex items-center gap-2">
+               <Button asChild>
+                <Link href="/login">Login</Link>
+              </Button>
+               <Button asChild variant="outline">
+                <Link href="/signup">Sign Up</Link>
+              </Button>
+            </div>
           )}
 
 

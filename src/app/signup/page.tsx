@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from 'react';
-import { useRouter, notFound } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, db } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,34 +13,43 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({
-        title: "Login Successful",
-        description: "Welcome back!",
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Create a user document in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        uid: user.uid,
+        email: user.email,
+        role: 'user', // Default role
       });
-      // The UserProvider will see the auth state change and handle
-      // checking for admin status and redirection. We can just go home.
-      router.push('/');
+
+      toast({
+        title: "Account Created",
+        description: "You have been successfully signed up!",
+      });
+      router.push('/'); // Redirect to home page after sign up
     } catch (error: any) {
-      console.error("Login failed:", error);
-      let description = "Please check your email and password.";
-      if (error.code === 'auth/invalid-credential') {
-        description = "Invalid credentials. Please try again."
+      console.error("Sign up failed:", error);
+      let description = "An error occurred during sign up.";
+      if (error.code === 'auth/email-already-in-use') {
+        description = "This email is already registered.";
+      } else if (error.code === 'auth/weak-password') {
+        description = "The password is too weak. Please use at least 6 characters.";
       }
       toast({
         variant: "destructive",
-        title: "Login Failed",
+        title: "Sign Up Failed",
         description: description,
       });
     } finally {
@@ -50,11 +60,11 @@ export default function LoginPage() {
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background">
       <Card className="w-full max-w-sm">
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleSignUp}>
           <CardHeader>
-            <CardTitle className="text-2xl text-primary">Login</CardTitle>
+            <CardTitle className="text-2xl text-primary">Create an Account</CardTitle>
             <CardDescription>
-              Enter your credentials to access your account.
+              Enter your email and password to sign up.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
@@ -76,21 +86,22 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 required
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="current-password"
+                autoComplete="new-password"
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col gap-4">
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign In
+              Sign Up
             </Button>
-            <div className="text-sm text-center text-muted-foreground">
-              Don't have an account?{' '}
-              <Link href="/signup" className="underline hover:text-primary">
-                Sign Up
+             <div className="text-sm text-center text-muted-foreground">
+              Already have an account?{' '}
+              <Link href="/login" className="underline hover:text-primary">
+                Login
               </Link>
             </div>
           </CardFooter>
