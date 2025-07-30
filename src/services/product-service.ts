@@ -17,11 +17,11 @@ if (!admin.apps.length) {
       }),
     });
   } catch (error: any) {
-    console.error('Firebase admin initialization error', error.stack);
+    console.error('Firebase admin initialization error. Make sure you have set the FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables.', error.stack);
   }
 }
 
-const db = admin.firestore();
+const db = admin.apps.length ? admin.firestore() : null;
 
 const productSchema = z.object({
   name: z.string().min(1),
@@ -33,6 +33,10 @@ const productSchema = z.object({
 })
 
 export async function getProducts(): Promise<Product[]> {
+  if (!db) {
+    console.error("Firestore not initialized");
+    return [];
+  }
   const snapshot = await db.collection('products').get()
   if (snapshot.empty) {
     return []
@@ -41,6 +45,10 @@ export async function getProducts(): Promise<Product[]> {
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
+  if (!db) {
+    console.error("Firestore not initialized");
+    return null;
+  }
   const doc = await db.collection('products').doc(id).get()
   if (!doc.exists) {
     return null
@@ -49,6 +57,10 @@ export async function getProductById(id: string): Promise<Product | null> {
 }
 
 export async function getCategories(): Promise<Category[]> {
+  if (!db) {
+    console.error("Firestore not initialized");
+    return [];
+  }
   const snapshot = await db.collection('categories').orderBy('name').get()
   if (snapshot.empty) {
     return []
@@ -59,6 +71,10 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function addCategory(formData: FormData) {
+  if (!db) {
+    console.error("Firestore not initialized");
+    return { errors: { name: ["Database not connected."]}};
+  }
   const categorySchema = z.object({
     name: z.string().min(1),
   })
@@ -80,6 +96,10 @@ export async function addCategory(formData: FormData) {
 }
 
 export async function addProduct(prevState: unknown, formData: FormData) {
+  if (!db) {
+    console.error("Firestore not initialized");
+    return { name: ["Database not connected."]};
+  }
   const result = productSchema.safeParse(Object.fromEntries(formData.entries()))
   if (result.success === false) {
     return result.error.formErrors.fieldErrors
