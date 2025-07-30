@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from "react-hook-form";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -122,10 +124,13 @@ export default function AddProductPage() {
                                 name="image"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Image URL</FormLabel>
+                                        <FormLabel>Product Image URL</FormLabel>
                                         <FormControl>
                                             <Input placeholder="https://placehold.co/600x600" {...field} />
                                         </FormControl>
+                                        <FormDescription>
+                                            Use a square image for best results (e.g., 600x600 pixels).
+                                        </FormDescription>
                                         <FormMessage />
                                     </FormItem>
                                 )}

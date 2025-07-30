@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import Image from "next/image";
 import { products } from "@/lib/products";
@@ -34,7 +35,7 @@ export default function AdminDashboard() {
         <div className="flex items-center">
             <h1 className="font-headline text-3xl font-bold text-primary">Products</h1>
             <div className="ml-auto flex items-center gap-2">
-                <Button asChild size="sm" className="gap-1">
+                <Button asChild size="sm" className="gap-1 bg-accent text-accent-foreground hover:bg-accent/90">
                     <Link href="/admin/add-product">
                         <PlusCircle className="h-4 w-4" />
                         Add Product
@@ -56,6 +57,7 @@ export default function AdminDashboard() {
                 </TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Featured</TableHead>
                 <TableHead className="hidden md:table-cell">Price</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
@@ -78,6 +80,13 @@ export default function AdminDashboard() {
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>
                     <Badge variant="outline">{product.category}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {product.featured ? (
+                      <Badge variant="default">Yes</Badge>
+                    ) : (
+                      <Badge variant="secondary">No</Badge>
+                    )}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     ${product.price.toFixed(2)}
