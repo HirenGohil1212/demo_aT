@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ShoppingCart, Menu } from 'lucide-react';
+import { ShoppingCart, Menu, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { Badge } from '@/components/ui/badge';
@@ -11,9 +11,20 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { useUser } from '@/hooks/use-user';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { auth } from '@/lib/firebase';
 
 export default function Header() {
   const { itemCount } = useCart();
+  const { user, isAdmin } = useUser();
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -33,6 +44,11 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
+           {isAdmin && (
+              <Link href="/admin" className="text-base font-medium hover:text-primary transition-colors duration-300">
+                Admin
+              </Link>
+            )}
         </nav>
 
         <div className="flex items-center gap-4">
@@ -47,6 +63,30 @@ export default function Header() {
               <span className="sr-only">Shopping Cart</span>
             </Link>
           </Button>
+
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <UserIcon className="h-6 w-6" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => auth.signOut()}>
+                  Logout
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild>
+              <Link href="/login">Login</Link>
+            </Button>
+          )}
+
 
           <div className="md:hidden">
             <Sheet>
@@ -65,6 +105,11 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
+                  {isAdmin && (
+                    <Link href="/admin" className="text-lg font-medium hover:text-primary transition-colors">
+                      Admin
+                    </Link>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

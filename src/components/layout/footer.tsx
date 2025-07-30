@@ -5,8 +5,11 @@ export default function Footer() {
     <footer className="bg-card shadow-inner mt-12">
       <div className="container mx-auto px-4 py-6 text-center text-muted-foreground">
         <p>&copy; {new Date().getFullYear()} LuxeLiquor. All rights reserved.</p>
-        <div className="text-xs mt-2">
+        <div className="text-xs mt-2 space-x-2">
             <span>Please drink responsibly.</span>
+            <span className="border-l border-muted-foreground/50 pl-2">
+              <Link href="/login" className="hover:text-primary">Admin Login</Link>
+            </span>
         </div>
       </div>
     </footer>
