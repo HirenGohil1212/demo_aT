@@ -25,7 +25,9 @@ function getDb() {
         // This is useful for environments like Google Cloud Run/Functions and Firebase App Hosting
         // where credentials can be automatically discovered.
         if (admin.apps.length === 0) {
-             admin.initializeApp();
+             admin.initializeApp({
+                storageBucket: 'fir-5d78f.appspot.com'
+             });
         }
     }
   }
@@ -225,7 +227,6 @@ export async function addBanner(prevState: unknown, formData: FormData) {
 export async function getBanners(): Promise<Banner[]> {
   try {
     const db = getDb();
-    // Removed the complex query that requires an index
     const snapshot = await db.collection('banners').get();
     
     if (snapshot.empty) {
