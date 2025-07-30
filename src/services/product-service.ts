@@ -6,6 +6,8 @@ import type { Category, Product, Banner, AppSettings } from '@/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
+import { Readable } from 'stream';
+
 
 // Helper function to initialize Firebase Admin and get the Firestore instance
 function getDb() {
@@ -14,7 +16,8 @@ function getDb() {
       // Check if service account JSON file exists
       const serviceAccount = require('../../serviceAccountKey.json');
       admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+        credential: admin.credential.cert(serviceAccount),
+        storageBucket: `${serviceAccount.project_id}.appspot.com`
       });
     } catch (error: any) {
       console.error('Firebase admin initialization error:', error.message);
@@ -27,13 +30,43 @@ function getDb() {
   return admin.firestore();
 }
 
+function getStorage() {
+    if (admin.apps.length === 0) {
+        getDb(); // Ensures initialization
+    }
+    return admin.storage();
+}
+
+
+async function uploadImage(file: File) {
+    const bucket = getStorage().bucket();
+    const fileName = `${Date.now()}_${file.name}`;
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+    const stream = Readable.from(fileBuffer);
+    const writeStream = bucket.file(`images/${fileName}`).createWriteStream({
+        metadata: {
+            contentType: file.type,
+        },
+    });
+
+    return new Promise<string>((resolve, reject) => {
+        stream.pipe(writeStream)
+            .on('finish', () => {
+                const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(`images/${fileName}`)}?alt=media`;
+                resolve(publicUrl);
+            })
+            .on('error', reject);
+    });
+}
+
 
 const productSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
   price: z.coerce.number().int().positive({ message: 'Price must be a positive integer in cents' }),
   category: z.string().min(1, { message: 'Category is required' }),
-  image: z.string().url({ message: 'A valid image URL is required' }),
+  image: z.instanceof(File),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
 })
 
@@ -125,9 +158,14 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 
     const data = result.data
 
+    const imageUrl = await uploadImage(data.image);
+
     await db.collection('products').add({
-      ...data,
+      name: data.name,
+      description: data.description,
+      category: data.category,
       price: data.price / 100, // convert from cents to dollars
+      image: imageUrl,
       featured: data.featured || false,
       details: [], // Default empty values
       recipe: null,
@@ -148,7 +186,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 const bannerSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   subtitle: z.string().min(1, { message: "Subtitle is required" }),
-  imageUrl: z.string().url({ message: "A valid image URL is required" }),
+  imageUrl: z.instanceof(File),
   productId: z.string().min(1, { message: "A product must be linked" }),
 });
 
@@ -163,8 +201,12 @@ export async function addBanner(formData: FormData) {
   }
 
   try {
+    const imageUrl = await uploadImage(result.data.imageUrl);
     await db.collection("banners").add({
-      ...result.data,
+      title: result.data.title,
+      subtitle: result.data.subtitle,
+      productId: result.data.productId,
+      imageUrl: imageUrl,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       active: true,
     });

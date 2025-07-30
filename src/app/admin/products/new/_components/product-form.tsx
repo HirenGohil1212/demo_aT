@@ -15,8 +15,10 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Category } from "@/types";
-import { Loader2 } from "lucide-react";
+import { Loader2, Image as ImageIcon } from "lucide-react";
 import { useFormStatus } from "react-dom";
+import { useState, useRef } from "react";
+import Image from "next/image";
 
 type ProductFormProps = {
   categories: Category[];
@@ -24,6 +26,22 @@ type ProductFormProps = {
 
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState(addProduct, {});
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+        setImagePreview(null);
+    }
+  };
 
   return (
     <form action={action} className="space-y-6">
@@ -57,9 +75,33 @@ export function ProductForm({ categories }: ProductFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">Image URL</Label>
-        <Input type="url" id="image" name="image" required defaultValue="https://placehold.co/600x600.png" />
-        {error?.image && <div className="text-destructive text-sm">{error.image}</div>}
+        <Label htmlFor="image">Product Image</Label>
+        <div className="flex items-center gap-4">
+          <div className="w-32 h-32 border rounded-md flex items-center justify-center bg-muted/30">
+            {imagePreview ? (
+                <Image src={imagePreview} alt="Image Preview" width={128} height={128} className="object-cover w-full h-full rounded-md" />
+            ) : (
+                <ImageIcon className="w-16 h-16 text-muted-foreground" />
+            )}
+          </div>
+          <div className="space-y-2">
+            <Input 
+                id="image" 
+                name="image" 
+                type="file" 
+                required 
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleImageChange}
+            />
+             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                Choose Image
+            </Button>
+            <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 5MB</p>
+          </div>
+        </div>
+         {error?.image && <div className="text-destructive text-sm">{error.image}</div>}
       </div>
 
       <div className="space-y-2">
