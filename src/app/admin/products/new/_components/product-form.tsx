@@ -16,20 +16,27 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Category } from "@/types";
-import { Loader2, Image as ImageIcon } from "lucide-react";
+import { Loader2, Image as ImageIcon, UploadCloud } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { useState, useRef } from "react";
 import Image from "next/image";
+import { uploadFile } from "@/lib/storage";
 
 type ProductFormProps = {
   categories: Category[];
 };
 
-function SubmitButton() {
+function SubmitButton({ isUploading }: { isUploading: boolean }) {
     const { pending } = useFormStatus();
+    const isDisabled = pending || isUploading;
     return (
-        <Button type="submit" disabled={pending} className="w-full">
-            {pending ? <Loader2 className="animate-spin" /> : "Add Product"}
+        <Button type="submit" disabled={isDisabled} className="w-full">
+            {isUploading 
+                ? <><UploadCloud className="animate-bounce" /> Uploading Image...</>
+                : pending 
+                ? <><Loader2 className="animate-spin" /> Adding Product...</>
+                : "Add Product"
+            }
         </Button>
     )
 }
@@ -37,24 +44,54 @@ function SubmitButton() {
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState(addProduct, {});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     } else {
+        setImageFile(null);
         setImagePreview(null);
     }
   };
 
+  const handleFormAction = async (formData: FormData) => {
+    if (!imageFile) {
+        // This should be caught by the 'required' attribute, but as a fallback
+        console.error("No image file selected");
+        return;
+    }
+
+    setIsUploading(true);
+    let imageUrl = '';
+    try {
+        imageUrl = await uploadFile(imageFile, 'products');
+    } catch (uploadError) {
+        console.error("Image upload failed:", uploadError);
+        // You might want to set an error state here to show in the UI
+        setIsUploading(false);
+        return; // Stop form submission
+    }
+    setIsUploading(false);
+
+    // Append the uploaded image URL to the form data
+    formData.append('imageUrl', imageUrl);
+
+    // Call the original server action
+    action(formData);
+  }
+
   return (
-    <form action={action} className="space-y-6">
+    <form action={handleFormAction} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required />
@@ -62,8 +99,8 @@ export function ProductForm({ categories }: ProductFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="price">Price (in cents)</Label>
-        <Input type="number" id="price" name="price" required />
+        <Label htmlFor="price">Price</Label>
+        <Input type="number" step="0.01" id="price" name="price" required />
          {error?.price && <div className="text-destructive text-sm">{error.price[0]}</div>}
       </div>
       
@@ -111,7 +148,7 @@ export function ProductForm({ categories }: ProductFormProps) {
             <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 5MB</p>
           </div>
         </div>
-         {error?.image && <div className="text-destructive text-sm">{error.image[0]}</div>}
+         {error?.imageUrl && <div className="text-destructive text-sm">{error.imageUrl[0]}</div>}
       </div>
 
       <div className="space-y-2">
@@ -127,7 +164,7 @@ export function ProductForm({ categories }: ProductFormProps) {
       
       {error?.serverError && <div className="text-destructive text-sm">{error.serverError[0]}</div>}
 
-      <SubmitButton />
+      <SubmitButton isUploading={isUploading} />
     </form>
   );
 }
