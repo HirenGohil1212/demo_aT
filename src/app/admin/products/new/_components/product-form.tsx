@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { addProduct } from "@/services/product-service";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ type ProductFormProps = {
 };
 
 export function ProductForm({ categories }: ProductFormProps) {
-  const [error, action] = useFormState(addProduct, {});
+  const [error, action] = useActionState(addProduct, {});
 
   return (
     <form action={action} className="space-y-6">
