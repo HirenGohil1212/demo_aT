@@ -11,10 +11,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { ADMIN_UIDS } from '@/lib/admins';
 
 export default function LoginPage() {
-  const { user, loading } = useUser();
+  const { user, isAdmin, loading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
@@ -22,37 +21,22 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    // If user is loaded and is an admin, redirect to the dashboard.
-    if (!loading && user && ADMIN_UIDS.includes(user.uid)) {
+    if (!loading && user && isAdmin) {
       router.push('/admin');
     }
-  }, [user, loading, router]);
+  }, [user, isAdmin, loading, router]);
 
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Check if the logged-in user is an admin
-      if (ADMIN_UIDS.includes(userCredential.user.uid)) {
-        toast({
-            title: "Login Successful",
-            description: "Redirecting to the admin panel...",
-        });
-        // The useEffect above will handle the redirect.
-        // Or we can push directly:
-        router.push('/admin');
-      } else {
-        // Not an admin, sign them out and show an error
-        await auth.signOut();
-        toast({
-            variant: "destructive",
-            title: "Access Denied",
-            description: "You do not have permission to access the admin panel.",
-        });
-        setIsLoggingIn(false);
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      // The useEffect above will handle the redirect upon successful state change.
+      toast({
+          title: "Login Successful",
+          description: "Redirecting to the admin panel...",
+      });
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -78,18 +62,14 @@ export default function LoginPage() {
     }
   };
   
-  // While checking user auth state, show a loading message.
   if (loading) {
     return <div className='text-center p-12'>Loading...</div>;
   }
   
-  // If the user is already logged in and an admin, they will be redirected by the useEffect.
-  // We can show a message here as well.
-  if (user && ADMIN_UIDS.includes(user.uid)) {
+  if (user && isAdmin) {
       return <div className='text-center p-12'>Redirecting to admin panel...</div>;
   }
 
-  // Otherwise, show the login form.
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
       <Card className="w-full max-w-sm">
@@ -131,4 +111,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

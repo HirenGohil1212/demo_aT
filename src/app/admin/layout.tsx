@@ -3,7 +3,6 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { useUser } from '@/hooks/use-user';
-import { ADMIN_UIDS } from '@/lib/admins';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Home, PackagePlus, Users, Image as ImageIcon, LayoutGrid, LogOut, Shield } from 'lucide-react';
@@ -16,26 +15,22 @@ import { useIsMobile } from '@/hooks/use-mobile';
 
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
-  const { user, loading } = useUser();
+  const { user, isAdmin, loading } = useUser();
   const router = useRouter();
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // Don't do anything until the user's auth state is fully loaded
     if (loading) {
       return; 
     }
-    // If loading is finished, and there's no user, or the user is not an admin, redirect to login.
-    if (!user || !ADMIN_UIDS.includes(user.uid)) {
+    if (!user || !isAdmin) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, isAdmin, loading, router]);
 
 
-  // While loading, or if the user is not yet determined to be a valid admin,
-  // show a single, stable loading screen. This prevents content flashing or redirect loops.
-  if (loading || !user || !ADMIN_UIDS.includes(user.uid)) {
+  if (loading || !user || !isAdmin) {
     return (
         <div className="flex justify-center items-center h-screen">
             <div className="text-xl">Loading Admin Panel...</div>

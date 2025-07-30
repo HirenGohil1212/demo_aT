@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { useUser } from '@/hooks/use-user';
 import { auth } from '@/lib/firebase';
-import { ADMIN_UIDS } from '@/lib/admins';
 import { signOut } from 'firebase/auth';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -28,9 +27,8 @@ import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { itemCount } = useCart();
-  const { user, loading } = useUser();
+  const { user, isAdmin, loading } = useUser();
   const router = useRouter();
-  const isAdmin = user && ADMIN_UIDS.includes(user.uid);
 
   const navLinks = [
     { href: '/', label: 'Home' },
