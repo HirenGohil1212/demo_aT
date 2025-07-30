@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useActionState } from "react";
@@ -23,6 +24,15 @@ import Image from "next/image";
 type ProductFormProps = {
   categories: Category[];
 };
+
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" disabled={pending} className="w-full">
+            {pending ? <Loader2 className="animate-spin" /> : "Add Product"}
+        </Button>
+    )
+}
 
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState(addProduct, {});
@@ -118,13 +128,4 @@ export function ProductForm({ categories }: ProductFormProps) {
       <SubmitButton />
     </form>
   );
-}
-
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-        <Button type="submit" disabled={pending} className="w-full">
-            {pending ? <Loader2 className="animate-spin" /> : "Add Product"}
-        </Button>
-    )
 }

@@ -10,34 +10,38 @@ import { Readable } from 'stream';
 
 
 // Helper function to initialize Firebase Admin and get the Firestore instance
-function getDb() {
-  if (admin.apps.length === 0) {
-    try {
-      // First, try to use the service account key file if it exists.
-      const serviceAccount = require('../../serviceAccountKey.json');
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        storageBucket: `${serviceAccount.project_id}.appspot.com`
-      });
-    } catch (error) {
-        console.error("Service account key not found or failed to parse, falling back to default credentials.", error);
-        // If the file doesn't exist or fails, fall back to default credentials.
-        // This is useful for environments like Google Cloud Run/Functions and Firebase App Hosting
-        // where credentials can be automatically discovered.
-        if (admin.apps.length === 0) {
-             admin.initializeApp({
-                storageBucket: 'fir-5d78f.appspot.com'
-             });
-        }
+function initializeAdmin() {
+    if (admin.apps.length > 0) {
+        return;
     }
-  }
-  return admin.firestore();
+
+    try {
+        // This is the recommended way to load credentials in a Google Cloud environment.
+        // It will automatically use the service account associated with the App Hosting backend.
+        // For local development, it will use the GOOGLE_APPLICATION_CREDENTIALS env var.
+        // As a fallback for simpler local setup, we check for serviceAccountKey.json.
+        const serviceAccount = require('../../serviceAccountKey.json');
+        console.log("Initializing Firebase Admin with serviceAccountKey.json");
+        admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            storageBucket: `fir-5d78f.appspot.com`,
+        });
+    } catch (error) {
+        console.log("serviceAccountKey.json not found, initializing with default credentials.");
+        // This will be used in the deployed App Hosting environment
+        admin.initializeApp({
+            storageBucket: `fir-5d78f.appspot.com`,
+        });
+    }
+}
+
+function getDb() {
+    initializeAdmin();
+    return admin.firestore();
 }
 
 function getStorage() {
-    if (admin.apps.length === 0) {
-        getDb(); // Ensures initialization
-    }
+    initializeAdmin();
     return admin.storage();
 }
 

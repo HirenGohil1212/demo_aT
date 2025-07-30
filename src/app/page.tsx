@@ -24,11 +24,12 @@ export default async function Home() {
   return (
     <div>
       {/* Hero Carousel */}
-      <section className="w-full">
+      <section className="w-full relative">
         <Carousel
           className="w-full"
           opts={{
             align: 'start',
+            loop: true,
           }}
         >
           <CarouselContent>
@@ -59,8 +60,8 @@ export default async function Home() {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden sm:flex left-4 text-primary" />
-          <CarouselNext className="hidden sm:flex right-4 text-primary" />
+          <CarouselPrevious className="hidden sm:flex" />
+          <CarouselNext className="hidden sm:flex" />
         </Carousel>
       </section>
 
