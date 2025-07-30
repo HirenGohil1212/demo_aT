@@ -37,6 +37,7 @@ export default function LoginPage() {
           title: "Login Successful",
           description: "Redirecting to the admin panel...",
       });
+      // The user state will be updated by the UserProvider, triggering the useEffect
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -58,16 +59,14 @@ export default function LoginPage() {
             title: "Login Failed",
             description: errorMessage,
         });
+    } finally {
         setIsLoggingIn(false);
     }
   };
   
-  if (loading) {
+  // This prevents a flash of the login page if the user is already an admin
+  if (loading || (!loading && user && isAdmin)) {
     return <div className='text-center p-12'>Loading...</div>;
-  }
-  
-  if (user && isAdmin) {
-      return <div className='text-center p-12'>Redirecting to admin panel...</div>;
   }
 
   return (
