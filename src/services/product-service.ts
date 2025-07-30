@@ -68,7 +68,7 @@ async function uploadImage(file: File) {
             })
             .on('error', (err) => {
                 console.error('Error uploading image to storage:', err);
-                reject(err);
+                reject(new Error('Failed to upload image.'));
             });
     });
 }
