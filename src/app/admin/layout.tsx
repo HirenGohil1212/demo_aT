@@ -30,28 +30,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     }
   }, [user, loading, isAdmin, router]);
 
+  // While loading or if the user is not yet determined to be an admin, show a loading screen.
+  // The useEffect above will handle redirection if they are not an admin.
+  if (loading || !isAdmin) {
+    return (
+        <div className="flex justify-center items-center h-screen">
+            <div className="text-xl">Loading Admin Panel...</div>
+        </div>
+    );
+  }
+
+
   const handleSignOut = async () => {
     await signOut(auth);
     router.push('/login');
   };
-
-  if (loading) {
-    return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="text-xl">Loading...</div>
-        </div>
-    )
-  }
-
-  // If we're still loading or the user is not an admin, don't render the admin layout.
-  // The useEffect will handle the redirect.
-  if (!isAdmin) {
-    return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="text-xl">Checking permissions...</div>
-        </div>
-    );
-  }
 
   return (
     <SidebarProvider defaultOpen={!isMobile} onOpenChange={setSidebarOpen} open={sidebarOpen}>
