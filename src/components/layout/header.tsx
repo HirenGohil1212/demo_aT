@@ -36,7 +36,7 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-4">
-          <Button asChild variant="outline" size="icon" className="relative border-accent text-accent-foreground hover:bg-accent">
+          <Button asChild variant="outline" size="icon" className="relative border-accent text-accent hover:bg-accent hover:text-accent-foreground">
             <Link href="/cart">
               <ShoppingCart className="h-6 w-6" />
               {itemCount > 0 && (
