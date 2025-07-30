@@ -8,6 +8,9 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 import { Readable } from 'stream';
 
+const FIREBASE_PROJECT_ID = "fir-5d78f";
+const FIREBASE_STORAGE_BUCKET = `${FIREBASE_PROJECT_ID}.appspot.com`;
+
 
 // Helper function to initialize Firebase Admin and get the Firestore instance
 function initializeAdmin() {
@@ -15,22 +18,21 @@ function initializeAdmin() {
         return;
     }
 
+    // Check if the service account key is available. This is for local development.
+    // In a deployed environment (like App Hosting), Google's infrastructure provides
+    // the credentials automatically.
     try {
-        // This is the recommended way to load credentials in a Google Cloud environment.
-        // It will automatically use the service account associated with the App Hosting backend.
-        // For local development, it will use the GOOGLE_APPLICATION_CREDENTIALS env var.
-        // As a fallback for simpler local setup, we check for serviceAccountKey.json.
         const serviceAccount = require('../../serviceAccountKey.json');
         console.log("Initializing Firebase Admin with serviceAccountKey.json");
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
-            storageBucket: `fir-5d78f.appspot.com`,
+            storageBucket: FIREBASE_STORAGE_BUCKET,
         });
     } catch (error) {
-        console.log("serviceAccountKey.json not found, initializing with default credentials.");
+        console.log("serviceAccountKey.json not found, initializing with default credentials (expected in production).");
         // This will be used in the deployed App Hosting environment
         admin.initializeApp({
-            storageBucket: `fir-5d78f.appspot.com`,
+            storageBucket: FIREBASE_STORAGE_BUCKET,
         });
     }
 }
@@ -64,7 +66,10 @@ async function uploadImage(file: File) {
                 const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(`images/${fileName}`)}?alt=media`;
                 resolve(publicUrl);
             })
-            .on('error', reject);
+            .on('error', (err) => {
+                console.error('Error uploading image to storage:', err);
+                reject(err);
+            });
     });
 }
 
@@ -74,7 +79,7 @@ const productSchema = z.object({
   description: z.string().min(1, { message: 'Description is required' }),
   price: z.coerce.number().int().positive({ message: 'Price must be a positive integer in cents' }),
   category: z.string().min(1, { message: 'Category is required' }),
-  image: z.instanceof(File),
+  image: z.instanceof(File).refine((file) => file.size > 0, { message: 'Image is required.' }),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
 })
 
@@ -157,13 +162,13 @@ export async function addCategory(formData: FormData) {
 }
 
 export async function addProduct(prevState: unknown, formData: FormData) {
+  const result = productSchema.safeParse(Object.fromEntries(formData.entries()))
+  if (result.success === false) {
+    return result.error.formErrors.fieldErrors
+  }
+  
   try {
     const db = getDb();
-    const result = productSchema.safeParse(Object.fromEntries(formData.entries()))
-    if (result.success === false) {
-      return result.error.formErrors.fieldErrors
-    }
-
     const data = result.data
 
     const imageUrl = await uploadImage(data.image);
@@ -179,8 +184,8 @@ export async function addProduct(prevState: unknown, formData: FormData) {
       recipe: null,
     })
   } catch (error) {
-    console.error("Error in addProduct:", error);
-    return { name: ["Failed to add product due to a server error."] };
+    console.error("Full error in addProduct:", error);
+    return { serverError: ["Failed to add product due to a server error."] };
   }
 
   revalidatePath('/')
@@ -194,21 +199,20 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 const bannerSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   subtitle: z.string().min(1, { message: "Subtitle is required" }),
-  imageUrl: z.instanceof(File),
+  imageUrl: z.instanceof(File).refine((file) => file.size > 0, { message: 'Image is required.' }),
   productId: z.string().min(1, { message: "A product must be linked" }),
 });
 
 export async function addBanner(prevState: unknown, formData: FormData) {
-  const db = getDb();
   const result = bannerSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (result.success === false) {
     console.error("Banner validation error:", result.error.formErrors);
-    // A more user-friendly error handling would be ideal here
     return { error: "Invalid data provided." };
   }
 
   try {
+    const db = getDb();
     const imageUrl = await uploadImage(result.data.imageUrl);
     await db.collection("banners").add({
       title: result.data.title,
@@ -231,19 +235,13 @@ export async function addBanner(prevState: unknown, formData: FormData) {
 export async function getBanners(): Promise<Banner[]> {
   try {
     const db = getDb();
-    const snapshot = await db.collection('banners').get();
+    const snapshot = await db.collection('banners').orderBy("createdAt", "desc").where("active", "==", true).get();
     
     if (snapshot.empty) {
       return [];
     }
     
-    const allBanners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
-    
-    // Perform filtering and sorting in code
-    const activeBanners = allBanners.filter(banner => banner.active === true);
-    activeBanners.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-
-    return activeBanners;
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
 
   } catch (error) {
     console.error("Error in getBanners:", error);

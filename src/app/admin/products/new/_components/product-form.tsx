@@ -34,6 +34,7 @@ function SubmitButton() {
     )
 }
 
+
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState(addProduct, {});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -58,13 +59,13 @@ export function ProductForm({ categories }: ProductFormProps) {
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required />
-        {error?.name && <div className="text-destructive text-sm">{error.name}</div>}
+        {error?.name && <div className="text-destructive text-sm">{error.name[0]}</div>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="price">Price (in cents)</Label>
         <Input type="number" id="price" name="price" required />
-         {error?.price && <div className="text-destructive text-sm">{error.price}</div>}
+         {error?.price && <div className="text-destructive text-sm">{error.price[0]}</div>}
       </div>
       
       <div className="space-y-2">
@@ -81,7 +82,7 @@ export function ProductForm({ categories }: ProductFormProps) {
             ))}
           </SelectContent>
         </Select>
-        {error?.category && <div className="text-destructive text-sm">{error.category}</div>}
+        {error?.category && <div className="text-destructive text-sm">{error.category[0]}</div>}
       </div>
 
       <div className="space-y-2">
@@ -111,19 +112,21 @@ export function ProductForm({ categories }: ProductFormProps) {
             <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 5MB</p>
           </div>
         </div>
-         {error?.image && <div className="text-destructive text-sm">{error.image}</div>}
+         {error?.image && <div className="text-destructive text-sm">{error.image[0]}</div>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea id="description" name="description" required />
-        {error?.description && <div className="text-destructive text-sm">{error.description}</div>}
+        {error?.description && <div className="text-destructive text-sm">{error.description[0]}</div>}
       </div>
       
       <div className="flex items-center space-x-2">
         <Checkbox id="featured" name="featured" />
         <Label htmlFor="featured">Featured Product</Label>
       </div>
+      
+      {error?.serverError && <div className="text-destructive text-sm">{error.serverError[0]}</div>}
 
       <SubmitButton />
     </form>
