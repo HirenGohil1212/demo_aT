@@ -21,7 +21,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Redirect only if loading is complete and user is a logged-in admin.
+    // This effect will handle redirection for an admin who is already logged in
+    // and visits the login page by mistake.
     if (!loading && user && ADMIN_UIDS.includes(user.uid)) {
       router.push('/admin');
     }
@@ -31,12 +32,25 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      toast({
-        title: "Login Successful",
-        description: "Welcome back, admin!",
-      });
-      // The useEffect hook will handle the redirect to /admin upon successful login.
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // Check if the logged-in user is an admin
+      if (ADMIN_UIDS.includes(userCredential.user.uid)) {
+        toast({
+            title: "Login Successful",
+            description: "Redirecting to the admin panel...",
+        });
+        // Redirect immediately to the admin panel
+        router.push('/admin');
+      } else {
+        // If the user is not an admin, sign them out and show an error
+        await auth.signOut();
+        setError("You are not authorized to access the admin panel.");
+        toast({
+            variant: "destructive",
+            title: "Access Denied",
+            description: "You do not have permission to access this page.",
+        });
+      }
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -62,14 +76,11 @@ export default function LoginPage() {
     }
   };
 
-  // Show a loading indicator while Firebase auth state is being determined.
-  // Prevents flashing the login form for an already logged-in admin.
-  if (loading) {
+  // While loading or if an already logged-in admin is being redirected, show loading.
+  if (loading || (user && ADMIN_UIDS.includes(user.uid))) {
     return <div className='text-center p-12'>Loading...</div>;
   }
   
-  // If user is loaded and is an admin, they will be redirected by the useEffect.
-  // For non-admins or logged-out users, render the login form.
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
       <Card className="w-full max-w-sm">
