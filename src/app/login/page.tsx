@@ -99,12 +99,6 @@ export default function LoginPage() {
                 <Button className="w-full" type="submit">
                     Sign In
                 </Button>
-                 <p className="text-xs text-center text-muted-foreground">
-                    Don&apos;t have an account?{' '}
-                    <Link href="/signup" className="underline hover:text-primary">
-                        Sign Up
-                    </Link>
-                </p>
             </CardFooter>
         </form>
       </Card>
