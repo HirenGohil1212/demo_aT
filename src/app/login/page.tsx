@@ -33,25 +33,14 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      // Check if the logged-in user is an admin
-      if (ADMIN_UIDS.includes(userCredential.user.uid)) {
-        toast({
-            title: "Login Successful",
-            description: "Redirecting to the admin panel...",
-        });
-        // Redirect immediately to the admin panel
-        router.push('/admin');
-      } else {
-        // If the user is not an admin, sign them out and show an error
-        await auth.signOut();
-        setError("You are not authorized to access the admin panel.");
-        toast({
-            variant: "destructive",
-            title: "Access Denied",
-            description: "You do not have permission to access this page.",
-        });
-      }
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({
+          title: "Login Successful",
+          description: "Redirecting to the admin panel...",
+      });
+      // The useEffect will now handle the redirect to /admin
+      // This simplifies the logic here.
+      router.push('/admin');
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
