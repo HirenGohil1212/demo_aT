@@ -5,7 +5,7 @@ import { ReactNode, useEffect } from 'react';
 import { useUser } from '@/hooks/use-user';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Home, PackagePlus, Image as ImageIcon, LayoutGrid, LogOut, Shield } from 'lucide-react';
+import { Home, Package, PackagePlus, Image as ImageIcon, LayoutGrid, LogOut } from 'lucide-react';
 import { SidebarProvider, Sidebar, SidebarTrigger, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader, SidebarContent, SidebarFooter, SidebarInset } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
@@ -28,13 +28,20 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
 
   // While loading, show a full-page loading indicator to prevent flashing content.
-  if (loading || !isAdmin) {
+  if (loading) {
     return (
         <div className="flex justify-center items-center h-screen bg-background">
             <div className="text-xl font-semibold text-foreground">Loading Admin Panel...</div>
         </div>
     );
   }
+
+  // If loading is done and they are not an admin, they will be redirected by the effect above.
+  // We can return null here to prevent flashing the admin panel.
+  if (!isAdmin) {
+      return null;
+  }
+
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -63,6 +70,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                             <Link href="/admin">
                                 <Home />
                                 <span className='group-data-[collapsible=icon]:hidden'>Dashboard</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                     <SidebarMenuItem>
+                        <SidebarMenuButton asChild>
+                            <Link href="/admin/products">
+                                <Package />
+                                <span className='group-data-[collapsible=icon]:hidden'>Manage Products</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
