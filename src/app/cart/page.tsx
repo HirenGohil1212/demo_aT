@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -6,20 +7,30 @@ import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, MessageSquareText } from 'lucide-react';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, totalPrice, itemCount } = useCart();
 
   const handleWhatsAppOrder = () => {
-    const phoneNumber = '15551234567'; // Replace with a valid WhatsApp number
+    // Replace with your actual WhatsApp business number, including the country code without '+' or '00'
+    const adminPhoneNumber = '911234567890'; 
+    
     let message = 'Hello LuxeLiquor, I would like to place an order for the following items:\n\n';
+    
     cartItems.forEach(item => {
       message += `*${item.quantity}x* ${item.product.name} (@ $${item.product.price.toFixed(2)} each)\n`;
     });
-    message += `\n----------------------\n*Total Order Value: $${totalPrice.toFixed(2)}*`;
     
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    message += `\n----------------------\n`;
+    message += `*Total Order Value: $${totalPrice.toFixed(2)}*\n\n`;
+    message += `----------------------\n`;
+    message += `Please provide your details for delivery:\n`;
+    message += `*Full Name:* \n`;
+    message += `*Shipping Address:* \n`;
+    message += `*Contact Number:* \n`;
+
+    const whatsappUrl = `https://wa.me/${adminPhoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
@@ -92,6 +103,7 @@ export default function CartPage() {
             </CardContent>
             <CardFooter>
               <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleWhatsAppOrder}>
+                <MessageSquareText className="mr-2"/>
                 Place Order via WhatsApp
               </Button>
             </CardFooter>
