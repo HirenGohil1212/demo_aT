@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useUser } from '@/hooks/use-user';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,31 +15,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user, isAdmin, loading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
-
-  useEffect(() => {
-    // If loading is done and we have an admin user, redirect them to the dashboard.
-    // This handles the case where a logged-in admin lands on the login page.
-    if (!loading && user && isAdmin) {
-      router.push('/admin');
-    }
-  }, [user, isAdmin, loading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // On successful login, the useEffect hook will handle redirection
-      // to the admin panel after the user state (including claims) is confirmed.
       toast({
         title: "Login Successful",
         description: "Redirecting to the admin dashboard...",
       });
-      // We can also optimistically redirect here for a faster user experience.
-      // The admin layout's guard will handle any non-admin users.
+      // Directly push to admin page on successful login.
+      // The AdminLayout will handle showing a loading state and verifying claims.
       router.push('/admin');
     } catch (error: any) {
       console.error("Login failed:", error);
@@ -54,26 +42,6 @@ export default function LoginPage() {
     }
   };
 
-  // Show a loading spinner while the auth state is being determined.
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // If an admin is already logged in, show a redirecting message.
-  if (user && isAdmin) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Redirecting to dashboard...</p>
-      </div>
-    );
-  }
-
-  // Otherwise, show the login form.
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background">
       <Card className="w-full max-w-sm">

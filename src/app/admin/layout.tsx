@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/use-user";
-import { Loader2, Home, Package2, Settings } from "lucide-react";
+import { Loader2, Home } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -12,9 +12,8 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter,
-  SidebarTrigger,
   SidebarInset,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -70,14 +69,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarContent>
-          <SidebarFooter>
-            {/* Footer content if any */}
-          </SidebarFooter>
         </Sidebar>
         <SidebarInset>
           <header className="flex h-12 items-center justify-between border-b px-4 lg:justify-end">
             <SidebarTrigger className="lg:hidden" />
-            {/* Potentially add user profile button here */}
           </header>
           <main className="p-4">{children}</main>
         </SidebarInset>
