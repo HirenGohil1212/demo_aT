@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -13,31 +13,23 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const { user, isAdmin, loading } = useUser();
+  const { loading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  useEffect(() => {
-    if (!loading && user && isAdmin) {
-      router.push('/admin');
-    }
-  }, [user, isAdmin, loading, router]);
-
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // The user state will be updated by the UserProvider, triggering the useEffect
       toast({
           title: "Login Successful",
           description: "Redirecting to the admin panel...",
       });
-      router.push('/admin'); // Force redirect on successful login
+      router.push('/admin');
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -65,14 +57,12 @@ export default function LoginPage() {
   };
   
   if (loading) {
-    return <div className='text-center p-12'>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+         <div className="text-xl font-semibold text-foreground">Loading...</div>
+      </div>
+    )
   }
-  
-  if (isAdmin) {
-    // This will be handled by the effect, but can prevent a flash of the login page
-    return <div className='text-center p-12'>Redirecting to dashboard...</div>
-  }
-
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">

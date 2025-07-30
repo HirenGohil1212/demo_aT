@@ -20,19 +20,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (loading) {
-      return; 
-    }
-    if (!user || !isAdmin) {
+    if (!loading && !isAdmin) {
       router.push('/login');
     }
-  }, [user, isAdmin, loading, router]);
+  }, [isAdmin, loading, router]);
 
 
   if (loading || !isAdmin) {
     return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="text-xl">Loading Admin Panel...</div>
+        <div className="flex justify-center items-center h-screen bg-background">
+            <div className="text-xl font-semibold text-foreground">Loading Admin Panel...</div>
         </div>
     );
   }
