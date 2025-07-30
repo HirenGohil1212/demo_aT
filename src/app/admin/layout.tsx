@@ -59,7 +59,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
               </h1>
             </Link>
           </SidebarHeader>
-          <SidebarContent>
+          <SidebarContent className="mt-4">
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={pathname === "/admin"} tooltip="Dashboard">
