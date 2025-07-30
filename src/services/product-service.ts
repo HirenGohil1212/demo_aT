@@ -6,123 +6,134 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
-// Initialize Firebase Admin SDK
-if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-  } catch (error: any) {
-    console.error('Firebase admin initialization error:', error.message);
+// Helper function to initialize Firebase Admin and get the Firestore instance
+function getDb() {
+  if (admin.apps.length === 0) {
+    try {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: process.env.FIREBASE_PROJECT_ID,
+          clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+          privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        }),
+      });
+    } catch (error: any) {
+      console.error('Firebase admin initialization error:', error.message);
+      // We throw an error to stop execution if initialization fails
+      throw new Error('Firebase admin initialization failed');
+    }
   }
+  return admin.firestore();
 }
-
-
-const db = admin.apps.length ? admin.firestore() : null;
 
 const productSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
-  price: z.coerce.number().int().min(1),
+  price: z.coerce.number().int().positive(),
   category: z.string().min(1),
   image: z.string().url(),
   featured: z.coerce.boolean().optional(),
 })
 
 export async function getProducts(): Promise<Product[]> {
-  if (!db) {
-    console.error("Firestore not initialized");
+  try {
+    const db = getDb();
+    const snapshot = await db.collection('products').get()
+    if (snapshot.empty) {
+      return []
+    }
+    return snapshot.docs.map(doc => {
+      const data = doc.data()
+      return { 
+        id: doc.id, 
+        ...data, 
+        price: data.price || 0 
+      } as Product
+    });
+  } catch (error) {
+    console.error("Error in getProducts:", error);
     return [];
   }
-  const snapshot = await db.collection('products').get()
-  if (snapshot.empty) {
-    return []
-  }
-  return snapshot.docs.map(doc => {
-    const data = doc.data()
-    return { 
-      id: doc.id, 
-      ...data, 
-      price: data.price || 0 
-    } as Product
-  });
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
-  if (!db) {
-    console.error("Firestore not initialized");
+  try {
+    const db = getDb();
+    const doc = await db.collection('products').doc(id).get()
+    if (!doc.exists) {
+      return null
+    }
+    const data = doc.data();
+    return { id: doc.id, ...data, price: data?.price || 0 } as Product;
+  } catch (error) {
+    console.error("Error in getProductById:", error);
     return null;
   }
-  const doc = await db.collection('products').doc(id).get()
-  if (!doc.exists) {
-    return null
-  }
-  const data = doc.data();
-  return { id: doc.id, ...data, price: data?.price || 0 } as Product;
 }
 
 export async function getCategories(): Promise<Category[]> {
-  if (!db) {
-    console.error("Firestore not initialized");
+  try {
+    const db = getDb();
+    const snapshot = await db.collection('categories').orderBy('name').get()
+    if (snapshot.empty) {
+      return []
+    }
+    return snapshot.docs.map(
+      doc => ({ id: doc.id, ...doc.data() } as Category)
+    )
+  } catch (error) {
+    console.error("Error in getCategories:", error);
     return [];
   }
-  const snapshot = await db.collection('categories').orderBy('name').get()
-  if (snapshot.empty) {
-    return []
-  }
-  return snapshot.docs.map(
-    doc => ({ id: doc.id, ...doc.data() } as Category)
-  )
 }
 
 export async function addCategory(formData: FormData) {
-  if (!db) {
-    console.error("Firestore not initialized");
-    return { errors: { name: ["Database not connected."]}};
-  }
-  const categorySchema = z.object({
-    name: z.string().min(1),
-  })
+  try {
+    const db = getDb();
+    const categorySchema = z.object({
+      name: z.string().min(1),
+    })
 
-  const validatedFields = categorySchema.safeParse({
-    name: formData.get('name'),
-  })
+    const validatedFields = categorySchema.safeParse({
+      name: formData.get('name'),
+    })
 
-  if (!validatedFields.success) {
-    // Handle validation errors, maybe return them
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
+    if (!validatedFields.success) {
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+      }
     }
-  }
 
-  await db.collection('categories').add(validatedFields.data)
-  revalidatePath('/admin/categories')
-  revalidatePath('/admin/products/new')
+    await db.collection('categories').add(validatedFields.data)
+    revalidatePath('/admin/categories')
+    revalidatePath('/admin/products/new')
+  } catch (error) {
+    console.error("Error in addCategory:", error);
+    return { errors: { name: ["Failed to add category due to a server error."] } };
+  }
 }
 
 export async function addProduct(prevState: unknown, formData: FormData) {
-  if (!db) {
-    console.error("Firestore not initialized");
-    return { name: ["Database not connected."]};
-  }
-  const result = productSchema.safeParse(Object.fromEntries(formData.entries()))
-  if (result.success === false) {
-    return result.error.formErrors.fieldErrors
-  }
+  try {
+    const db = getDb();
+    const result = productSchema.safeParse(Object.fromEntries(formData.entries()))
+    if (result.success === false) {
+      return result.error.formErrors.fieldErrors
+    }
 
-  const data = result.data
+    const data = result.data
 
-  await db.collection('products').add({
-    ...data,
-    price: data.price / 100, // convert from cents
-    featured: data.featured || false,
-    details: [], // Default empty values
-    recipe: null,
-  })
+    await db.collection('products').add({
+      ...data,
+      price: data.price / 100, // convert from cents to dollars
+      featured: data.featured || false,
+      details: [], // Default empty values
+      recipe: null,
+    })
+  } catch (error) {
+    console.error("Error in addProduct:", error);
+    return { name: ["Failed to add product due to a server error."] };
+  }
 
   revalidatePath('/')
   revalidatePath('/products')
