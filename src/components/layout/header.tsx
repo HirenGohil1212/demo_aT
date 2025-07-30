@@ -27,7 +27,7 @@ import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { itemCount } = useCart();
-  const { user, isAdmin, loading } = useUser();
+  const { user, loading } = useUser();
   const router = useRouter();
 
   const navLinks = [
@@ -53,12 +53,6 @@ export default function Header() {
               {link.label}
             </Link>
           ))}
-          {isAdmin && (
-             <Link href="/admin" className="text-base font-medium hover:text-primary transition-colors duration-300 flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Admin
-            </Link>
-          )}
         </nav>
 
         <div className="flex items-center gap-4">
@@ -88,18 +82,9 @@ export default function Header() {
                   <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium leading-none">{user.displayName ?? user.email}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{isAdmin ? 'Administrator' : 'Customer'}</p>
+                    <p className="text-xs leading-none text-muted-foreground">Customer</p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                  {isAdmin && (
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin">
-                        <Shield className="mr-2 h-4 w-4" />
-                        <span>Admin Dashboard</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
@@ -133,12 +118,6 @@ export default function Header() {
                       {link.label}
                     </Link>
                   ))}
-                  {isAdmin && (
-                     <Link href="/admin" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                       <Shield className="h-5 w-5" />
-                      Admin
-                    </Link>
-                  )}
                    {!user && !loading && (
                     <Link href="/login" className="text-lg font-medium hover:text-primary transition-colors">
                       Login

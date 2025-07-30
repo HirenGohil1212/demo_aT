@@ -7,7 +7,6 @@ import { auth } from '@/lib/firebase';
 
 interface UserContextType {
   user: User | null;
-  isAdmin: boolean;
   loading: boolean;
 }
 
@@ -15,7 +14,6 @@ export const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true); // Start as true
 
   useEffect(() => {
@@ -23,19 +21,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        setUser(user);
-        try {
-          const tokenResult = await user.getIdTokenResult();
-          setIsAdmin(!!tokenResult.claims.admin);
-        } catch (error) {
-          console.error("Error fetching user token:", error);
-          setIsAdmin(false);
-        }
-      } else {
-        setUser(null);
-        setIsAdmin(false);
-      }
+      setUser(user);
       // Only set loading to false after all checks are complete.
       setLoading(false);
     });
@@ -45,7 +31,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ user, isAdmin, loading }}>
+    <UserContext.Provider value={{ user, loading }}>
       {children}
     </UserContext.Provider>
   );

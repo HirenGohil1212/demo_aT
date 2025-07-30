@@ -7,8 +7,6 @@ export default function Footer() {
         <p>&copy; {new Date().getFullYear()} LuxeLiquor. All rights reserved.</p>
         <div className="text-xs mt-2">
             <span>Please drink responsibly.</span>
-            <span className="mx-2">|</span>
-            <Link href="/login" className="hover:text-primary">Admin Login</Link>
         </div>
       </div>
     </footer>
