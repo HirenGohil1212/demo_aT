@@ -22,30 +22,21 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    // This effect runs when the loading status or user object changes.
-    // If loading is finished and there's no user, or the user is not an admin, redirect.
-    if (!loading && (!user || !ADMIN_UIDS.includes(user.uid))) {
+    if (loading) {
+      return; // Do nothing while loading
+    }
+    if (!user || !ADMIN_UIDS.includes(user.uid)) {
       router.push('/login');
     }
   }, [user, loading, router]);
 
 
-  // While loading, show a full-screen loading indicator to prevent flashing content.
-  if (loading) {
+  // While loading, or if the user is not yet determined to be a valid admin,
+  // show a loading screen. This prevents content flashing or redirect loops.
+  if (loading || !user || !ADMIN_UIDS.includes(user.uid)) {
     return (
         <div className="flex justify-center items-center h-screen">
             <div className="text-xl">Loading Admin Panel...</div>
-        </div>
-    );
-  }
-
-  // If not loading, but the user is still not valid (e.g., logged out, not an admin),
-  // show the loading screen as well, as the useEffect above will handle the redirection.
-  // This prevents the admin layout from briefly appearing before the redirect.
-  if (!user || !ADMIN_UIDS.includes(user.uid)) {
-       return (
-        <div className="flex justify-center items-center h-screen">
-            <div className="text-xl">Redirecting...</div>
         </div>
     );
   }

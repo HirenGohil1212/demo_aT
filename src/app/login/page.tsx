@@ -19,11 +19,10 @@ export default function LoginPage() {
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    // If the user is already logged in and is an admin, redirect to the dashboard.
-    // This prevents showing the login page to an already authenticated admin.
+    // If the user is already logged in and is an admin, redirect them to the dashboard.
     if (!loading && user && ADMIN_UIDS.includes(user.uid)) {
       router.push('/admin');
     }
@@ -32,15 +31,15 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setIsLoggingIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // On successful login, the useEffect above will handle the redirect.
       toast({
           title: "Login Successful",
           description: "Redirecting to the admin panel...",
       });
-      // The redirect is now handled by the useEffect above, which waits for user state to be confirmed.
-      router.push('/admin');
+      // We don't need to push here, the effect will do it.
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -57,17 +56,17 @@ export default function LoginPage() {
                 errorMessage = "Failed to sign in. Please try again later.";
                 break;
         }
-        setError(errorMessage);
         toast({
             variant: "destructive",
             title: "Login Failed",
             description: errorMessage,
         });
+        setIsLoggingIn(false);
     }
   };
   
-  // Show a loading state while checking user auth
-  if (loading) {
+  // Show a loading state while checking user auth or if a login is in progress
+  if (loading || isLoggingIn) {
     return <div className='text-center p-12'>Loading...</div>;
   }
 
@@ -109,8 +108,8 @@ export default function LoginPage() {
             </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-4">
-                <Button className="w-full" type="submit">
-                    Sign In
+                <Button className="w-full" type="submit" disabled={isLoggingIn}>
+                    {isLoggingIn ? 'Signing In...' : 'Sign In'}
                 </Button>
             </CardFooter>
         </form>
