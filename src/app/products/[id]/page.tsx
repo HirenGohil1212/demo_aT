@@ -1,8 +1,9 @@
+
 "use server";
 
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { getProductById } from '@/services/product-service';
+import { getProductById } from '@/actions/product-actions';
 import { AddToCartButton } from './_components/add-to-cart-button';
 import { Badge } from '@/components/ui/badge';
 import { CheckCircle } from 'lucide-react';

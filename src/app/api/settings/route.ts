@@ -1,5 +1,5 @@
 
-import { getSettings } from "@/services/product-service";
+import { getSettings } from "@/actions/settings-actions";
 import { NextResponse } from "next/server";
 
 export const dynamic = 'force-dynamic'; // Ensures the route is not cached

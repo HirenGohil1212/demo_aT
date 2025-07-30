@@ -1,6 +1,7 @@
+
 "use server";
 
-import { getSettings } from "@/services/product-service";
+import { getSettings } from "@/actions/settings-actions";
 import SignUpForm from "./_components/signup-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShieldAlert } from "lucide-react";

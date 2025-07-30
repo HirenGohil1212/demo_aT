@@ -1,6 +1,7 @@
+
 "use server";
 
-import { getCategories, addCategory } from "@/services/product-service";
+import { getCategories, addCategory } from "@/actions/category-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

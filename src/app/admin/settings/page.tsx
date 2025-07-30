@@ -1,6 +1,7 @@
+
 "use server";
 
-import { getSettings } from "@/services/product-service";
+import { getSettings } from "@/actions/settings-actions";
 import { SettingsForm } from "./_components/settings-form";
 import {
   Card,

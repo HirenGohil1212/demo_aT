@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useActionState } from "react";
-import { updateSettings } from "@/services/product-service";
+import { updateSettings } from "@/actions/settings-actions";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";

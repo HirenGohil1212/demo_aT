@@ -2,8 +2,8 @@
 "use client";
 
 import { useActionState } from "react";
-import { addBanner } from "@/services/product-service";
-import type { Banner, Product, Category } from "@/types";
+import { addBanner } from "@/actions/banner-actions";
+import type { Banner, Product } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,6 +33,8 @@ import { Loader2, Image as ImageIcon } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
+import { getProducts } from "@/actions/product-actions";
+import { getBanners } from "@/actions/banner-actions";
 
 // These would normally come from the server, but for the client component
 // we pass them as props or fetch them in a client-safe way.
@@ -134,10 +136,8 @@ export default function BannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Let's modify this to fetch from server actions instead to avoid creating new API routes
   useEffect(() => {
     async function loadData() {
-        const { getProducts, getBanners } = await import('@/services/product-service');
         const [productsData, bannersData] = await Promise.all([getProducts(), getBanners()]);
         setProducts(productsData);
         setBanners(bannersData);
@@ -208,4 +208,3 @@ export default function BannersPage() {
     </div>
   );
 }
-

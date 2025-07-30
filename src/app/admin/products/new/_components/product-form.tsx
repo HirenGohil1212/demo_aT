@@ -2,7 +2,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { addProduct } from "@/services/product-service";
+import { addProduct } from "@/actions/product-actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -33,7 +33,6 @@ function SubmitButton() {
         </Button>
     )
 }
-
 
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState(addProduct, {});

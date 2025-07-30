@@ -1,6 +1,8 @@
+
 "use server";
 
-import { getProducts, getCategories } from '@/services/product-service';
+import { getProducts } from '@/actions/product-actions';
+import { getCategories } from '@/actions/category-actions';
 import ProductCard from '@/components/product-card';
 import { ProductFilters } from './_components/product-filters';
 

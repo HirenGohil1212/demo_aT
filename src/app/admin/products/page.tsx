@@ -1,7 +1,8 @@
+
 "use server";
 import Link from "next/link";
 import Image from "next/image";
-import { getProducts } from "@/services/product-service";
+import { getProducts } from "@/actions/product-actions";
 import { Button } from "@/components/ui/button";
 import {
   Table,

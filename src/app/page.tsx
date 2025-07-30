@@ -2,7 +2,9 @@
 "use server";
 import Image from 'next/image';
 import Link from 'next/link';
-import { getProducts, getCategories, getBanners } from '@/services/product-service';
+import { getProducts } from '@/actions/product-actions';
+import { getCategories } from '@/actions/category-actions';
+import { getBanners } from '@/actions/banner-actions';
 import ProductCard from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import {

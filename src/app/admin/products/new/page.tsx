@@ -1,5 +1,6 @@
+
 "use server";
-import { getCategories } from "@/services/product-service";
+import { getCategories } from "@/actions/category-actions";
 import { ProductForm } from "./_components/product-form";
 import {
   Card,
