@@ -10,9 +10,9 @@ import { z } from 'zod'
 function getDb() {
   if (admin.apps.length === 0) {
     try {
-      // The GOOGLE_APPLICATION_CREDENTIALS env var points to the service account file.
-      // Firebase Admin SDK automatically finds and uses it.
-      admin.initializeApp();
+      admin.initializeApp({
+        credential: admin.credential.cert(require('../../serviceAccountKey.json'))
+      });
     } catch (error: any) {
       console.error('Firebase admin initialization error:', error.message);
       // Don't throw, as it could be a transient issue.
@@ -174,11 +174,23 @@ export async function addBanner(formData: FormData) {
 export async function getBanners(): Promise<Banner[]> {
   try {
     const db = getDb();
-    const snapshot = await db.collection('banners').where('active', '==', true).orderBy('createdAt', 'desc').get();
+    // Fetch all banners, then filter and sort in code to avoid needing a composite index.
+    const snapshot = await db.collection('banners').get();
     if (snapshot.empty) {
       return [];
     }
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+    
+    const allBanners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+
+    // 1. Filter for active banners
+    const activeBanners = allBanners.filter(banner => banner.active === true);
+
+    // 2. Sort by creation date (descending)
+    // The `|| 0` is a safeguard in case createdAt is null.
+    activeBanners.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+    return activeBanners;
+
   } catch (error) {
     console.error("Error in getBanners:", error);
     return [];
