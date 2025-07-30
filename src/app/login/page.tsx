@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    // If the user is already logged in and is an admin, redirect them to the dashboard.
+    // If user is loaded and is an admin, redirect to the dashboard.
     if (!loading && user && ADMIN_UIDS.includes(user.uid)) {
       router.push('/admin');
     }
@@ -33,13 +33,26 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoggingIn(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
-      // On successful login, the useEffect above will handle the redirect.
-      toast({
-          title: "Login Successful",
-          description: "Redirecting to the admin panel...",
-      });
-      // We don't need to push here, the effect will do it.
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // Check if the logged-in user is an admin
+      if (ADMIN_UIDS.includes(userCredential.user.uid)) {
+        toast({
+            title: "Login Successful",
+            description: "Redirecting to the admin panel...",
+        });
+        // The useEffect above will handle the redirect.
+        // Or we can push directly:
+        router.push('/admin');
+      } else {
+        // Not an admin, sign them out and show an error
+        await auth.signOut();
+        toast({
+            variant: "destructive",
+            title: "Access Denied",
+            description: "You do not have permission to access the admin panel.",
+        });
+        setIsLoggingIn(false);
+      }
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -65,17 +78,18 @@ export default function LoginPage() {
     }
   };
   
-  // Show a loading state while checking user auth or if a login is in progress
-  if (loading || isLoggingIn) {
+  // While checking user auth state, show a loading message.
+  if (loading) {
     return <div className='text-center p-12'>Loading...</div>;
   }
-
-  // If the user is logged in, the useEffect will handle the redirect.
-  // We don't want to render the form if they are already an admin.
+  
+  // If the user is already logged in and an admin, they will be redirected by the useEffect.
+  // We can show a message here as well.
   if (user && ADMIN_UIDS.includes(user.uid)) {
-     return <div className='text-center p-12'>Redirecting to admin panel...</div>;
+      return <div className='text-center p-12'>Redirecting to admin panel...</div>;
   }
 
+  // Otherwise, show the login form.
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
       <Card className="w-full max-w-sm">
@@ -117,3 +131,4 @@ export default function LoginPage() {
     </div>
   );
 }
+

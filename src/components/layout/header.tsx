@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from 'next/link';
-import { ShoppingCart, Menu, LogOut, Shield } from 'lucide-react';
+import { ShoppingCart, Menu, LogOut, Shield, User as UserIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { useUser } from '@/hooks/use-user';
@@ -23,11 +24,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
-import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { itemCount } = useCart();
   const { user, loading } = useUser();
+  const router = useRouter();
   const isAdmin = user && ADMIN_UIDS.includes(user.uid);
 
   const navLinks = [
@@ -37,6 +39,7 @@ export default function Header() {
   
   const handleSignOut = async () => {
     await signOut(auth);
+    router.push('/login');
   };
 
   return (
@@ -73,7 +76,7 @@ export default function Header() {
             </Link>
           </Button>
 
-          {!loading && user && (
+          {!loading && user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-9 w-9 rounded-full">
@@ -86,17 +89,19 @@ export default function Header() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.displayName}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="text-sm font-medium leading-none">{user.displayName ?? user.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{isAdmin ? 'Administrator' : 'Customer'}</p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin">
-                      <Shield className="mr-2 h-4 w-4" />
-                      <span>Admin Dashboard</span>
-                    </Link>
-                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin">
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Admin Dashboard</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
@@ -104,6 +109,13 @@ export default function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          ) : !loading && !user && (
+            <Button asChild variant="ghost" size="icon" className="hidden md:flex">
+              <Link href="/login">
+                <UserIcon className="h-6 w-6" />
+                <span className="sr-only">Login</span>
+              </Link>
+            </Button>
           )}
 
           <div className="md:hidden">
@@ -127,6 +139,11 @@ export default function Header() {
                      <Link href="/admin" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
                        <Shield className="h-5 w-5" />
                       Admin
+                    </Link>
+                  )}
+                   {!user && !loading && (
+                    <Link href="/login" className="text-lg font-medium hover:text-primary transition-colors">
+                      Login
                     </Link>
                   )}
                 </div>
