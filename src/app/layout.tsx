@@ -4,7 +4,6 @@ import { CartProvider } from '@/components/cart-provider';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { Toaster } from '@/components/ui/toaster';
-import { UserProvider } from '@/components/user-provider';
 
 export const metadata: Metadata = {
   title: 'LuxeLiquor',
@@ -24,7 +23,6 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <UserProvider>
           <CartProvider>
             <div className="flex flex-col min-h-screen">
               <Header />
@@ -33,7 +31,6 @@ export default function RootLayout({
             </div>
             <Toaster />
           </CartProvider>
-        </UserProvider>
       </body>
     </html>
   );
