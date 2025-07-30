@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -13,23 +13,31 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
-  const { loading } = useUser();
+  const { user, isAdmin, loading } = useUser();
   const router = useRouter();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+  useEffect(() => {
+    // If the user is already logged in and is an admin, redirect them away from the login page.
+    if (!loading && user && isAdmin) {
+      router.push('/admin');
+    }
+  }, [user, isAdmin, loading, router]);
+
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      toast({
-          title: "Login Successful",
-          description: "Redirecting to the admin panel...",
-      });
+      // The user provider will pick up the new auth state.
+      // The redirect will be handled by the user provider and admin layout's logic.
+      // We can push to /admin as a starting point.
       router.push('/admin');
+
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -56,12 +64,19 @@ export default function LoginPage() {
     }
   };
   
+  // Show a loading state while we check for an existing session.
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
          <div className="text-xl font-semibold text-foreground">Loading...</div>
       </div>
     )
+  }
+
+  // If the user is logged in but not an admin, they shouldn't be here. Redirect them home.
+  if (user && !isAdmin) {
+      router.push('/');
+      return null;
   }
 
   return (

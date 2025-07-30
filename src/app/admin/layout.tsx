@@ -20,12 +20,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const isMobile = useIsMobile();
 
   useEffect(() => {
+    // Only redirect if loading is finished.
     if (!loading && !isAdmin) {
       router.push('/login');
     }
   }, [isAdmin, loading, router]);
 
 
+  // While loading, show a full-page loading indicator to prevent flashing content.
   if (loading || !isAdmin) {
     return (
         <div className="flex justify-center items-center h-screen bg-background">
