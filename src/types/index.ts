@@ -31,7 +31,7 @@ export type Banner = {
   imageUrl: string;
   productId: string;
   active: boolean;
-  createdAt: any; // Firestore timestamp
+  createdAt: string; // Changed to string for serializability
 }
 
 export type AppSettings = {

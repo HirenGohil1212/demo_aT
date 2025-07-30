@@ -138,9 +138,15 @@ export default function BannersPage() {
 
   useEffect(() => {
     async function loadData() {
-        const [productsData, bannersData] = await Promise.all([getProducts(), getBanners()]);
-        setProducts(productsData);
+        // Fetch banners first, then products
+        const bannersData = await getBanners();
         setBanners(bannersData);
+
+        if (bannersData.length > 0) {
+            const productsData = await getProducts();
+            setProducts(productsData);
+        }
+        
         setLoading(false);
     }
     loadData();

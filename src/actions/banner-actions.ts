@@ -92,12 +92,21 @@ export async function getBanners(): Promise<Banner[]> {
       return [];
     }
     
-    const banners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+    const banners = snapshot.docs.map(doc => {
+        const data = doc.data();
+        const createdAt = data.createdAt;
+        return { 
+            id: doc.id, 
+            ...data,
+            // Convert timestamp to a serializable format (ISO string)
+            createdAt: createdAt.toDate ? createdAt.toDate().toISOString() : new Date().toISOString()
+        } as Banner
+    });
 
     // Sort by createdAt timestamp in descending order (newest first)
     banners.sort((a, b) => {
-        const dateA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
-        const dateB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+        const dateA = new Date(a.createdAt);
+        const dateB = new Date(b.createdAt);
         return dateB.getTime() - dateA.getTime();
     });
 
