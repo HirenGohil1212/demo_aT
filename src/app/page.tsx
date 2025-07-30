@@ -1,7 +1,7 @@
 "use server";
 import Image from 'next/image';
 import Link from 'next/link';
-import { getProducts, getCategories } from '@/services/product-service';
+import { getProducts, getCategories, getBanners } from '@/services/product-service';
 import ProductCard from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,6 +16,7 @@ import { ArrowRight } from 'lucide-react';
 export default async function Home() {
   const allProducts = await getProducts();
   const allCategories = await getCategories();
+  const allBanners = await getBanners();
 
   const featuredProducts = allProducts.filter((p) => p.featured);
 
@@ -31,25 +32,25 @@ export default async function Home() {
           }}
         >
           <CarouselContent>
-            {featuredProducts.map((product) => (
-              <CarouselItem key={product.id}>
+            {allBanners.map((banner) => (
+              <CarouselItem key={banner.id}>
                 <div className="relative h-[60vh] w-full text-white">
                    <Image
-                      src={product.image}
-                      alt={product.name}
+                      src={banner.imageUrl}
+                      alt={banner.title}
                       fill
                       className="object-cover brightness-50"
-                      data-ai-hint={`${product.category} bottle`}
+                      data-ai-hint={`cocktail drink`}
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
                        <h2 className="font-headline text-4xl md:text-6xl font-bold text-primary drop-shadow-lg mb-4">
-                        {product.name}
+                        {banner.title}
                       </h2>
                       <p className="text-lg md:text-xl max-w-2xl mb-6 drop-shadow-md">
-                        {product.description.split('.')[0]}.
+                        {banner.subtitle}
                       </p>
                       <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                        <Link href={`/products/${product.id}`}>
+                        <Link href={`/products/${banner.productId}`}>
                           Discover More
                         </Link>
                       </Button>

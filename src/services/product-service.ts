@@ -1,7 +1,7 @@
 'use server'
 
 import admin from 'firebase-admin'
-import type { Category, Product } from '@/types'
+import type { Category, Product, Banner } from '@/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -135,4 +135,52 @@ export async function addProduct(prevState: unknown, formData: FormData) {
   revalidatePath('/products')
   revalidatePath('/admin/products')
   redirect('/admin/products')
+}
+
+// --- Banner Functions ---
+
+const bannerSchema = z.object({
+  title: z.string().min(1, { message: "Title is required" }),
+  subtitle: z.string().min(1, { message: "Subtitle is required" }),
+  imageUrl: z.string().url({ message: "A valid image URL is required" }),
+  productId: z.string().min(1, { message: "A product must be linked" }),
+});
+
+export async function addBanner(formData: FormData) {
+  const db = getDb();
+  const result = bannerSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (result.success === false) {
+    console.error("Banner validation error:", result.error.formErrors);
+    // A more user-friendly error handling would be ideal here
+    return { error: "Invalid data provided." };
+  }
+
+  try {
+    await db.collection("banners").add({
+      ...result.data,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      active: true,
+    });
+  } catch (error) {
+    console.error("Error in addBanner:", error);
+    return { error: "Failed to add banner due to a server error." };
+  }
+
+  revalidatePath("/admin/banners");
+  revalidatePath("/");
+}
+
+export async function getBanners(): Promise<Banner[]> {
+  try {
+    const db = getDb();
+    const snapshot = await db.collection('banners').where('active', '==', true).orderBy('createdAt', 'desc').get();
+    if (snapshot.empty) {
+      return [];
+    }
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+  } catch (error) {
+    console.error("Error in getBanners:", error);
+    return [];
+  }
 }

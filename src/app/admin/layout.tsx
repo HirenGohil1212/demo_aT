@@ -3,7 +3,7 @@
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/use-user";
-import { Loader2, Home, ShoppingBag, Tag } from "lucide-react";
+import { Loader2, Home, ShoppingBag, Tag, GalleryHorizontal } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -58,6 +58,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                   <SidebarMenuButton isActive={pathname === "/admin"}>
                     <Home />
                     Dashboard
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+               <SidebarMenuItem>
+                <Link href="/admin/banners">
+                  <SidebarMenuButton isActive={pathname.startsWith("/admin/banners")}>
+                    <GalleryHorizontal />
+                    Banners
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>

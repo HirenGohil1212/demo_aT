@@ -23,3 +23,13 @@ export type Category = {
   id: string;
   name: string;
 };
+
+export type Banner = {
+  id: string;
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  productId: string;
+  active: boolean;
+  createdAt: any; // Firestore timestamp
+}
