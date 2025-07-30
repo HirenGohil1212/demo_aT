@@ -21,11 +21,35 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+
+// We can't use the server-side getSettings here, so we fetch it on the client
+async function fetchSignupSetting() {
+    try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) return true; // Default to true on error
+        const data = await res.json();
+        return data.allowSignups;
+    } catch {
+        return true; // Default to true on error
+    }
+}
+
 
 export default function Header() {
   const { itemCount } = useCart();
   const { user, isAdmin } = useUser();
   const router = useRouter();
+  const [allowSignups, setAllowSignups] = useState(true);
+
+  useEffect(() => {
+    async function checkSettings() {
+        const setting = await fetchSignupSetting();
+        setAllowSignups(setting);
+    }
+    checkSettings();
+  }, []);
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -88,13 +112,15 @@ export default function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
                <Button asChild>
                 <Link href="/login">Login</Link>
               </Button>
-               <Button asChild variant="outline">
-                <Link href="/signup">Sign Up</Link>
-              </Button>
+              {allowSignups && (
+                <Button asChild variant="outline">
+                    <Link href="/signup">Sign Up</Link>
+                </Button>
+              )}
             </div>
           )}
 
@@ -121,6 +147,18 @@ export default function Header() {
                       Admin
                     </Link>
                   )}
+                  <div className="flex flex-col gap-4 mt-4">
+                     {user ? (
+                        <Button onClick={handleLogout}>Logout</Button>
+                     ) : (
+                        <>
+                            <Button asChild><Link href="/login">Login</Link></Button>
+                            {allowSignups && (
+                                <Button asChild variant="outline"><Link href="/signup">Sign Up</Link></Button>
+                            )}
+                        </>
+                     )}
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>

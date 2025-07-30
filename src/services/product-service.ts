@@ -1,7 +1,7 @@
 'use server'
 
 import admin from 'firebase-admin'
-import type { Category, Product, Banner } from '@/types'
+import type { Category, Product, Banner, AppSettings } from '@/types'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { z } from 'zod'
@@ -10,17 +10,22 @@ import { z } from 'zod'
 function getDb() {
   if (admin.apps.length === 0) {
     try {
+      // Check if service account JSON file exists
+      const serviceAccount = require('../../serviceAccountKey.json');
       admin.initializeApp({
-        credential: admin.credential.cert(require('../../serviceAccountKey.json'))
+        credential: admin.credential.cert(serviceAccount)
       });
     } catch (error: any) {
       console.error('Firebase admin initialization error:', error.message);
-      // Don't throw, as it could be a transient issue.
-      // Functions below will handle the case where db is not initialized.
+      // Fallback to default credentials for environments like Cloud Run
+      if (admin.apps.length === 0) {
+           admin.initializeApp();
+      }
     }
   }
   return admin.firestore();
 }
+
 
 const productSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
@@ -174,19 +179,13 @@ export async function addBanner(formData: FormData) {
 export async function getBanners(): Promise<Banner[]> {
   try {
     const db = getDb();
-    // Fetch all banners, then filter and sort in code to avoid needing a composite index.
     const snapshot = await db.collection('banners').get();
     if (snapshot.empty) {
       return [];
     }
     
     const allBanners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
-
-    // 1. Filter for active banners
     const activeBanners = allBanners.filter(banner => banner.active === true);
-
-    // 2. Sort by creation date (descending)
-    // The `|| 0` is a safeguard in case createdAt is null.
     activeBanners.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 
     return activeBanners;
@@ -194,5 +193,53 @@ export async function getBanners(): Promise<Banner[]> {
   } catch (error) {
     console.error("Error in getBanners:", error);
     return [];
+  }
+}
+
+// --- Settings Functions ---
+
+const defaultSettings: AppSettings = {
+  allowSignups: true,
+};
+
+export async function getSettings(): Promise<AppSettings> {
+  try {
+    const db = getDb();
+    const settingsDoc = await db.collection('settings').doc('config').get();
+
+    if (!settingsDoc.exists) {
+      // If settings don't exist, create them with default values
+      await db.collection('settings').doc('config').set(defaultSettings);
+      return defaultSettings;
+    }
+    return settingsDoc.data() as AppSettings;
+  } catch (error) {
+    console.error("Error in getSettings:", error);
+    // Return default settings on error to avoid crashing the app
+    return defaultSettings;
+  }
+}
+
+export async function updateSettings(prevState: unknown, formData: FormData) {
+  const db = getDb();
+  const settingsSchema = z.object({
+    allowSignups: z.preprocess((val) => val === 'on', z.boolean()),
+  });
+
+  const result = settingsSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (result.success === false) {
+    return { message: "Invalid data provided." };
+  }
+
+  try {
+    await db.collection('settings').doc('config').set(result.data, { merge: true });
+    revalidatePath('/admin/settings');
+    revalidatePath('/signup');
+    revalidatePath('/login');
+    revalidatePath('/api/settings'); // Revalidate the API route
+  } catch (error) {
+    console.error("Error in updateSettings:", error);
+    return { message: "Failed to update settings due to a server error." };
   }
 }

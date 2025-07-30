@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, notFound } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -12,12 +12,33 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
+// We can't use the server-side getSettings here, so we fetch it on the client
+async function fetchSignupSetting() {
+    try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) return true; // Default to true on error
+        const data = await res.json();
+        return data.allowSignups;
+    } catch {
+        return true; // Default to true on error
+    }
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [allowSignups, setAllowSignups] = useState(true);
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    async function checkSettings() {
+        const setting = await fetchSignupSetting();
+        setAllowSignups(setting);
+    }
+    checkSettings();
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,12 +108,14 @@ export default function LoginPage() {
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
-            <div className="text-sm text-center text-muted-foreground">
-              Don't have an account?{' '}
-              <Link href="/signup" className="underline hover:text-primary">
-                Sign Up
-              </Link>
-            </div>
+            {allowSignups && (
+                <div className="text-sm text-center text-muted-foreground">
+                Don't have an account?{' '}
+                <Link href="/signup" className="underline hover:text-primary">
+                    Sign Up
+                </Link>
+                </div>
+            )}
           </CardFooter>
         </form>
       </Card>

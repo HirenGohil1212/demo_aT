@@ -5,7 +5,7 @@ export type Product = {
   price: number;
   image: string;
   description: string;
-  details: string[];
+  details?: string[];
   featured?: boolean;
   recipe?: {
     name: string;
@@ -33,3 +33,7 @@ export type Banner = {
   active: boolean;
   createdAt: any; // Firestore timestamp
 }
+
+export type AppSettings = {
+  allowSignups: boolean;
+};
