@@ -1,3 +1,4 @@
+
 import { getSettings } from "@/services/product-service";
 import { NextResponse } from "next/server";
 
