@@ -1,16 +1,11 @@
-"use client";
+"use server";
 
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
-import { products } from '@/lib/products';
-import { Button } from '@/components/ui/button';
-import { useCart } from '@/hooks/use-cart';
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, ShoppingCart } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import type { Product } from '@/types';
 import { getProductById } from '@/services/product-service';
-import { Loader2 } from 'lucide-react';
+import { AddToCartButton } from './_components/add-to-cart-button';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle } from 'lucide-react';
 
 type ProductPageProps = {
   params: {
@@ -18,32 +13,8 @@ type ProductPageProps = {
   };
 };
 
-export default function ProductPage({ params }: ProductPageProps) {
-  const { addToCart } = useCart();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchProduct = async () => {
-      setLoading(true);
-      // This is a workaround to call an async function in a Client Component.
-      // We are fetching the product data on the client side.
-      const productData = await getProductById(params.id);
-      setProduct(productData);
-      setLoading(false);
-    };
-
-    fetchProduct();
-  }, [params.id]);
-
-
-  if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-12 flex justify-center items-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+export default async function ProductPage({ params }: ProductPageProps) {
+  const product = await getProductById(params.id);
 
   if (!product) {
     notFound();
@@ -68,21 +39,22 @@ export default function ProductPage({ params }: ProductPageProps) {
           </h1>
           <p className="text-2xl font-bold text-primary mb-6">${product.price.toFixed(2)}</p>
           <p className="text-muted-foreground mb-6">{product.description}</p>
-          <div className="mb-8">
-            <h3 className="font-bold text-lg mb-2">Details</h3>
-            <ul className="space-y-1 text-muted-foreground">
-              {product.details?.map((detail, index) => (
-                <li key={index} className="flex items-center gap-2">
-                  <CheckCircle className="h-4 w-4 text-accent" />
-                  <span>{detail}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <Button size="lg" className="w-full md:w-auto bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product)}>
-            <ShoppingCart className="mr-2 h-5 w-5" />
-            Add to Cart
-          </Button>
+          
+          {product.details && product.details.length > 0 && (
+            <div className="mb-8">
+              <h3 className="font-bold text-lg mb-2">Details</h3>
+              <ul className="space-y-1 text-muted-foreground">
+                {product.details?.map((detail, index) => (
+                  <li key={index} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-accent" />
+                    <span>{detail}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <AddToCartButton product={product} />
         </div>
       </div>
 

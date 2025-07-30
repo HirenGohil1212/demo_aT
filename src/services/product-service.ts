@@ -19,19 +19,18 @@ function getDb() {
       });
     } catch (error: any) {
       console.error('Firebase admin initialization error:', error.message);
-      // We throw an error to stop execution if initialization fails
-      throw new Error('Firebase admin initialization failed');
+      throw new Error('Firebase admin initialization failed. Please check your server environment variables.');
     }
   }
   return admin.firestore();
 }
 
 const productSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().min(1),
-  price: z.coerce.number().int().positive(),
-  category: z.string().min(1),
-  image: z.string().url(),
+  name: z.string().min(1, { message: 'Name is required' }),
+  description: z.string().min(1, { message: 'Description is required' }),
+  price: z.coerce.number().int().positive({ message: 'Price must be a positive number' }),
+  category: z.string().min(1, { message: 'Category is required' }),
+  image: z.string().url({ message: 'A valid image URL is required' }),
   featured: z.coerce.boolean().optional(),
 })
 
@@ -91,7 +90,7 @@ export async function addCategory(formData: FormData) {
   try {
     const db = getDb();
     const categorySchema = z.object({
-      name: z.string().min(1),
+      name: z.string().min(1, "Category name is required"),
     })
 
     const validatedFields = categorySchema.safeParse({
