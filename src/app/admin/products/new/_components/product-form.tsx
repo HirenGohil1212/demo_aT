@@ -44,54 +44,43 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState(addProduct, {});
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file);
+      // Show preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // Upload file
+      setIsUploading(true);
+      try {
+        const url = await uploadFile(file, 'products');
+        setImageUrl(url); // Set the URL for the hidden input
+      } catch (uploadError) {
+        console.error("Image upload failed:", uploadError);
+        // TODO: Show an error to the user
+      } finally {
+        setIsUploading(false);
+      }
     } else {
-        setImageFile(null);
         setImagePreview(null);
+        setImageUrl("");
     }
   };
 
-  const handleFormAction = async (formData: FormData) => {
-    if (!imageFile) {
-        // This should be caught by the 'required' attribute, but as a fallback
-        console.error("No image file selected");
-        return;
-    }
-
-    setIsUploading(true);
-    let imageUrl = '';
-    try {
-        imageUrl = await uploadFile(imageFile, 'products');
-    } catch (uploadError) {
-        console.error("Image upload failed:", uploadError);
-        // You might want to set an error state here to show in the UI
-        setIsUploading(false);
-        return; // Stop form submission
-    }
-    setIsUploading(false);
-
-    // Append the uploaded image URL to the form data
-    formData.append('imageUrl', imageUrl);
-
-    // Call the original server action
-    action(formData);
-  }
-
   return (
-    <form action={handleFormAction} className="space-y-6">
+    <form action={action} className="space-y-6">
+       {/* Hidden input to hold the uploaded image URL */}
+      <input type="hidden" name="imageUrl" value={imageUrl} />
+      
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required />
