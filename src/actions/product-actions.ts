@@ -61,11 +61,8 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 
   try {
     const data = result.data;
-    console.log("Uploading image...");
     const imageUrl = await uploadImage(data.image);
-    console.log("Image uploaded successfully:", imageUrl);
 
-    console.log("Adding product to Firestore...");
     await db.collection('products').add({
       name: data.name,
       description: data.description,
@@ -76,7 +73,6 @@ export async function addProduct(prevState: unknown, formData: FormData) {
       details: [],
       recipe: null,
     });
-    console.log("Product added to Firestore successfully.");
 
   } catch (error) {
     console.error("Full error in addProduct:", error);
