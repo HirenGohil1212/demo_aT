@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useUser } from '@/hooks/use-user';
 import { ADMIN_UIDS } from '@/lib/admins';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,15 @@ import { Home, PackagePlus, Users } from 'lucide-react';
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, loading } = useUser();
   const router = useRouter();
+  const isAdmin = user && ADMIN_UIDS.includes(user.uid);
+
+  useEffect(() => {
+    // If loading is finished and the user is not an admin, redirect them.
+    if (!loading && !isAdmin) {
+      router.push('/');
+    }
+  }, [user, loading, isAdmin, router]);
+
 
   if (loading) {
     return (
@@ -19,12 +28,16 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     )
   }
 
-  const isAdmin = user && ADMIN_UIDS.includes(user.uid);
-
+  // If we're still loading or the user is not an admin, don't render the admin layout.
+  // The useEffect will handle the redirect.
   if (!isAdmin) {
-    router.push('/'); // Or a dedicated "unauthorized" page
-    return null;
+    return (
+        <div className="flex justify-center items-center h-screen">
+            <div className="text-xl">Checking permissions...</div>
+        </div>
+    );
   }
+
 
   return (
     <div className="flex min-h-screen">
