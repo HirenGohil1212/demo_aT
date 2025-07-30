@@ -7,17 +7,26 @@ import { redirect } from 'next/navigation'
 import { z } from 'zod'
 
 // Initialize Firebase Admin SDK
+// This is a more robust way to initialize, checking for credentials first.
 if (!admin.apps.length) {
-  try {
-    admin.initializeApp({
-      credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-      }),
-    });
-  } catch (error: any) {
-    console.error('Firebase admin initialization error. Make sure you have set the FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY environment variables.', error.stack);
+  const serviceAccountKey = process.env.FIREBASE_PRIVATE_KEY
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
+  const projectId = process.env.FIREBASE_PROJECT_ID
+
+  if (serviceAccountKey && clientEmail && projectId) {
+    try {
+      admin.initializeApp({
+        credential: admin.credential.cert({
+          projectId: projectId,
+          clientEmail: clientEmail,
+          privateKey: serviceAccountKey.replace(/\\n/g, '\n'),
+        }),
+      });
+    } catch (error: any) {
+      console.error('Firebase admin initialization error:', error.stack);
+    }
+  } else {
+    console.error("Firebase Admin credentials are not set. Please check your environment variables (FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, FIREBASE_PRIVATE_KEY).");
   }
 }
 
@@ -41,7 +50,7 @@ export async function getProducts(): Promise<Product[]> {
   if (snapshot.empty) {
     return []
   }
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product))
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), price: doc.data().price || 0 } as Product));
 }
 
 export async function getProductById(id: string): Promise<Product | null> {
@@ -53,7 +62,8 @@ export async function getProductById(id: string): Promise<Product | null> {
   if (!doc.exists) {
     return null
   }
-  return { id: doc.id, ...doc.data() } as Product
+  const data = doc.data();
+  return { id: doc.id, ...data, price: data?.price || 0 } as Product;
 }
 
 export async function getCategories(): Promise<Category[]> {
