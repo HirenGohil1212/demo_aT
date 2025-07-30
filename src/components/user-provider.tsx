@@ -3,7 +3,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast";
 
 interface UserContextType {
   user: User | null;
@@ -21,10 +21,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setLoading(true); // Set loading to true whenever the user state changes
       if (currentUser) {
         setUser(currentUser);
         try {
+          // Force a token refresh to get the latest custom claims.
           const idTokenResult = await currentUser.getIdTokenResult(true);
+          // The admin status is determined by a custom claim set on the user's token.
+          // You must set this claim using the Firebase Admin SDK.
           const userIsAdmin = idTokenResult.claims.admin === true;
           setIsAdmin(userIsAdmin);
         } catch (error) {
@@ -40,7 +44,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setUser(null);
         setIsAdmin(false);
       }
-      // Only set loading to false AFTER all async operations are complete.
+      // Set loading to false only after all async operations are complete.
       setLoading(false);
     });
 

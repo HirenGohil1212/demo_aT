@@ -32,10 +32,14 @@ export default function LoginPage() {
       router.push('/admin');
     } catch (error: any) {
       console.error("Login failed:", error);
+      let description = "Please check your email and password.";
+      if (error.code === 'auth/invalid-credential') {
+        description = "Invalid credentials. Please try again."
+      }
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: "Please check your email and password.",
+        description: description,
       });
     } finally {
       setIsSubmitting(false);
