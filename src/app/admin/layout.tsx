@@ -60,7 +60,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           <SidebarContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <Link href="/admin" passHref legacyBehavior>
+                <Link href="/admin">
                   <SidebarMenuButton isActive={pathname === "/admin"}>
                     <Home />
                     Dashboard
