@@ -224,7 +224,9 @@ export async function getSettings(): Promise<AppSettings> {
 export async function updateSettings(prevState: unknown, formData: FormData) {
   const db = getDb();
   const settingsSchema = z.object({
-    allowSignups: z.preprocess((val) => val === 'on', z.boolean()),
+    // A switch sends "on" when checked, and nothing when unchecked.
+    // We preprocess this to a boolean.
+    allowSignups: z.preprocess((val) => val === 'on', z.boolean().default(false)),
   });
 
   const result = settingsSchema.safeParse(Object.fromEntries(formData.entries()));
