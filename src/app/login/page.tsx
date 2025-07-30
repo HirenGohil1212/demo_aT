@@ -21,10 +21,17 @@ export default function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    // If the user is already logged in and is an admin, redirect them away from the login page.
-    if (!loading && user && isAdmin) {
-      router.push('/admin');
+    // This effect handles redirects based on the user's auth state.
+    if (!loading) {
+      if (user && isAdmin) {
+        // If the user is an admin, send them to the dashboard.
+        router.push('/admin');
+      } else if (user && !isAdmin) {
+        // If the user is logged in but not an admin, send them to the homepage.
+        router.push('/');
+      }
     }
+    // It runs whenever the auth state changes.
   }, [user, isAdmin, loading, router]);
 
 
@@ -33,11 +40,13 @@ export default function LoginPage() {
     setIsLoggingIn(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // The user provider will pick up the new auth state.
-      // The redirect will be handled by the user provider and admin layout's logic.
-      // We can push to /admin as a starting point.
-      router.push('/admin');
-
+      // The user provider will pick up the new auth state, and the useEffect above
+      // will handle the redirect to the admin panel.
+      toast({
+          title: "Login Successful",
+          description: "Redirecting to your dashboard...",
+      });
+      // No need to manually push router here, the effect will do it.
     } catch (error: any) {
         console.error("Error during email/password sign-in:", error);
         let errorMessage = "An unknown error occurred.";
@@ -64,19 +73,14 @@ export default function LoginPage() {
     }
   };
   
-  // Show a loading state while we check for an existing session.
-  if (loading) {
+  // While we wait for the initial auth state, show a loading indicator.
+  // We also don't render the form if a redirect is imminent.
+  if (loading || (user && (isAdmin || !isAdmin))) {
     return (
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
          <div className="text-xl font-semibold text-foreground">Loading...</div>
       </div>
     )
-  }
-
-  // If the user is logged in but not an admin, they shouldn't be here. Redirect them home.
-  if (user && !isAdmin) {
-      router.push('/');
-      return null;
   }
 
   return (
