@@ -25,14 +25,19 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-    } else if (!loading && user && !isAdmin) {
-      // If user is logged in but not an admin, redirect to home page.
-      router.push("/");
+    // Wait until the loading is complete before checking for user/admin status
+    if (!loading) {
+      if (!user) {
+        // If no user, redirect to login
+        router.push("/login");
+      } else if (!isAdmin) {
+        // If user is not an admin, redirect to home page
+        router.push("/");
+      }
     }
   }, [user, isAdmin, loading, router]);
 
+  // While loading, show a spinner to prevent flicker and premature redirects
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -42,8 +47,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  // If loading is finished, but user is not an admin, show a message while redirecting
   if (!isAdmin) {
-    // This will be shown briefly before the redirect kicks in.
     return (
        <div className="flex h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -52,6 +57,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
 
+  // If user is an admin, render the layout
   return (
     <SidebarProvider>
       <Sidebar>

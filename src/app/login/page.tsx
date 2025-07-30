@@ -21,6 +21,7 @@ export default function LoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Redirect if a logged-in admin lands on the login page
     if (!loading && user && isAdmin) {
       router.push('/admin');
     }
@@ -32,29 +33,34 @@ export default function LoginPage() {
     setIsSubmitting(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // The useEffect will handle the redirect on successful login
+      // On successful login, the useEffect above will handle the redirect.
+      // We can also push directly here for a faster redirect.
+      router.push('/admin');
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message,
+        description: "Please check your email and password.",
       });
       setIsSubmitting(false);
     }
   };
   
+  // Show a loading spinner while checking auth state
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
     </div>
   }
   
+  // If user is already an admin, show a redirecting message
   if (user && isAdmin) {
      return <div className="flex justify-center items-center min-h-screen">
       <p>Redirecting to dashboard...</p>
     </div>
   }
 
+  // Otherwise, show the login form
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background">
       <Card className="w-full max-w-sm">
