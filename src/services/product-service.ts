@@ -13,18 +13,20 @@ import { Readable } from 'stream';
 function getDb() {
   if (admin.apps.length === 0) {
     try {
-      // Check if service account JSON file exists
+      // First, try to use the service account key file if it exists.
       const serviceAccount = require('../../serviceAccountKey.json');
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
         storageBucket: `${serviceAccount.project_id}.appspot.com`
       });
-    } catch (error: any) {
-      console.error('Firebase admin initialization error:', error.message);
-      // Fallback to default credentials for environments like Cloud Run
-      if (admin.apps.length === 0) {
-           admin.initializeApp();
-      }
+    } catch (error) {
+        console.error("Service account key not found or failed to parse, falling back to default credentials.", error);
+        // If the file doesn't exist or fails, fall back to default credentials.
+        // This is useful for environments like Google Cloud Run/Functions and Firebase App Hosting
+        // where credentials can be automatically discovered.
+        if (admin.apps.length === 0) {
+             admin.initializeApp();
+        }
     }
   }
   return admin.firestore();
@@ -190,7 +192,7 @@ const bannerSchema = z.object({
   productId: z.string().min(1, { message: "A product must be linked" }),
 });
 
-export async function addBanner(formData: FormData) {
+export async function addBanner(prevState: unknown, formData: FormData) {
   const db = getDb();
   const result = bannerSchema.safeParse(Object.fromEntries(formData.entries()));
 
@@ -217,17 +219,22 @@ export async function addBanner(formData: FormData) {
 
   revalidatePath("/admin/banners");
   revalidatePath("/");
+  redirect('/admin/banners')
 }
 
 export async function getBanners(): Promise<Banner[]> {
   try {
     const db = getDb();
+    // Removed the complex query that requires an index
     const snapshot = await db.collection('banners').get();
+    
     if (snapshot.empty) {
       return [];
     }
     
     const allBanners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Banner));
+    
+    // Perform filtering and sorting in code
     const activeBanners = allBanners.filter(banner => banner.active === true);
     activeBanners.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
 

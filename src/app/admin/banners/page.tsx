@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useActionState } from "react";
@@ -133,30 +134,6 @@ export default function BannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // This is not ideal, but it's a workaround to fetch data in a client component
-  // A better approach would be to have a dedicated API route for products/banners
-  useEffect(() => {
-    async function fetchData() {
-        try {
-            // This is a simplified fetch. In a real app, you'd have API endpoints.
-            const productsPromise = fetch('/api/products').then(res => res.json())
-            const bannersPromise = fetch('/api/banners').then(res => res.json())
-
-            const [productsData, bannersData] = await Promise.all([productsPromise, bannersPromise]);
-
-            setProducts(productsData);
-            setBanners(bannersData);
-        } catch (error) {
-            console.error("Failed to fetch data:", error);
-        } finally {
-            setLoading(false);
-        }
-    }
-    // This is a temporary solution. We need to create these API routes.
-    // For now, let's create dummy routes.
-    // I will need to create /api/products and /api/banners routes
-  }, []);
-
   // Let's modify this to fetch from server actions instead to avoid creating new API routes
   useEffect(() => {
     async function loadData() {
@@ -231,3 +208,4 @@ export default function BannersPage() {
     </div>
   );
 }
+
