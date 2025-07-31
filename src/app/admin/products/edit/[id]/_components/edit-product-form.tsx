@@ -89,7 +89,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
-            <Label htmlFor="price">Price (₹)</Label>
+            <Label htmlFor="price">Price (INR)</Label>
             <Input type="number" step="0.01" id="price" name="price" required defaultValue={product.price} />
             {error?.price && <div className="text-destructive text-sm">{error.price[0]}</div>}
         </div>

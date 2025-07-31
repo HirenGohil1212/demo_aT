@@ -151,7 +151,7 @@ export default function ProductsPage() {
                 <TableCell className="hidden md:table-cell">
                   <Badge variant="outline">{product.category}</Badge>
                 </TableCell>
-                <TableCell>₹{product.price.toFixed(2)}</TableCell>
+                <TableCell>INR {product.price.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
                     <div className="flex justify-end items-center gap-2">
                          <Button asChild variant="outline" size="icon" className="h-8 w-8">

@@ -20,11 +20,11 @@ export default function CartPage() {
     let message = 'Hello LuxeLiquor, I would like to place an order for the following items:\n\n';
     
     cartItems.forEach(item => {
-      message += `*${item.quantity}x* ${item.product.name} (@ ₹${item.product.price.toFixed(2)} each)\n`;
+      message += `*${item.quantity}x* ${item.product.name} (@ INR ${item.product.price.toFixed(2)} each)\n`;
     });
     
     message += `\n----------------------\n`;
-    message += `*Total Order Value: ₹${totalPrice.toFixed(2)}*\n\n`;
+    message += `*Total Order Value: INR ${totalPrice.toFixed(2)}*\n\n`;
     message += `----------------------\n`;
     message += `Please provide your details for delivery:\n`;
     message += `*Full Name:* \n`;
@@ -63,7 +63,7 @@ export default function CartPage() {
               </div>
               <div className="flex-grow">
                 <Link href={`/products/${product.id}`} className="font-bold text-lg hover:text-primary transition-colors">{product.name}</Link>
-                <p className="text-sm text-muted-foreground">₹{product.price.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">INR {product.price.toFixed(2)}</p>
                 <div className="flex items-center gap-2 mt-3">
                   <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => updateQuantity(product.id, quantity - 1)}>
                     <Minus className="h-4 w-4" />
@@ -75,7 +75,7 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="text-right ml-auto sm:ml-4 flex flex-col sm:items-end justify-between self-stretch">
-                <p className="font-bold text-lg mb-2 sm:mb-0">₹{(product.price * quantity).toFixed(2)}</p>
+                <p className="font-bold text-lg mb-2 sm:mb-0">INR {(product.price * quantity).toFixed(2)}</p>
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive mt-auto" onClick={() => removeFromCart(product.id)}>
                   <Trash2 className="h-5 w-5" />
                 </Button>
@@ -91,7 +91,7 @@ export default function CartPage() {
             <CardContent className="space-y-4">
               <div className="flex justify-between text-muted-foreground">
                 <span>Subtotal ({itemCount} {itemCount > 1 ? 'items' : 'item'})</span>
-                <span>₹{totalPrice.toFixed(2)}</span>
+                <span>INR {totalPrice.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-muted-foreground">
                 <span>Shipping & Taxes</span>
@@ -99,7 +99,7 @@ export default function CartPage() {
               </div>
               <div className="flex justify-between font-bold text-xl border-t pt-4 mt-2">
                 <span>Total</span>
-                <span>₹{totalPrice.toFixed(2)}</span>
+                <span>INR {totalPrice.toFixed(2)}</span>
               </div>
             </CardContent>
             <CardFooter>
