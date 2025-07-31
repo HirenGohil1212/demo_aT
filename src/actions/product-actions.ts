@@ -118,6 +118,7 @@ export async function getProducts(): Promise<Product[]> {
     });
   } catch (error) {
     console.error("Error in getProducts:", error);
+    // In case of an error, return an empty array to prevent the page from crashing.
     return [];
   }
 }

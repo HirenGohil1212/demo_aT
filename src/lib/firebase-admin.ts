@@ -9,25 +9,21 @@ const serviceAccountKey = process.env.SERVICE_ACCOUNT_KEY
 const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
 if (!getApps().length) {
-    if (serviceAccountKey) {
-        try {
+    try {
+        if (serviceAccountKey) {
+            // Initialize with service account key
             admin.initializeApp({
                 credential: admin.credential.cert(serviceAccountKey),
                 storageBucket,
             });
-        } catch (error) {
-            console.error("Firebase Admin initialization error with service account:", error);
-        }
-    } else {
-        // Use application default credentials if service account key is not provided
-        // This is the standard for App Hosting and other Google Cloud environments
-        try {
-             admin.initializeApp({
+        } else {
+            // Initialize with application default credentials for App Hosting
+            admin.initializeApp({
                 storageBucket,
             });
-        } catch(error) {
-             console.error("Firebase Admin initialization error with default credentials:", error);
         }
+    } catch (error: any) {
+        console.error("Firebase Admin Initialization Error", error.stack);
     }
 }
 
