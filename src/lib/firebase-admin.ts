@@ -2,13 +2,16 @@
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 
+// This is the recommended approach for handling Firebase Admin initialization
+// in a serverless environment like Next.js on Firebase App Hosting.
+// It ensures that we only initialize the app once.
+
 const serviceAccountKey = process.env.SERVICE_ACCOUNT_KEY
     ? JSON.parse(process.env.SERVICE_ACCOUNT_KEY)
     : undefined;
 
 const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
-// This pattern ensures we only initialize the app once, which is crucial for serverless environments
 if (!getApps().length) {
     try {
         admin.initializeApp({
@@ -17,6 +20,7 @@ if (!getApps().length) {
             credential: serviceAccountKey ? admin.credential.cert(serviceAccountKey) : admin.credential.applicationDefault(),
             storageBucket,
         });
+        console.log("Firebase Admin SDK initialized successfully.");
     } catch (error: any) {
         console.error("Firebase Admin Initialization Error", error.stack);
     }
