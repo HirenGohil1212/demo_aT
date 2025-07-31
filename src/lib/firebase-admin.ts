@@ -8,7 +8,7 @@ const serviceAccountKey = process.env.SERVICE_ACCOUNT_KEY
 
 const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
-// This pattern ensures we only initialize the app once
+// This pattern ensures we only initialize the app once, which is crucial for serverless environments
 if (!getApps().length) {
     try {
         admin.initializeApp({
