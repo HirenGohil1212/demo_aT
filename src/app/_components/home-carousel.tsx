@@ -32,14 +32,15 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
             }}
           >
             <CarouselContent>
-              {banners.map((banner) => (
+              {banners.map((banner, index) => (
                 <CarouselItem key={banner.id}>
                   <div className="relative aspect-[16/9] md:aspect-[2/1] lg:aspect-[2.5/1] w-full text-white">
                      <Image
                         src={banner.imageUrl}
                         alt={banner.title}
                         fill
-                        priority
+                        priority={index === 0} // Prioritize loading of the first banner image
+                        sizes="100vw"
                         className="object-cover brightness-50"
                         data-ai-hint={`cocktail drink`}
                       />
