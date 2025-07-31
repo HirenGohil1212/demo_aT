@@ -21,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Image as ImageIcon, Trash2, Upload } from "lucide-react";
+import { Loader2, Image as ImageIcon, Trash2, Upload, Link as LinkIcon } from "lucide-react";
 import { useState, useRef, useTransition, useActionState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import {
@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { uploadFile } from "@/lib/storage";
+import { Card, CardContent } from "@/components/ui/card";
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: (newBanner: Banner) => void }) {
   const [state, formAction, isPending] = useActionState(addBanner, undefined);
@@ -108,7 +109,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
       <div className="space-y-2">
         <Label htmlFor="imageFile">Banner Image</Label>
         <div className="flex items-center gap-4">
-          <div className="w-48 h-24 border rounded-md flex items-center justify-center bg-muted/30">
+          <div className="w-48 h-24 border rounded-md flex items-center justify-center bg-muted/30 flex-shrink-0">
             {imagePreview ? (
               <Image src={imagePreview} alt="Image Preview" width={192} height={96} className="object-cover w-full h-full rounded-md" />
             ) : (
@@ -215,49 +216,42 @@ export function BannersClient({ initialProducts, initialBanners }: { initialProd
   const productMap = new Map(products.map((p) => [p.id, p.name]));
 
   return (
-    <div className="grid md:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
       <div>
         <h3 className="text-lg font-medium mb-4">Add New Banner</h3>
         <BannerForm products={products} onBannerAdded={handleBannerAdded} />
       </div>
-      <div>
+      <div className="space-y-4">
         <h3 className="text-lg font-medium mb-4">Existing Banners</h3>
-        <div className="border rounded-md">
-            {banners.length === 0 ? (
-                <p className="text-muted-foreground text-center p-8">No banners have been created yet.</p>
-            ) : (
-                <Table>
-                    <TableHeader>
-                    <TableRow>
-                        <TableHead>Image</TableHead>
-                        <TableHead>Title</TableHead>
-                        <TableHead>Linked Product</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                    {banners.map((banner) => (
-                        <TableRow key={banner.id}>
-                            <TableCell>
-                            <Image
-                                src={banner.imageUrl}
-                                alt={banner.title}
-                                width={100}
-                                height={50}
-                                className="rounded-md object-cover"
-                            />
-                            </TableCell>
-                            <TableCell className="font-medium">{banner.title}</TableCell>
-                            <TableCell>{productMap.get(banner.productId) || "N/A"}</TableCell>
-                            <TableCell className="text-right">
-                                <DeleteBannerButton bannerId={banner.id} onDelete={() => handleBannerDeleted(banner.id)} />
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                    </TableBody>
-                </Table>
-            )}
-        </div>
+        {banners.length === 0 ? (
+            <p className="text-muted-foreground text-center p-8 border rounded-md">No banners have been created yet.</p>
+        ) : (
+          <div className="space-y-4">
+            {banners.map((banner) => (
+              <Card key={banner.id}>
+                <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
+                    <Image
+                        src={banner.imageUrl}
+                        alt={banner.title}
+                        width={150}
+                        height={75}
+                        className="rounded-md object-cover aspect-[2/1] flex-shrink-0"
+                    />
+                    <div className="flex-grow text-center sm:text-left">
+                      <p className="font-bold text-lg">{banner.title}</p>
+                      <div className="text-sm text-muted-foreground flex items-center justify-center sm:justify-start gap-2">
+                        <LinkIcon className="h-3 w-3"/>
+                        <span>{productMap.get(banner.productId) || "N/A"}</span>
+                      </div>
+                    </div>
+                    <div className="flex-shrink-0 self-center">
+                      <DeleteBannerButton bannerId={banner.id} onDelete={() => handleBannerDeleted(banner.id)} />
+                    </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
