@@ -56,6 +56,8 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
 
   const [error, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
     const result = await addBanner(prevState, formData);
@@ -74,12 +76,13 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
       setImagePreview(URL.createObjectURL(file));
       setIsUploading(true);
       setUploadProgress(0);
+      setUploadError(null);
       try {
         const url = await uploadFile(file, 'banners', setUploadProgress);
         setImageUrl(url);
-      } catch (uploadError) {
+      } catch (uploadError: any) {
         console.error("Image upload failed:", uploadError);
-        // You can set an error state here to show the user
+        setUploadError(uploadError.message || "Image upload failed. Please try again.");
       } finally {
         setIsUploading(false);
       }
@@ -134,6 +137,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
                     <Progress value={uploadProgress} className="w-full h-2" />
                 </div>
             )}
+            {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
           </div>
         </div>
       </div>

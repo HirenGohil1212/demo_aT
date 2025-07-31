@@ -51,6 +51,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
   const [imageUrl, setImageUrl] = useState<string>(product.image);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -60,12 +61,13 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
       setImagePreview(URL.createObjectURL(file));
       setIsUploading(true);
       setUploadProgress(0);
+      setUploadError(null);
       try {
         const url = await uploadFile(file, 'products', setUploadProgress);
         setImageUrl(url); // Set the URL for the hidden input
-      } catch (uploadError) {
+      } catch (uploadError: any) {
         console.error("Image upload failed:", uploadError);
-        // TODO: Show an error to the user
+        setUploadError(uploadError.message || "Image upload failed. Please try again.");
       } finally {
         setIsUploading(false);
       }
@@ -144,6 +146,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
                 <Progress value={uploadProgress} className="w-full h-2" />
               </div>
             )}
+             {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
           </div>
         </div>
          {error?.imageUrl && !imageUrl && <div className="text-destructive text-sm">{error.imageUrl[0]}</div>}
