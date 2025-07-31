@@ -4,6 +4,7 @@
 import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import Autoplay from "embla-carousel-autoplay";
 import type { Banner } from '@/types';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,6 +24,10 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
         return null;
     }
     
+    const plugin = React.useRef(
+        Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
+    );
+    
     return (
         <section className="w-full relative">
           <Carousel
@@ -31,6 +36,9 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
               align: 'start',
               loop: true,
             }}
+            plugins={[plugin.current]}
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
           >
             <CarouselContent>
               {banners.map((banner, index) => (
