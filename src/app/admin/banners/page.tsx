@@ -2,7 +2,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { addBanner } from "@/actions/banner-actions";
+import { addBanner, deleteBanner } from "@/actions/banner-actions";
 import type { Banner, Product } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,12 +29,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Image as ImageIcon } from "lucide-react";
+import { Loader2, Image as ImageIcon, Trash2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useTransition } from "react";
 import Image from "next/image";
 import { getProducts } from "@/actions/product-actions";
 import { getBanners } from "@/actions/banner-actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
 
 // These would normally come from the server, but for the client component
 // we pass them as props or fetch them in a client-safe way.
@@ -130,6 +141,49 @@ function SubmitButton() {
     )
 }
 
+function DeleteBannerButton({ bannerId }: { bannerId: string }) {
+    const [isPending, startTransition] = useTransition();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    
+    const handleDelete = () => {
+        startTransition(async () => {
+            await deleteBanner(bannerId);
+            setIsDialogOpen(false);
+        });
+    }
+
+    return (
+      <>
+        <Button
+            variant="destructive"
+            size="icon"
+            onClick={() => setIsDialogOpen(true)}
+            disabled={isPending}
+        >
+            {isPending ? <Loader2 className="animate-spin h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
+        </Button>
+         <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the banner
+                        and its image from the server.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} disabled={isPending}>
+                        {isPending ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+     </>
+    )
+}
+
+
 // We need a client component to use hooks for fetching data
 export default function BannersPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -138,15 +192,13 @@ export default function BannersPage() {
 
   useEffect(() => {
     async function loadData() {
-        // Fetch banners first, then products
-        const bannersData = await getBanners();
+        setLoading(true);
+        const [bannersData, productsData] = await Promise.all([
+          getBanners(),
+          getProducts(),
+        ]);
         setBanners(bannersData);
-
-        if (bannersData.length > 0) {
-            const productsData = await getProducts();
-            setProducts(productsData);
-        }
-        
+        setProducts(productsData);
         setLoading(false);
     }
     loadData();
@@ -185,6 +237,7 @@ export default function BannersPage() {
                 <TableHead>Image</TableHead>
                 <TableHead>Title</TableHead>
                 <TableHead>Linked Product</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -203,6 +256,9 @@ export default function BannersPage() {
                     </TableCell>
                     <TableCell className="font-medium">{banner.title}</TableCell>
                     <TableCell>{product?.name || "N/A"}</TableCell>
+                    <TableCell className="text-right">
+                       <DeleteBannerButton bannerId={banner.id} />
+                    </TableCell>
                   </TableRow>
                 );
               })}

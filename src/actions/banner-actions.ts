@@ -117,3 +117,49 @@ export async function getBanners(): Promise<Banner[]> {
     return [];
   }
 }
+
+/**
+ * Deletes a banner from Firestore and its image from Storage.
+ * @param bannerId The ID of the banner to delete.
+ */
+export async function deleteBanner(bannerId: string) {
+    if (!bannerId) {
+        return { error: "Invalid banner ID." };
+    }
+
+    try {
+        const bannerRef = db.collection('banners').doc(bannerId);
+        const bannerDoc = await bannerRef.get();
+
+        if (!bannerDoc.exists) {
+            return { error: "Banner not found." };
+        }
+
+        const bannerData = bannerDoc.data() as Banner;
+        const imageUrl = bannerData.imageUrl;
+
+        // Delete the image from Firebase Storage
+        if (imageUrl) {
+            try {
+                const bucket = storage.bucket();
+                // Extract the file path from the URL
+                const decodedUrl = decodeURIComponent(imageUrl);
+                const filePath = decodedUrl.substring(decodedUrl.indexOf('/o/') + 3, decodedUrl.indexOf('?alt=media'));
+                await bucket.file(filePath).delete();
+            } catch (storageError) {
+                console.error("Error deleting image from storage, continuing with firestore deletion:", storageError);
+                // We don't want to block Firestore deletion if image deletion fails
+            }
+        }
+        
+        // Delete the banner document from Firestore
+        await bannerRef.delete();
+
+    } catch (error) {
+        console.error("Error in deleteBanner:", error);
+        return { error: "Failed to delete banner due to a server error." };
+    }
+
+    revalidatePath("/admin/banners");
+    revalidatePath("/");
+}
