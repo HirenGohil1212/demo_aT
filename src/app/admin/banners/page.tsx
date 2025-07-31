@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useActionState } from "react";
-import { addBanner, deleteBanner } from "@/actions/banner-actions";
+import { addBanner, deleteBanner, getBanners } from "@/actions/banner-actions";
+import { getProducts } from "@/actions/product-actions";
 import type { Banner, Product } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,8 +32,6 @@ import {
 import { Loader2, Image as ImageIcon, Trash2 } from "lucide-react";
 import { useState, useRef, useEffect, useTransition } from "react";
 import Image from "next/image";
-import { getProducts } from "@/actions/product-actions";
-import { getBanners } from "@/actions/banner-actions";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,7 +41,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { uploadFile } from "@/lib/storage";
 
@@ -54,25 +52,16 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, startSubmitting] = useTransition();
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-
-  const [state, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
-    formData.set('imageUrl', imageUrl);
-    const result = await addBanner(prevState, formData);
-    if (result?.success) {
-        onBannerAdded();
-        formRef.current?.reset();
-        setImagePreview(null);
-        setImageUrl("");
-    }
-    return result;
-  }, undefined);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setIsUploading(true);
       setImagePreview(URL.createObjectURL(file));
+      setError(null);
 
       try {
         const downloadURL = await uploadFile(file, 'banners');
@@ -83,11 +72,11 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
           variant: "destructive",
           title: "Upload Failed",
           description: uploadError.message || "There was a problem with the upload. Please try again."
-        })
+        });
         setImagePreview(null);
         setImageUrl("");
         if (fileInputRef.current) {
-            fileInputRef.current.value = "";
+          fileInputRef.current.value = "";
         }
       } finally {
         setIsUploading(false);
@@ -95,8 +84,31 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
     }
   };
 
+  const handleSubmit = async (formData: FormData) => {
+    if (!imageUrl) {
+      setError("Banner image is required. Please upload an image.");
+      return;
+    }
+    formData.set('imageUrl', imageUrl);
+
+    startSubmitting(async () => {
+      const result = await addBanner(null, formData);
+      if (result?.success) {
+        toast({ title: "Success", description: "New banner has been added." });
+        onBannerAdded();
+        formRef.current?.reset();
+        setImagePreview(null);
+        setImageUrl("");
+        setError(null);
+      } else if (result?.error) {
+        const errorMessages = Object.values(result.error).flat().join(", ");
+        setError(typeof result.error === 'string' ? result.error : errorMessages);
+      }
+    });
+  };
+
   return (
-     <form ref={formRef} action={action} className="space-y-4">
+    <form ref={formRef} action={handleSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />
@@ -109,36 +121,34 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         <Label htmlFor="imageFile">Banner Image</Label>
         <div className="flex items-center gap-4">
           <div className="w-48 h-24 border rounded-md flex items-center justify-center bg-muted/30">
-             {imagePreview ? (
-                <Image src={imagePreview} alt="Image Preview" width={192} height={96} className="object-cover w-full h-full rounded-md" />
+            {imagePreview ? (
+              <Image src={imagePreview} alt="Image Preview" width={192} height={96} className="object-cover w-full h-full rounded-md" />
             ) : (
-                <ImageIcon className="w-16 h-16 text-muted-foreground" />
+              <ImageIcon className="w-16 h-16 text-muted-foreground" />
             )}
           </div>
-           <div className="space-y-2 flex-grow">
-            <Input 
-                id="imageFile" 
-                name="imageFile" 
-                type="file" 
-                accept="image/*"
-                className="hidden"
-                ref={fileInputRef}
-                onChange={handleImageChange}
-                disabled={isUploading}
+          <div className="space-y-2 flex-grow">
+            <Input
+              id="imageFile"
+              name="imageFile"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              ref={fileInputRef}
+              onChange={handleImageChange}
+              disabled={isUploading}
             />
-             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Choose Image"}
+             <input type="hidden" name="imageUrl" value={imageUrl} />
+            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+              {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Choose Image"}
             </Button>
             <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
           </div>
         </div>
-        {state?.error && typeof state.error !== 'string' && 'imageUrl' in state.error && (
-            <p className="text-sm text-destructive">{state.error.imageUrl[0]}</p>
-        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="productId">Link to Product</Label>
-         <Select name="productId" required>
+        <Select name="productId" required>
           <SelectTrigger>
             <SelectValue placeholder="Select a product to link" />
           </SelectTrigger>
@@ -151,26 +161,19 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
           </SelectContent>
         </Select>
       </div>
-      <SubmitButton isUploading={isUploading} isFormPending={isPending} />
-      {state?.error && typeof state.error === 'string' && <p className="text-sm text-destructive">{state.error}</p>}
+       <Button type="submit" disabled={isUploading || isSubmitting}>
+        {isUploading
+          ? <><Loader2 className="animate-spin mr-2" /> Waiting for upload...</>
+          : isSubmitting
+          ? <><Loader2 className="animate-spin mr-2" /> Adding Banner...</>
+          : "Add Banner"
+        }
+      </Button>
+      {error && <p className="text-sm text-destructive mt-2">{error}</p>}
     </form>
   )
 }
 
-
-function SubmitButton({ isUploading, isFormPending }: { isUploading: boolean, isFormPending: boolean }) {
-    const isDisabled = isUploading || isFormPending;
-    return (
-        <Button type="submit" disabled={isDisabled}>
-            {isUploading 
-                ? <><Loader2 className="animate-spin mr-2" /> Waiting for upload...</>
-                : isFormPending
-                ? <><Loader2 className="animate-spin mr-2" /> Adding Banner...</>
-                : "Add Banner"
-            }
-        </Button>
-    )
-}
 
 function DeleteBannerButton({ bannerId, onDelete }: { bannerId: string, onDelete: (id: string) => void }) {
     const [isPending, startTransition] = useTransition();

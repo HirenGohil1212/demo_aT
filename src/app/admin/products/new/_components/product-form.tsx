@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useActionState } from "react";
+import { useTransition } from "react";
 import { addProduct } from "@/actions/product-actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,7 +17,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Category } from "@/types";
 import { Loader2, Image as ImageIcon } from "lucide-react";
-import { useFormStatus } from "react-dom";
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
@@ -28,29 +27,12 @@ type ProductFormProps = {
   categories: Category[];
 };
 
-function SubmitButton({ isUploading }: { isUploading: boolean }) {
-    const { pending } = useFormStatus();
-    const isDisabled = pending || isUploading;
-    return (
-        <Button type="submit" disabled={isDisabled} className="w-full">
-            {isUploading 
-                ? <><Loader2 className="animate-spin mr-2" /> Waiting for upload...</>
-                : pending 
-                ? <><Loader2 className="animate-spin mr-2" /> Adding Product...</>
-                : "Add Product"
-            }
-        </Button>
-    )
-}
 
 export function ProductForm({ categories }: ProductFormProps) {
+  const [isSubmitting, startSubmitting] = useTransition();
+  const [error, setError] = useState<Record<string, string[]> | { serverError: string[] } | null>(null);
+  
   const [imageUrl, setImageUrl] = useState<string>("");
-
-  const [error, action] = useActionState(async (prevState: unknown, formData: FormData) => {
-    formData.set('imageUrl', imageUrl);
-    return addProduct(prevState, formData);
-  }, undefined);
-
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -83,24 +65,35 @@ export function ProductForm({ categories }: ProductFormProps) {
     }
   };
 
+  const handleSubmit = async (formData: FormData) => {
+    formData.set('imageUrl', imageUrl);
+    startSubmitting(async () => {
+      const result = await addProduct(null, formData);
+      if (result) { // addProduct redirects on success, so we only handle errors
+        setError(result);
+      }
+    });
+  };
+
   return (
-    <form action={action} className="space-y-6">
+    <form action={handleSubmit} className="space-y-6">
+      <input type="hidden" name="imageUrl" value={imageUrl} />
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required />
-        {error?.name && <div className="text-destructive text-sm">{error.name[0]}</div>}
+        {error && 'name' in error && <div className="text-destructive text-sm">{error.name[0]}</div>}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
             <Label htmlFor="price">Price (INR)</Label>
             <Input type="number" step="0.01" id="price" name="price" required />
-            {error?.price && <div className="text-destructive text-sm">{error.price[0]}</div>}
+            {error && 'price' in error && <div className="text-destructive text-sm">{error.price[0]}</div>}
         </div>
         <div className="space-y-2">
             <Label htmlFor="quantity">Quantity (ml)</Label>
             <Input type="number" id="quantity" name="quantity" placeholder="e.g. 750" required />
-            {error?.quantity && <div className="text-destructive text-sm">{error.quantity[0]}</div>}
+            {error && 'quantity' in error && <div className="text-destructive text-sm">{error.quantity[0]}</div>}
         </div>
       </div>
       
@@ -118,7 +111,7 @@ export function ProductForm({ categories }: ProductFormProps) {
             ))}
           </SelectContent>
         </Select>
-        {error?.category && <div className="text-destructive text-sm">{error.category[0]}</div>}
+        {error && 'category' in error && <div className="text-destructive text-sm">{error.category[0]}</div>}
       </div>
 
       <div className="space-y-2">
@@ -148,13 +141,13 @@ export function ProductForm({ categories }: ProductFormProps) {
             <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1)</p>
           </div>
         </div>
-         {error?.imageUrl && <div className="text-destructive text-sm">{error.imageUrl[0]}</div>}
+         {error && 'imageUrl' in error && <div className="text-destructive text-sm">{error.imageUrl[0]}</div>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea id="description" name="description" required />
-        {error?.description && <div className="text-destructive text-sm">{error.description[0]}</div>}
+        {error && 'description' in error && <div className="text-destructive text-sm">{error.description[0]}</div>}
       </div>
       
       <div className="flex items-center space-x-2">
@@ -162,9 +155,16 @@ export function ProductForm({ categories }: ProductFormProps) {
         <Label htmlFor="featured">Featured Product</Label>
       </div>
       
-      {error?.serverError && <div className="text-destructive text-sm">{error.serverError[0]}</div>}
+      {error && 'serverError' in error && <div className="text-destructive text-sm">{error.serverError[0]}</div>}
 
-      <SubmitButton isUploading={isUploading} />
+      <Button type="submit" disabled={isUploading || isSubmitting} className="w-full">
+        {isUploading 
+            ? <><Loader2 className="animate-spin mr-2" /> Waiting for upload...</>
+            : isSubmitting 
+            ? <><Loader2 className="animate-spin mr-2" /> Adding Product...</>
+            : "Add Product"
+        }
+      </Button>
     </form>
   );
 }
