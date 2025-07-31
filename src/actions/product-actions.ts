@@ -112,7 +112,7 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
  */
 export async function getProducts(): Promise<Product[]> {
   try {
-    const snapshot = await db.collection('products').get();
+    const snapshot = await db.collection('products').orderBy('name').get();
     if (snapshot.empty) {
       return [];
     }

@@ -19,7 +19,7 @@ export default async function Home() {
   return (
     <div>
       {/* Hero Carousel */}
-      <HomeCarousel banners={allBanners} />
+      <HomeCarousel banners={allBanners} key={allBanners.length} />
 
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Featured Products Grid */}
