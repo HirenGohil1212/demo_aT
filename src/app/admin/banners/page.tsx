@@ -57,6 +57,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   const { toast } = useToast();
 
   const [state, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
+    formData.set('imageUrl', imageUrl);
     const result = await addBanner(prevState, formData);
     if (result?.success) {
         onBannerAdded();
@@ -96,9 +97,6 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
 
   return (
      <form ref={formRef} action={action} className="space-y-4">
-      {/* Hidden input to hold the uploaded image URL */}
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />

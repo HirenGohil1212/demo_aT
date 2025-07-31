@@ -44,10 +44,14 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 }
 
 export function ProductForm({ categories }: ProductFormProps) {
-  const [error, action] = useActionState(addProduct, undefined);
+  const [imageUrl, setImageUrl] = useState<string>("");
+
+  const [error, action] = useActionState(async (prevState: unknown, formData: FormData) => {
+    formData.set('imageUrl', imageUrl);
+    return addProduct(prevState, formData);
+  }, undefined);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -81,9 +85,6 @@ export function ProductForm({ categories }: ProductFormProps) {
 
   return (
     <form action={action} className="space-y-6">
-      {/* Hidden input to hold the uploaded image URL */}
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-      
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required />

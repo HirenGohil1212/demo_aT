@@ -44,11 +44,15 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 }
 
 export function EditProductForm({ categories, product }: EditProductFormProps) {
+  const [imageUrl, setImageUrl] = useState<string>(product.image);
+  
   const updateProductWithId = updateProduct.bind(null, product.id);
-  const [error, action] = useActionState(updateProductWithId, undefined);
+  const [error, action] = useActionState(async (prevState: unknown, formData: FormData) => {
+      formData.set('imageUrl', imageUrl);
+      return updateProductWithId(prevState, formData);
+  }, undefined);
   
   const [imagePreview, setImagePreview] = useState<string | null>(product.image);
-  const [imageUrl, setImageUrl] = useState<string>(product.image);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
@@ -83,9 +87,6 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
 
   return (
     <form action={action} className="space-y-6">
-      {/* Hidden input to hold the uploaded image URL */}
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-      
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required defaultValue={product.name} />
