@@ -2,41 +2,31 @@
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 
-// This is the correct way to initialize the admin SDK.
-// It uses a simplified service account object and ensures the storageBucket is always correct.
-const serviceAccount = process.env.SERVICE_ACCOUNT_KEY
-  ? JSON.parse(process.env.SERVICE_ACCOUNT_KEY)
-  : {
-      type: 'service_account',
-      project_id: process.env.FIREBASE_PROJECT_ID || 'fir-5d78f',
-      private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
-      private_key: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
-      client_email: process.env.FIREBASE_CLIENT_EMAIL,
-      client_id: process.env.FIREBASE_CLIENT_ID,
-      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
-      token_uri: 'https://oauth2.googleapis.com/token',
-      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-      client_x509_cert_url: process.env.FIREBASE_CLIENT_X509_CERT_URL,
-      universe_domain: 'googleapis.com',
-    };
+let app: admin.app.App;
 
-// The storage bucket must be in the format 'project-id.appspot.com' for the Admin SDK.
-const storageBucket = "fir-5d78f.appspot.com";
-
-if (!getApps().length) {
+if (getApps().length === 0) {
   try {
-    admin.initializeApp({
+    if (!process.env.SERVICE_ACCOUNT_KEY) {
+        throw new Error("SERVICE_ACCOUNT_KEY environment variable is not set.");
+    }
+    const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
+
+    app = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      storageBucket: storageBucket,
+      storageBucket: `${serviceAccount.project_id}.appspot.com`,
     });
     console.log("Firebase Admin SDK initialized successfully.");
   } catch (error: any) {
     console.error("Firebase Admin Initialization Error", error.stack);
+    // Throw an error to prevent the app from continuing with a misconfigured admin SDK
+    throw new Error("Failed to initialize Firebase Admin SDK.");
   }
+} else {
+  app = admin.app();
 }
 
-const db = admin.firestore();
-const storage = admin.storage();
-const auth = admin.auth();
+const db = admin.firestore(app);
+const storage = admin.storage(app);
+const auth = admin.auth(app);
 
 export { db, storage, auth };
