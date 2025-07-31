@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Image as ImageIcon, Trash2, Upload } from "lucide-react";
-import { useState, useRef, useTransition, useActionState, useEffect } from "react";
+import { useState, useRef, useTransition, useActionState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -204,13 +204,13 @@ export function BannersClient({ initialProducts, initialBanners }: { initialProd
   const [products] = useState<Product[]>(initialProducts);
   const [banners, setBanners] = useState<Banner[]>(initialBanners);
 
-  const handleBannerAdded = (newBanner: Banner) => {
+  const handleBannerAdded = useCallback((newBanner: Banner) => {
     setBanners(prevBanners => [newBanner, ...prevBanners]);
-  }
+  }, []);
 
-  const handleBannerDeleted = (deletedBannerId: string) => {
+  const handleBannerDeleted = useCallback((deletedBannerId: string) => {
     setBanners(prevBanners => prevBanners.filter(banner => banner.id !== deletedBannerId));
-  }
+  }, []);
 
   const productMap = new Map(products.map((p) => [p.id, p.name]));
 
