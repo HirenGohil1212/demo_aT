@@ -44,7 +44,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
       try {
         const url = await uploadFile(file, 'products');
         setImageUrl(url);
-        toast({ title: "Success", description: "Image uploaded successfully." });
+        toast({ title: "Success", description: "Image updated successfully." });
       } catch (error) {
         console.error("Image upload failed:", error);
         toast({ variant: "destructive", title: "Upload Failed", description: String(error) });

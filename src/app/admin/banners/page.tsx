@@ -88,6 +88,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
       formRef.current?.reset();
       setImagePreview(null);
       setImageUrl('');
+      if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+      }
     } else if (state.error) {
        const errorMessages = Object.values(state.error).flat().join(" \n");
        toast({
