@@ -16,14 +16,18 @@ if (!getApps().length) {
                 storageBucket,
             });
         } catch (error) {
-            console.error("Firebase Admin initialization error:", error);
+            console.error("Firebase Admin initialization error with service account:", error);
         }
     } else {
-        console.warn("Firebase Admin SDK not initialized: SERVICE_ACCOUNT_KEY environment variable is not set.");
-        // Initialize without credentials if you have other ways of authenticating
-        // or for environments where admin features are not used.
-        // For many server-side operations, this will not be sufficient.
-        admin.initializeApp({ storageBucket });
+        // Use application default credentials if service account key is not provided
+        // This is the standard for App Hosting and other Google Cloud environments
+        try {
+             admin.initializeApp({
+                storageBucket,
+            });
+        } catch(error) {
+             console.error("Firebase Admin initialization error with default credentials:", error);
+        }
     }
 }
 
