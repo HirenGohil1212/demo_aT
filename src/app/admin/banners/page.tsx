@@ -29,12 +29,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Image as ImageIcon, Trash2 } from "lucide-react";
+import { Loader2, Image as ImageIcon, Trash2, UploadCloud } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { useState, useRef, useEffect, useTransition } from "react";
 import Image from "next/image";
 import { getProducts } from "@/actions/product-actions";
 import { getBanners } from "@/actions/banner-actions";
+import { uploadFile } from "@/lib/storage";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,45 +48,49 @@ import {
 } from "@/components/ui/alert-dialog"
 
 
-// These would normally come from the server, but for the client component
-// we pass them as props or fetch them in a client-safe way.
-// For this form, we'll assume they are fetched and passed in.
-type BannerFormProps = {
-  products: Product[];
-  onBannerAdded: () => void;
-};
-
-function BannerForm({ products, onBannerAdded }: BannerFormProps) {
+function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: () => void }) {
   const formRef = useRef<HTMLFormElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
 
-  const [error, action] = useActionState(async (prevState: unknown, formData: FormData) => {
+  const [error, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
     const result = await addBanner(prevState, formData);
-    if (!result?.error) {
+    if (result?.success) {
         onBannerAdded();
         formRef.current?.reset();
         setImagePreview(null);
+        setImageUrl("");
     }
     return result;
   }, undefined);
 
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setImagePreview(URL.createObjectURL(file));
+      setIsUploading(true);
+      try {
+        const url = await uploadFile(file, 'banners');
+        setImageUrl(url);
+      } catch (uploadError) {
+        console.error("Image upload failed:", uploadError);
+        // You can set an error state here to show the user
+      } finally {
+        setIsUploading(false);
+      }
     } else {
-      setImagePreview(null);
+        setImagePreview(null);
+        setImageUrl("");
     }
   };
 
   return (
      <form ref={formRef} action={action} className="space-y-4">
+      {/* Hidden input to hold the uploaded image URL */}
+      <input type="hidden" name="imageUrl" value={imageUrl} />
+
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />
@@ -95,7 +100,7 @@ function BannerForm({ products, onBannerAdded }: BannerFormProps) {
         <Input name="subtitle" id="subtitle" placeholder="e.g. The finest spirits for the season" required />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="imageUrl">Banner Image</Label>
+        <Label htmlFor="imageFile">Banner Image</Label>
         <div className="flex items-center gap-4">
           <div className="w-48 h-24 border rounded-md flex items-center justify-center bg-muted/30">
              {imagePreview ? (
@@ -106,8 +111,8 @@ function BannerForm({ products, onBannerAdded }: BannerFormProps) {
           </div>
            <div className="space-y-2">
             <Input 
-                id="imageUrl" 
-                name="imageUrl" 
+                id="imageFile" 
+                name="imageFile" // This input is just for file selection, not submission
                 type="file" 
                 required 
                 accept="image/*"
@@ -137,18 +142,23 @@ function BannerForm({ products, onBannerAdded }: BannerFormProps) {
           </SelectContent>
         </Select>
       </div>
-      <SubmitButton />
-      {error && <p className="text-sm text-destructive">{error.error}</p>}
+      <SubmitButton isUploading={isUploading} isPending={isPending} />
+      {error && 'error' in error && <p className="text-sm text-destructive">{error.error as string}</p>}
     </form>
   )
 }
 
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
+function SubmitButton({ isUploading, isPending }: { isUploading: boolean, isPending: boolean }) {
+    const isDisabled = isUploading || isPending;
     return (
-        <Button type="submit" disabled={pending}>
-            {pending ? <Loader2 className="animate-spin" /> : "Add Banner"}
+        <Button type="submit" disabled={isDisabled}>
+            {isUploading 
+                ? <><UploadCloud className="animate-bounce" /> Uploading Image...</>
+                : isPending 
+                ? <><Loader2 className="animate-spin" /> Adding Banner...</>
+                : "Add Banner"
+            }
         </Button>
     )
 }
@@ -160,7 +170,7 @@ function DeleteBannerButton({ bannerId, onDelete }: { bannerId: string, onDelete
     const handleDelete = () => {
         startTransition(async () => {
             const result = await deleteBanner(bannerId);
-            if (!result?.error) {
+            if (result?.success) {
                 onDelete(bannerId);
             }
             setIsDialogOpen(false);
