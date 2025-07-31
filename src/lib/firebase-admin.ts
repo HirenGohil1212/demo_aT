@@ -1,4 +1,6 @@
 
+'use server';
+
 import admin from 'firebase-admin';
 import { getApps } from 'firebase-admin/app';
 
@@ -13,7 +15,7 @@ if (getApps().length === 0) {
 
     app = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      storageBucket: `${serviceAccount.project_id}.appspot.com`,
+      storageBucket: "fir-5d78f.appspot.com",
     });
     console.log("Firebase Admin SDK initialized successfully.");
   } catch (error: any) {
