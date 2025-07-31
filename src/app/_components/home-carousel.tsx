@@ -50,7 +50,7 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
             }}
             plugins={[plugin.current]}
             onMouseEnter={plugin.current.stop}
-            onMouseLeave={plugin.current.play}
+            onMouseLeave={plugin.current.reset}
           >
             <CarouselContent>
               {banners.map((banner, index) => (

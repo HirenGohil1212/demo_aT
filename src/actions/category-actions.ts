@@ -86,6 +86,7 @@ export async function deleteCategory(categoryId: string) {
         await categoryRef.delete();
         
         revalidatePath('/admin/categories');
+        revalidatePath('/admin/products');
 
         return { success: true };
 
