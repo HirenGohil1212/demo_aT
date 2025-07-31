@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import {
   Sheet,
   SheetContent,
+  SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useUser } from '@/hooks/use-user';
@@ -134,6 +136,9 @@ export default function Header() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="right">
+                 <SheetHeader>
+                    <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                 </SheetHeader>
                 <div className="flex flex-col gap-6 pt-10">
                 <Link href="/" className="font-headline text-2xl font-bold text-primary mb-4">
                   LuxeLiquor
