@@ -73,13 +73,22 @@ export default function Header() {
         
         <nav className="hidden md:flex items-center gap-8">
           {navLinks.map(link => (
-            <Link key={link.href} href={link.href} className="text-base font-medium hover:text-primary transition-colors duration-300">
+            <Link 
+              key={link.href} 
+              href={link.href} 
+              className="relative font-headline text-lg group text-foreground/80 hover:text-foreground transition-colors duration-300"
+            >
               {link.label}
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-center"></span>
             </Link>
           ))}
            {isAdmin && (
-              <Link href="/admin" className="text-base font-medium hover:text-primary transition-colors duration-300">
+              <Link 
+                href="/admin" 
+                className="relative font-headline text-lg group text-foreground/80 hover:text-foreground transition-colors duration-300"
+              >
                 Admin
+                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 ease-out origin-center"></span>
               </Link>
             )}
         </nav>
