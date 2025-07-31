@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Image as ImageIcon, Trash2 } from "lucide-react";
+import { Loader2, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import { useState, useRef, useEffect, useTransition, useActionState } from "react";
 import Image from "next/image";
 import {
@@ -43,24 +43,39 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { uploadFile } from "@/lib/storage";
 
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: () => void }) {
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
   const [state, formAction, isPending] = useActionState(addBanner, undefined);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setIsUploading(true);
+      setImagePreview(URL.createObjectURL(file)); // Show preview immediately
+
+      try {
+        const url = await uploadFile(file, 'banners');
+        setImageUrl(url); // Set the URL for form submission
+        toast({ title: "Success", description: "Image uploaded successfully." });
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload image. Please try again." });
+        setImagePreview(null);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""; // Reset file input
+        }
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
   
@@ -71,6 +86,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
       onBannerAdded();
       formRef.current?.reset();
       setImagePreview(null);
+      setImageUrl('');
     } else if (state.error) {
        const errorMessages = Object.values(state.error).flat().join(" \n");
        toast({
@@ -84,6 +100,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
+      <input type="hidden" name="imageUrl" value={imageUrl} />
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />
@@ -105,19 +122,22 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
             )}
           </div>
           <div className="space-y-2 flex-grow">
+            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+              {isUploading ? <><Loader2 className="animate-spin mr-2"/> Uploading...</> : <><Upload className="mr-2"/>Select Image</>}
+            </Button>
             <Input
               id="imageFile"
-              name="imageFile"
+              name="imageFile" // Name is not used for submission, just for the ref
               type="file"
               accept="image/*"
-              required
               ref={fileInputRef}
               onChange={handleImageChange}
+              className="hidden"
             />
             <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
           </div>
         </div>
-        {state?.error?.imageFile && <p className="text-sm text-destructive mt-1">{state.error.imageFile[0]}</p>}
+        {state?.error?.imageUrl && <p className="text-sm text-destructive mt-1">{state.error.imageUrl[0]}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="productId">Link to Product</Label>
@@ -135,8 +155,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         </Select>
         {state?.error?.productId && <p className="text-sm text-destructive mt-1">{state.error.productId[0]}</p>}
       </div>
-       <Button type="submit" disabled={isPending}>
+       <Button type="submit" disabled={isPending || isUploading || !imageUrl}>
           {isPending ? <><Loader2 className="animate-spin mr-2" /> Adding Banner...</> : "Add Banner"}
+          {isUploading && " (Waiting for upload...)"}
       </Button>
       {state?.error?._server && <p className="text-sm text-destructive mt-2">{state.error._server[0]}</p>}
     </form>

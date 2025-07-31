@@ -6,12 +6,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db, storage } from '@/lib/firebase-admin';
 import type { Product } from '@/types';
-import { uploadFile } from '@/lib/storage';
 
-
-const fileSchema = z.instanceof(File).refine(file => file.size > 0, "An image is required.");
-
-// Zod schema for product validation
+// Base schema for product fields
 const productSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
@@ -21,19 +17,19 @@ const productSchema = z.object({
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
 });
 
+// Schema for adding a new product, requiring a valid image URL
 const addProductSchema = productSchema.extend({
-  imageFile: fileSchema,
+  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }),
 });
 
+// Schema for updating a product, image URL is also required
 const updateProductSchema = productSchema.extend({
-  imageFile: fileSchema.optional(), // Image is optional on update
-  imageUrl: z.string().url().optional(), // Keep existing image if no new file
+  imageUrl: z.string().url({ message: "A valid image URL is required." }),
 });
 
 
 /**
  * Adds a new product to the Firestore database.
- * This is a server action that handles form submission.
  */
 export async function addProduct(prevState: unknown, formData: FormData) {
   const result = addProductSchema.safeParse(Object.fromEntries(formData.entries()));
@@ -44,7 +40,6 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 
   try {
     const data = result.data;
-    const imageUrl = await uploadFile(data.imageFile, 'products');
 
     await db.collection('products').add({
       name: data.name,
@@ -52,7 +47,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
       category: data.category,
       price: data.price,
       quantity: data.quantity,
-      image: imageUrl,
+      image: data.imageUrl,
       featured: data.featured || false,
       details: [],
       recipe: null,
@@ -86,16 +81,6 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
 
   try {
     const data = result.data;
-    let imageUrl = data.imageUrl;
-
-    // If a new file is uploaded, upload it and get the new URL
-    if (data.imageFile && data.imageFile.size > 0) {
-      imageUrl = await uploadFile(data.imageFile, 'products');
-    }
-
-    if (!imageUrl) {
-        return { error: { imageFile: ["An image is required."] } };
-    }
 
     const productRef = db.collection('products').doc(id);
     await productRef.update({
@@ -104,7 +89,7 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
       category: data.category,
       price: data.price,
       quantity: data.quantity,
-      image: imageUrl,
+      image: data.imageUrl,
       featured: data.featured || false,
     });
 
@@ -197,11 +182,10 @@ export async function deleteProduct(productId: string) {
                 const bucket = storage.bucket();
                 // Extract the file path from the URL
                 const decodedUrl = decodeURIComponent(imageUrl);
-                const filePathWithQuery = decodedUrl.substring(decodedUrl.indexOf('/o/') + 3);
-                const filePath = filePathWithQuery.split('?alt=media')[0];
+                const gcsPath = decodedUrl.substring(decodedUrl.indexOf('/o/') + 3).split('?')[0];
                 
-                if(filePath && filePath.startsWith('products/')) { // Safety check
-                    await bucket.file(filePath).delete();
+                if(gcsPath && gcsPath.startsWith('products/')) { // Safety check
+                    await bucket.file(gcsPath).delete();
                 }
             } catch (storageError) {
                 console.error("Error deleting product image from storage, continuing with firestore deletion:", storageError);

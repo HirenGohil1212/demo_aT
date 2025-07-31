@@ -16,9 +16,10 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Category, Product } from "@/types";
-import { Loader2, Image as ImageIcon } from "lucide-react";
+import { Loader2, Image as ImageIcon, Upload } from "lucide-react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
+import { uploadFile } from "@/lib/storage";
 
 type EditProductFormProps = {
   categories: Category[];
@@ -26,19 +27,34 @@ type EditProductFormProps = {
 };
 
 export function EditProductForm({ categories, product }: EditProductFormProps) {
-  const [state, formAction] = useActionState(updateProduct.bind(null, product.id), undefined);
+  const [state, formAction, isPending] = useActionState(updateProduct.bind(null, product.id), undefined);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   const [imagePreview, setImagePreview] = useState<string | null>(product.image);
+  const [imageUrl, setImageUrl] = useState<string>(product.image);
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      setIsUploading(true);
+      setImagePreview(URL.createObjectURL(file));
+
+      try {
+        const url = await uploadFile(file, 'products');
+        setImageUrl(url);
+        toast({ title: "Success", description: "Image uploaded successfully." });
+      } catch (error) {
+        console.error("Image upload failed:", error);
+        toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload image. Please try again." });
+        setImagePreview(product.image); // Revert to original image on failure
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      } finally {
+        setIsUploading(false);
+      }
     }
   };
 
@@ -55,7 +71,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
 
   return (
     <form action={formAction} className="space-y-6">
-      <input type="hidden" name="imageUrl" value={product.image} />
+      <input type="hidden" name="imageUrl" value={imageUrl} />
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required defaultValue={product.name} />
@@ -103,17 +119,22 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
             )}
           </div>
           <div className="space-y-2 flex-grow">
+             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+              {isUploading ? <><Loader2 className="animate-spin mr-2"/> Uploading...</> : <><Upload className="mr-2"/>Change Image</>}
+            </Button>
             <Input 
               id="image" 
               name="imageFile"
               type="file" 
               accept="image/*"
+              ref={fileInputRef}
               onChange={handleImageChange}
+              className="hidden"
             />
-            <p className="text-xs text-muted-foreground">Change image (optional). Recommended: 600x600px (1:1)</p>
+            <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1)</p>
           </div>
         </div>
-        {state?.error?.imageFile && <div className="text-destructive text-sm">{state.error.imageFile[0]}</div>}
+        {state?.error?.imageUrl && <div className="text-destructive text-sm">{state.error.imageUrl[0]}</div>}
       </div>
 
       <div className="space-y-2">
@@ -129,9 +150,9 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
       
       {state?.error?._server && <div className="text-destructive text-sm">{state.error._server[0]}</div>}
 
-      <Button type="submit" className="w-full">
-        {/* The useFormStatus hook can be used here if we extract the button */}
-        Saving Changes...
+      <Button type="submit" className="w-full" disabled={isPending || isUploading}>
+        {isPending ? <><Loader2 className="animate-spin mr-2"/> Saving...</> : "Save Changes"}
+        {isUploading && " (Waiting for upload...)"}
       </Button>
     </form>
   );

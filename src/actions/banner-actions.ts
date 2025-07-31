@@ -6,19 +6,19 @@ import { revalidatePath } from 'next/cache';
 import { db, storage } from '@/lib/firebase-admin';
 import type { Banner } from '@/types';
 import admin from 'firebase-admin';
-import { uploadFile } from '@/lib/storage';
 
 // Zod schema for banner validation
+// Image is now validated as a URL string, not a File object.
 const bannerSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   subtitle: z.string().min(1, { message: "Subtitle is required" }),
-  imageFile: z.instanceof(File).refine(file => file.size > 0, "An image is required."),
+  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }),
   productId: z.string().min(1, { message: "A product must be linked" }),
 });
 
 /**
  * Adds a new banner to Firestore.
- * This is a server action that handles form submission including file upload.
+ * This is a server action that handles form submission.
  */
 export async function addBanner(prevState: unknown, formData: FormData) {
   const result = bannerSchema.safeParse(Object.fromEntries(formData.entries()));
@@ -31,13 +31,12 @@ export async function addBanner(prevState: unknown, formData: FormData) {
 
   try {
     const data = result.data;
-    const imageUrl = await uploadFile(data.imageFile, 'banners');
-
+    
     await db.collection("banners").add({
       title: data.title,
       subtitle: data.subtitle,
       productId: data.productId,
-      imageUrl: imageUrl,
+      imageUrl: data.imageUrl, // The URL comes directly from the form
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       active: true,
     });
@@ -117,11 +116,10 @@ export async function deleteBanner(bannerId: string) {
                 const bucket = storage.bucket();
                 // Extract the file path from the URL
                 const decodedUrl = decodeURIComponent(imageUrl);
-                const filePathWithQuery = decodedUrl.substring(decodedUrl.indexOf('/o/') + 3);
-                const filePath = filePathWithQuery.split('?alt=media')[0];
-                
-                if(filePath) {
-                    await bucket.file(filePath).delete();
+                const gcsPath = decodedUrl.substring(decodedUrl.indexOf('/o/') + 3).split('?')[0];
+
+                if(gcsPath) {
+                    await bucket.file(gcsPath).delete();
                 }
             } catch (storageError) {
                 console.error("Error deleting image from storage, continuing with firestore deletion:", storageError);
