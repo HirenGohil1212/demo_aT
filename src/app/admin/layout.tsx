@@ -91,6 +91,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         {/* Mobile Sidebar */}
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetContent side="left" className="p-0 w-72">
+                <SheetHeader>
+                  <SheetTitle className="sr-only">Admin Menu</SheetTitle>
+                </SheetHeader>
                 <SidebarContent />
             </SheetContent>
         </Sheet>
