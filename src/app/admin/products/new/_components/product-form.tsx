@@ -87,10 +87,17 @@ export function ProductForm({ categories }: ProductFormProps) {
         {error?.name && <div className="text-destructive text-sm">{error.name[0]}</div>}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="price">Price</Label>
-        <Input type="number" step="0.01" id="price" name="price" required />
-         {error?.price && <div className="text-destructive text-sm">{error.price[0]}</div>}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+            <Label htmlFor="price">Price (₹)</Label>
+            <Input type="number" step="0.01" id="price" name="price" required />
+            {error?.price && <div className="text-destructive text-sm">{error.price[0]}</div>}
+        </div>
+        <div className="space-y-2">
+            <Label htmlFor="quantity">Quantity (ml)</Label>
+            <Input type="number" id="quantity" name="quantity" placeholder="e.g. 750" required />
+            {error?.quantity && <div className="text-destructive text-sm">{error.quantity[0]}</div>}
+        </div>
       </div>
       
       <div className="space-y-2">

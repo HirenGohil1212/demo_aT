@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from 'next/image';
@@ -32,7 +33,10 @@ export default function ProductCard({ product }: ProductCardProps) {
         </Link>
       </CardHeader>
       <CardContent className="p-4 flex-grow">
-        <Badge variant="secondary" className="mb-2">{product.category}</Badge>
+        <div className="flex justify-between items-center mb-2">
+            <Badge variant="secondary">{product.category}</Badge>
+            <span className="text-xs text-muted-foreground">{product.quantity}ml</span>
+        </div>
         <Link href={`/products/${product.id}`}>
           <CardTitle className="font-headline text-xl leading-tight hover:text-primary transition-colors">
             {product.name}
@@ -40,7 +44,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </Link>
       </CardContent>
       <CardFooter className="p-4 flex justify-between items-center">
-        <p className="text-xl font-bold text-primary">${product.price.toFixed(2)}</p>
+        <p className="text-xl font-bold text-primary">₹{product.price.toFixed(2)}</p>
         <Button size="icon" variant="outline" onClick={() => addToCart(product)} className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
           <ShoppingCart className="h-5 w-5" />
           <span className="sr-only">Add to cart</span>

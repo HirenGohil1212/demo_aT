@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { getProductById } from '@/actions/product-actions';
 import { AddToCartButton } from './_components/add-to-cart-button';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Wine } from 'lucide-react';
+import { CheckCircle, Wine, Droplets } from 'lucide-react';
 
 type ProductPageProps = {
   params: {
@@ -39,7 +39,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary mb-4">
             {product.name}
           </h1>
-          <p className="text-2xl font-bold text-primary mb-6">${product.price.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-primary mb-2">₹{product.price.toFixed(2)}</p>
+          <div className="flex items-center text-muted-foreground mb-6">
+            <Droplets className="h-4 w-4 mr-2" />
+            <span>{product.quantity}ml</span>
+          </div>
           <p className="text-muted-foreground mb-6">{product.description}</p>
           
           {product.details && product.details.length > 0 && (

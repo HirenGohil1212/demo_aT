@@ -1,8 +1,10 @@
+
 export type Product = {
   id: string;
   name: string;
   category: string;
   price: number;
+  quantity: number; // e.g., 750 for 750ml
   image: string;
   description: string;
   details?: string[];

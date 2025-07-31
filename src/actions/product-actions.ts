@@ -12,6 +12,7 @@ const productSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
   price: z.coerce.number().positive({ message: 'Price must be a positive number' }),
+  quantity: z.coerce.number().positive({ message: 'Quantity must be a positive number' }),
   category: z.string().min(1, { message: 'Category is required' }),
   imageUrl: z.string().url({ message: 'A valid image URL is required' }),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
@@ -37,6 +38,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
       description: data.description,
       category: data.category,
       price: data.price,
+      quantity: data.quantity,
       image: data.imageUrl,
       featured: data.featured || false,
       details: [],
@@ -69,7 +71,8 @@ export async function getProducts(): Promise<Product[]> {
       return { 
         id: doc.id, 
         ...data, 
-        price: data.price || 0 
+        price: data.price || 0,
+        quantity: data.quantity || 0,
       } as Product;
     });
   } catch (error) {
@@ -90,7 +93,12 @@ export async function getProductById(id: string): Promise<Product | null> {
       return null;
     }
     const data = doc.data();
-    return { id: doc.id, ...data, price: data?.price || 0 } as Product;
+    return { 
+        id: doc.id, 
+        ...data, 
+        price: data?.price || 0,
+        quantity: data?.quantity || 0,
+    } as Product;
   } catch (error) {
     console.error("Error in getProductById:", error);
     return null;

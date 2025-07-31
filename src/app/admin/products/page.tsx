@@ -150,7 +150,7 @@ export default function ProductsPage() {
                 <TableCell className="hidden md:table-cell">
                   <Badge variant="outline">{product.category}</Badge>
                 </TableCell>
-                <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell>₹{product.price.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
                     <DeleteProductButton productId={product.id} onDelete={handleProductDeleted} />
                 </TableCell>
