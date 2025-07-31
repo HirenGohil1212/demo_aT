@@ -44,10 +44,10 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
                         data-ai-hint={`cocktail drink`}
                       />
                       <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                         <h2 className="font-headline text-4xl md:text-6xl font-bold text-primary drop-shadow-lg mb-4">
+                         <h2 className="font-headline text-3xl sm:text-4xl md:text-6xl font-bold text-primary drop-shadow-lg mb-2 sm:mb-4">
                           {banner.title}
                         </h2>
-                        <p className="text-lg md:text-xl max-w-2xl mb-6 drop-shadow-md">
+                        <p className="text-base sm:text-lg md:text-xl max-w-2xl mb-4 sm:mb-6 drop-shadow-md">
                           {banner.subtitle}
                         </p>
                         <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
