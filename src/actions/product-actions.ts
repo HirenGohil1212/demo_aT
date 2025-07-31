@@ -4,7 +4,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { db } from '@/lib/firebase-admin';
+import { db, storage } from '@/lib/firebase-admin';
 import type { Product } from '@/types';
 
 // Zod schema for product validation
@@ -95,4 +95,56 @@ export async function getProductById(id: string): Promise<Product | null> {
     console.error("Error in getProductById:", error);
     return null;
   }
+}
+
+/**
+ * Deletes a product from Firestore and its image from Storage.
+ * @param productId The ID of the product to delete.
+ */
+export async function deleteProduct(productId: string) {
+    if (!productId) {
+        return { error: "Invalid product ID." };
+    }
+
+    try {
+        const productRef = db.collection('products').doc(productId);
+        const productDoc = await productRef.get();
+
+        if (!productDoc.exists) {
+            return { error: "Product not found." };
+        }
+
+        const productData = productDoc.data() as Product;
+        const imageUrl = productData.image;
+
+        // Delete the image from Firebase Storage
+        if (imageUrl) {
+            try {
+                const bucket = storage.bucket();
+                // Extract the file path from the URL
+                const decodedUrl = decodeURIComponent(imageUrl);
+                const filePathWithQuery = decodedUrl.substring(decodedUrl.indexOf('/o/') + 3);
+                const filePath = filePathWithQuery.split('?alt=media')[0];
+                
+                if(filePath && filePath.startsWith('products/')) { // Safety check
+                    await bucket.file(filePath).delete();
+                }
+            } catch (storageError) {
+                console.error("Error deleting product image from storage, continuing with firestore deletion:", storageError);
+            }
+        }
+        
+        // Delete the product document from Firestore
+        await productRef.delete();
+        
+        revalidatePath('/admin/products');
+        revalidatePath('/products');
+        revalidatePath('/');
+
+        return { success: true };
+
+    } catch (error) {
+        console.error("Error in deleteProduct:", error);
+        return { error: "Failed to delete product due to a server error." };
+    }
 }

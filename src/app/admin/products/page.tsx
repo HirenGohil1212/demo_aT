@@ -1,8 +1,10 @@
 
-"use server";
+"use client";
+
+import { useState, useEffect, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { getProducts } from "@/actions/product-actions";
+import { getProducts, deleteProduct } from "@/actions/product-actions";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -20,10 +22,84 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Loader2, Trash2 } from "lucide-react";
+import type { Product } from "@/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
-export default async function ProductsPage() {
-  const products = await getProducts();
+
+function DeleteProductButton({ productId, onDelete }: { productId: string, onDelete: (id: string) => void }) {
+    const [isPending, startTransition] = useTransition();
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    
+    const handleDelete = () => {
+        startTransition(async () => {
+            const result = await deleteProduct(productId);
+            if (result?.success) {
+                onDelete(productId);
+            }
+            setIsDialogOpen(false);
+        });
+    }
+
+    return (
+      <>
+        <Button
+            variant="destructive"
+            size="icon"
+            onClick={() => setIsDialogOpen(true)}
+            disabled={isPending}
+        >
+            {isPending ? <Loader2 className="animate-spin h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
+        </Button>
+         <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the product
+                        and its image from the server.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} disabled={isPending}>
+                        {isPending ? "Deleting..." : "Delete"}
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+     </>
+    )
+}
+
+
+export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  async function loadProducts() {
+      setLoading(true);
+      const productsData = await getProducts();
+      setProducts(productsData);
+      setLoading(false);
+  }
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  const handleProductDeleted = (deletedProductId: string) => {
+    setProducts(prevProducts => prevProducts.filter(product => product.id !== deletedProductId));
+  }
 
   return (
     <Card>
@@ -43,6 +119,11 @@ export default async function ProductsPage() {
         </div>
       </CardHeader>
       <CardContent>
+        {loading ? (
+             <div className="flex justify-center items-center h-48">
+                <Loader2 className="animate-spin text-primary" size={32} />
+             </div>
+        ) : (
         <Table>
           <TableHeader>
             <TableRow>
@@ -50,6 +131,7 @@ export default async function ProductsPage() {
               <TableHead>Name</TableHead>
               <TableHead className="hidden md:table-cell">Category</TableHead>
               <TableHead>Price</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -69,10 +151,14 @@ export default async function ProductsPage() {
                   <Badge variant="outline">{product.category}</Badge>
                 </TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>
+                <TableCell className="text-right">
+                    <DeleteProductButton productId={product.id} onDelete={handleProductDeleted} />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
+        )}
       </CardContent>
     </Card>
   );
