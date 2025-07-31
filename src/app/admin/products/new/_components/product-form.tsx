@@ -45,11 +45,8 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState((prevState: unknown, formData: FormData) => {
-    if (!imageUrl && !isUploading) {
-        return { imageUrl: ["Product image is required and must be uploaded."] };
-    }
-    if (isUploading) {
-        return { imageUrl: ["Please wait for the image to finish uploading."] };
+    if (!imageUrl) {
+        return { imageUrl: ["Product image is required. Please upload an image."] };
     }
     formData.set('imageUrl', imageUrl);
     return addProduct(prevState, formData);
@@ -70,7 +67,7 @@ export function ProductForm({ categories }: ProductFormProps) {
       
       try {
         const downloadURL = await uploadFile(file, 'products');
-        setImageUrl(downloadURL); // Set the URL for the hidden input
+        setImageUrl(downloadURL);
       } catch (uploadError: any) {
         console.error("Image upload failed:", uploadError);
         toast({
@@ -86,9 +83,6 @@ export function ProductForm({ categories }: ProductFormProps) {
       } finally {
         setIsUploading(false);
       }
-    } else {
-        setImagePreview(null);
-        setImageUrl("");
     }
   };
 

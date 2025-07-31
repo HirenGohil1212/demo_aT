@@ -58,11 +58,8 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
 
 
   const [error, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
-    if (!imageUrl && !isUploading) {
-        return { error: "Banner image is required and must be uploaded." };
-    }
-    if (isUploading) {
-        return { error: "Please wait for the image to finish uploading." };
+    if (!imageUrl) {
+        return { error: "Banner image is required. Please upload an image." };
     }
     // Manually set imageUrl on formData before calling the action
     formData.set('imageUrl', imageUrl);
@@ -100,9 +97,6 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
       } finally {
         setIsUploading(false);
       }
-    } else {
-        setImagePreview(null);
-        setImageUrl("");
     }
   };
 
