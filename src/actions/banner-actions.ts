@@ -31,19 +31,28 @@ export async function addBanner(prevState: unknown, formData: FormData) {
 
   try {
     const data = result.data;
+    const createdAt = admin.firestore.FieldValue.serverTimestamp();
     
-    await db.collection("banners").add({
+    const docRef = await db.collection("banners").add({
       title: data.title,
       subtitle: data.subtitle,
       productId: data.productId,
       imageUrl: data.imageUrl, // The URL comes directly from the form
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      createdAt: createdAt,
       active: true,
     });
     
     revalidatePath("/admin/banners");
     revalidatePath("/");
-    return { success: true };
+
+    const newBanner = {
+        id: docRef.id,
+        ...data,
+        active: true,
+        createdAt: new Date().toISOString(), // Return a serializable date
+    }
+    
+    return { success: true, banner: newBanner };
 
   } catch (error) {
     console.error("Error in addBanner:", error);
@@ -58,13 +67,13 @@ export async function addBanner(prevState: unknown, formData: FormData) {
  */
 export async function getBanners(): Promise<Banner[]> {
   try {
-    const snapshot = await db.collection('banners').where("active", "==", true).get();
+    const snapshot = await db.collection('banners').where("active", "==", true).orderBy("createdAt", "desc").get();
     
     if (snapshot.empty) {
       return [];
     }
     
-    const banners = snapshot.docs.map(doc => {
+    return snapshot.docs.map(doc => {
         const data = doc.data();
         const createdAt = data.createdAt;
         return { 
@@ -74,15 +83,6 @@ export async function getBanners(): Promise<Banner[]> {
             createdAt: createdAt?.toDate ? createdAt.toDate().toISOString() : new Date().toISOString()
         } as Banner
     });
-
-    // Sort by createdAt timestamp in descending order (newest first)
-    banners.sort((a, b) => {
-        const dateA = new Date(a.createdAt);
-        const dateB = new Date(b.createdAt);
-        return dateB.getTime() - dateA.getTime();
-    });
-
-    return banners;
 
   } catch (error) {
     console.error("Error in getBanners:", error);
