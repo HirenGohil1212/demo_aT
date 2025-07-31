@@ -106,13 +106,13 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
             {products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell className="hidden sm:table-cell">
-                  <div className="w-[50px] h-[50px] bg-white rounded-md flex items-center justify-center">
+                  <div className="w-[50px] h-[50px] bg-white rounded-md flex items-center justify-center p-1">
                     <Image
                       src={product.image || "https://placehold.co/600x600.png"}
                       alt={product.name}
                       width={50}
                       height={50}
-                      className="rounded-md object-contain"
+                      className="rounded-md object-contain h-full w-auto"
                     />
                   </div>
                 </TableCell>
