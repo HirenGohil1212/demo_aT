@@ -6,15 +6,25 @@ import Link from 'next/link';
 import { useCart } from '@/hooks/use-cart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, MessageSquareText } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, totalPrice, itemCount } = useCart();
+  const [fullName, setFullName] = useState('');
+  const [shippingAddress, setShippingAddress] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+
+  const isDetailsComplete = fullName.trim() !== '' && shippingAddress.trim() !== '' && contactNumber.trim() !== '';
 
   const handleWhatsAppOrder = () => {
-    // Replace with your actual WhatsApp business number, including the country code without '+' or '00'
+    if (!isDetailsComplete) {
+      alert("Please fill in all your details before placing an order.");
+      return;
+    }
     const adminPhoneNumber = '917990305570'; 
     
     let message = 'Hello LuxeLiquor, I would like to place an order for the following items:\n\n';
@@ -26,10 +36,10 @@ export default function CartPage() {
     message += `\n----------------------\n`;
     message += `*Total Order Value: INR ${totalPrice.toFixed(2)}*\n\n`;
     message += `----------------------\n`;
-    message += `Please provide your details for delivery:\n`;
-    message += `*Full Name:* \n`;
-    message += `*Shipping Address:* \n`;
-    message += `*Contact Number:* \n`;
+    message += `*Delivery Details:*\n`;
+    message += `*Full Name:* ${fullName}\n`;
+    message += `*Shipping Address:* ${shippingAddress}\n`;
+    message += `*Contact Number:* ${contactNumber}\n`;
 
     const whatsappUrl = `https://wa.me/${adminPhoneNumber}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -89,7 +99,20 @@ export default function CartPage() {
               <CardTitle className="font-headline text-2xl">Order Summary</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex justify-between text-muted-foreground">
+              <div className="space-y-2">
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name" required/>
+              </div>
+               <div className="space-y-2">
+                  <Label htmlFor="shippingAddress">Shipping Address</Label>
+                  <Textarea id="shippingAddress" value={shippingAddress} onChange={(e) => setShippingAddress(e.target.value)} placeholder="Enter your full address" required/>
+              </div>
+               <div className="space-y-2">
+                  <Label htmlFor="contactNumber">Contact Number</Label>
+                  <Input id="contactNumber" type="tel" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} placeholder="Enter your phone number" required/>
+              </div>
+
+              <div className="flex justify-between text-muted-foreground pt-4 border-t">
                 <span>Subtotal ({itemCount} {itemCount > 1 ? 'items' : 'item'})</span>
                 <span>INR {totalPrice.toFixed(2)}</span>
               </div>
@@ -103,7 +126,13 @@ export default function CartPage() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={handleWhatsAppOrder}>
+              <Button 
+                size="lg" 
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90" 
+                onClick={handleWhatsAppOrder}
+                disabled={!isDetailsComplete}
+                title={!isDetailsComplete ? "Please fill in all your details" : "Place Order"}
+              >
                 <MessageSquareText className="mr-2"/>
                 Place Order via WhatsApp
               </Button>
