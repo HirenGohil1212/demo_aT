@@ -45,20 +45,13 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 
 export function EditProductForm({ categories, product }: EditProductFormProps) {
   const updateProductWithId = updateProduct.bind(null, product.id);
-  const [error, action] = useActionState((prevState: unknown, formData: FormData) => {
-    if (!imageUrl) {
-        return { imageUrl: ["Product image is required. Please upload an image."] };
-    }
-    formData.set('imageUrl', imageUrl);
-    return updateProductWithId(prevState, formData);
-  }, {});
+  const [error, action] = useActionState(updateProductWithId, undefined);
   
   const [imagePreview, setImagePreview] = useState<string | null>(product.image);
   const [imageUrl, setImageUrl] = useState<string>(product.image);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,11 +63,11 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
         const downloadURL = await uploadFile(file, 'products');
         setImageUrl(downloadURL);
       } catch (uploadError: any) {
-        console.error("Image upload failed:", uploadError);
+        console.error("Upload failed:", uploadError);
         toast({
           variant: "destructive",
           title: "Upload Failed",
-          description: uploadError.message || "There was a problem uploading your image. Please try again."
+          description: uploadError.message || "There was a problem with the upload. Please try again."
         });
         // Revert preview on fail
         setImagePreview(product.image);
@@ -90,6 +83,9 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
 
   return (
     <form action={action} className="space-y-6">
+      {/* Hidden input to hold the uploaded image URL */}
+      <input type="hidden" name="imageUrl" value={imageUrl} />
+      
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required defaultValue={product.name} />

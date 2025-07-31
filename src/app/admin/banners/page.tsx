@@ -56,13 +56,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
 
-
-  const [error, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
-    if (!imageUrl) {
-        return { error: "Banner image is required. Please upload an image." };
-    }
-    // Manually set imageUrl on formData before calling the action
-    formData.set('imageUrl', imageUrl);
+  const [state, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
     const result = await addBanner(prevState, formData);
     if (result?.success) {
         onBannerAdded();
@@ -83,11 +77,11 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         const downloadURL = await uploadFile(file, 'banners');
         setImageUrl(downloadURL);
       } catch (uploadError: any) {
-        console.error("Image upload failed:", uploadError);
+        console.error("Upload failed:", uploadError);
         toast({
           variant: "destructive",
           title: "Upload Failed",
-          description: uploadError.message || "There was a problem uploading your image. Please try again."
+          description: uploadError.message || "There was a problem with the upload. Please try again."
         })
         setImagePreview(null);
         setImageUrl("");
@@ -102,6 +96,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
 
   return (
      <form ref={formRef} action={action} className="space-y-4">
+      {/* Hidden input to hold the uploaded image URL */}
+      <input type="hidden" name="imageUrl" value={imageUrl} />
+
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />
@@ -137,6 +134,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
             <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
           </div>
         </div>
+        {state?.error && typeof state.error !== 'string' && 'imageUrl' in state.error && (
+            <p className="text-sm text-destructive">{state.error.imageUrl[0]}</p>
+        )}
       </div>
       <div className="space-y-2">
         <Label htmlFor="productId">Link to Product</Label>
@@ -154,7 +154,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         </Select>
       </div>
       <SubmitButton isUploading={isUploading} isFormPending={isPending} />
-      {error && 'error' in error && <p className="text-sm text-destructive">{error.error as string}</p>}
+      {state?.error && typeof state.error === 'string' && <p className="text-sm text-destructive">{state.error}</p>}
     </form>
   )
 }

@@ -11,7 +11,7 @@ import admin from 'firebase-admin';
 const bannerSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   subtitle: z.string().min(1, { message: "Subtitle is required" }),
-  imageUrl: z.string().url({ message: 'A valid image URL is required' }),
+  imageUrl: z.string().url({ message: 'An uploaded image is required.' }),
   productId: z.string().min(1, { message: "A product must be linked" }),
 });
 
@@ -23,8 +23,8 @@ export async function addBanner(prevState: unknown, formData: FormData) {
   const result = bannerSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (result.success === false) {
-    console.error("Banner validation error:", result.error.formErrors);
-    return { error: "Invalid data provided. Please check all fields." };
+    console.error("Banner validation error:", result.error.formErrors.fieldErrors);
+    return { error: result.error.formErrors.fieldErrors };
   }
 
   try {
