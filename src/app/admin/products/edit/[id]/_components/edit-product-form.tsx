@@ -21,6 +21,7 @@ import { useFormStatus } from "react-dom";
 import { useState, useRef } from "react";
 import Image from "next/image";
 import { uploadFile } from "@/lib/storage";
+import { Progress } from "@/components/ui/progress";
 
 type EditProductFormProps = {
   categories: Category[];
@@ -33,9 +34,9 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
     return (
         <Button type="submit" disabled={isDisabled} className="w-full">
             {isUploading 
-                ? <><UploadCloud className="animate-bounce" /> Uploading Image...</>
+                ? <><UploadCloud className="animate-bounce mr-2" /> Uploading Image...</>
                 : pending 
-                ? <><Loader2 className="animate-spin" /> Saving Changes...</>
+                ? <><Loader2 className="animate-spin mr-2" /> Saving Changes...</>
                 : "Save Changes"
             }
         </Button>
@@ -49,23 +50,18 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
   const [imagePreview, setImagePreview] = useState<string | null>(product.image);
   const [imageUrl, setImageUrl] = useState<string>(product.image);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Show preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-      
-      // Upload file
+      setImagePreview(URL.createObjectURL(file));
       setIsUploading(true);
+      setUploadProgress(0);
       try {
-        const url = await uploadFile(file, 'products');
+        const url = await uploadFile(file, 'products', setUploadProgress);
         setImageUrl(url); // Set the URL for the hidden input
       } catch (uploadError) {
         console.error("Image upload failed:", uploadError);
@@ -127,21 +123,27 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
                 <ImageIcon className="w-16 h-16 text-muted-foreground" />
             )}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 flex-grow">
             <Input 
                 id="image" 
                 name="image" 
                 type="file" 
-                // Not required for editing
                 accept="image/*"
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleImageChange}
+                disabled={isUploading}
             />
-             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                 Change Image
             </Button>
-            <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1 aspect ratio)</p>
+            <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1)</p>
+            {isUploading && (
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Uploading... {Math.round(uploadProgress)}%</p>
+                <Progress value={uploadProgress} className="w-full h-2" />
+              </div>
+            )}
           </div>
         </div>
          {error?.imageUrl && !imageUrl && <div className="text-destructive text-sm">{error.imageUrl[0]}</div>}

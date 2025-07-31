@@ -46,6 +46,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { uploadFile } from "@/lib/storage";
+import { Progress } from "@/components/ui/progress";
 
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: () => void }) {
@@ -54,6 +55,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const [error, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
     const result = await addBanner(prevState, formData);
@@ -71,8 +73,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
     if (file) {
       setImagePreview(URL.createObjectURL(file));
       setIsUploading(true);
+      setUploadProgress(0);
       try {
-        const url = await uploadFile(file, 'banners');
+        const url = await uploadFile(file, 'banners', setUploadProgress);
         setImageUrl(url);
       } catch (uploadError) {
         console.error("Image upload failed:", uploadError);
@@ -109,7 +112,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
                 <ImageIcon className="w-16 h-16 text-muted-foreground" />
             )}
           </div>
-           <div className="space-y-2">
+           <div className="space-y-2 flex-grow">
             <Input 
                 id="imageFile" 
                 name="imageFile" // This input is just for file selection, not submission
@@ -119,11 +122,18 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
                 className="hidden"
                 ref={fileInputRef}
                 onChange={handleImageChange}
+                disabled={isUploading}
             />
-             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
                 Choose Image
             </Button>
             <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
+            {isUploading && (
+                <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Uploading... {Math.round(uploadProgress)}%</p>
+                    <Progress value={uploadProgress} className="w-full h-2" />
+                </div>
+            )}
           </div>
         </div>
       </div>
@@ -154,9 +164,9 @@ function SubmitButton({ isUploading, isPending }: { isUploading: boolean, isPend
     return (
         <Button type="submit" disabled={isDisabled}>
             {isUploading 
-                ? <><UploadCloud className="animate-bounce" /> Uploading Image...</>
+                ? <><UploadCloud className="animate-bounce mr-2" /> Uploading Image...</>
                 : isPending 
-                ? <><Loader2 className="animate-spin" /> Adding Banner...</>
+                ? <><Loader2 className="animate-spin mr-2" /> Adding Banner...</>
                 : "Add Banner"
             }
         </Button>

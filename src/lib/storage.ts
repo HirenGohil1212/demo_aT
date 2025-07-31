@@ -1,23 +1,44 @@
 
 'use client'; 
 
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "@/lib/firebase";
 import { v4 as uuidv4 } from "uuid";
 
-// Uploads a file directly to Firebase Storage and returns the public download URL.
-export const uploadFile = async (file: File, path: string): Promise<string> => {
-    if (!file) {
-        throw new Error("No file provided for upload.");
-    }
-    // 1. Create a unique path for the file in Firebase Storage
-    const storagePath = `${path}/${uuidv4()}-${file.name}`;
-    const storageRef = ref(storage, storagePath);
+// Uploads a file to Firebase Storage with progress tracking and returns the public download URL.
+export const uploadFile = (
+    file: File, 
+    path: string,
+    onProgress: (progress: number) => void
+): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        if (!file) {
+            return reject(new Error("No file provided for upload."));
+        }
+        
+        const storagePath = `${path}/${uuidv4()}-${file.name}`;
+        const storageRef = ref(storage, storagePath);
 
-    // 2. Upload the file's raw data directly to the cloud
-    await uploadBytes(storageRef, file);
+        const uploadTask = uploadBytesResumable(storageRef, file);
 
-    // 3. Get the permanent, public download URL for the uploaded file
-    const downloadUrl = await getDownloadURL(storageRef);
-    return downloadUrl;
+        uploadTask.on('state_changed', 
+            (snapshot) => {
+                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                onProgress(progress);
+            }, 
+            (error) => {
+                console.error("Upload failed:", error);
+                reject(error);
+            }, 
+            async () => {
+                try {
+                    const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                    resolve(downloadUrl);
+                } catch (error) {
+                    console.error("Failed to get download URL:", error);
+                    reject(error);
+                }
+            }
+        );
+    });
 };
