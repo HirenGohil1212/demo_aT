@@ -15,7 +15,7 @@ export default function CartPage() {
 
   const handleWhatsAppOrder = () => {
     // Replace with your actual WhatsApp business number, including the country code without '+' or '00'
-    const adminPhoneNumber = '911234567890'; 
+    const adminPhoneNumber = '917990305570'; 
     
     let message = 'Hello LuxeLiquor, I would like to place an order for the following items:\n\n';
     
