@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { Banner } from '@/types';
@@ -12,6 +13,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from '@/components/ui/carousel';
+import Autoplay from "embla-carousel-autoplay"
 
 type HomeCarouselProps = {
     banners: Banner[];
@@ -22,6 +24,10 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
         return null;
     }
     
+    const plugin = React.useRef(
+      Autoplay({ delay: 5000, stopOnInteraction: true, stopOnHover: true })
+    )
+    
     return (
         <section className="w-full relative">
           <Carousel
@@ -30,6 +36,9 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
               align: 'start',
               loop: true,
             }}
+            plugins={[plugin.current]}
+            onMouseEnter={plugin.current.stop}
+            onMouseLeave={plugin.current.reset}
           >
             <CarouselContent>
               {banners.map((banner, index) => (
