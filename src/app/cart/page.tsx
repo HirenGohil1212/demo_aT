@@ -116,10 +116,6 @@ export default function CartPage() {
                 <span>Subtotal ({itemCount} {itemCount > 1 ? 'items' : 'item'})</span>
                 <span>INR {totalPrice.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between text-muted-foreground">
-                <span>Shipping & Taxes</span>
-                <span>Calculated at next step</span>
-              </div>
               <div className="flex justify-between font-bold text-xl border-t pt-4 mt-2">
                 <span>Total</span>
                 <span>INR {totalPrice.toFixed(2)}</span>
