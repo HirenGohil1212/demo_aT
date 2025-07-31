@@ -8,6 +8,7 @@ import type { AppSettings } from '@/types';
 
 const defaultSettings: AppSettings = {
   allowSignups: true,
+  whatsappNumber: '917990305570',
 };
 
 /**
@@ -24,7 +25,9 @@ export async function getSettings(): Promise<AppSettings> {
       await db.collection('settings').doc('config').set(defaultSettings);
       return defaultSettings;
     }
-    return settingsDoc.data() as AppSettings;
+    const data = settingsDoc.data();
+    // Merge with defaults to ensure new settings are present
+    return { ...defaultSettings, ...data } as AppSettings;
   } catch (error) {
     console.error("Error in getSettings:", error);
     // Return default settings on error to avoid crashing the app
@@ -41,6 +44,7 @@ export async function updateSettings(prevState: unknown, formData: FormData) {
     // A switch sends "on" when checked, and nothing when unchecked.
     // We preprocess this to a boolean.
     allowSignups: z.preprocess((val) => val === 'on', z.boolean().default(false)),
+    whatsappNumber: z.string().min(10, "WhatsApp number must be at least 10 digits").regex(/^\d+$/, "WhatsApp number must contain only digits"),
   });
 
   const result = settingsSchema.safeParse(Object.fromEntries(formData.entries()));
@@ -54,9 +58,11 @@ export async function updateSettings(prevState: unknown, formData: FormData) {
     revalidatePath('/admin/settings');
     revalidatePath('/signup');
     revalidatePath('/login');
+    revalidatePath('/cart');
     revalidatePath('/api/settings'); // Revalidate the API route
   } catch (error) {
     console.error("Error in updateSettings:", error);
     return { message: "Failed to update settings due to a server error." };
   }
 }
+
