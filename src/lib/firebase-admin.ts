@@ -4,15 +4,19 @@ import { getApps } from 'firebase-admin/app';
 
 const serviceAccount = process.env.SERVICE_ACCOUNT_KEY
   ? JSON.parse(process.env.SERVICE_ACCOUNT_KEY)
-  : require('../../serviceAccountKey.json');
+  : undefined;
 
-const storageBucket = 'fir-5d78f.appspot.com';
+const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
 if (!getApps().length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    storageBucket,
-  });
+    if (!serviceAccount) {
+        console.warn("SERVICE_ACCOUNT_KEY environment variable is not set. Admin features will be disabled.");
+    } else {
+         admin.initializeApp({
+            credential: admin.credential.cert(serviceAccount),
+            storageBucket,
+        });
+    }
 }
 
 const db = admin.firestore();
