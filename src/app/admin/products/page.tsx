@@ -34,6 +34,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 function DeleteProductButton({ productId, onDelete }: { productId: string, onDelete: (id: string) => void }) {
@@ -82,6 +83,46 @@ function DeleteProductButton({ productId, onDelete }: { productId: string, onDel
     )
 }
 
+function ProductTableSkeleton() {
+    return (
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead className="hidden sm:table-cell">Image</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead className="hidden md:table-cell">Category</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell className="hidden sm:table-cell">
+                            <Skeleton className="h-[50px] w-[50px] rounded-md" />
+                        </TableCell>
+                        <TableCell>
+                            <Skeleton className="h-5 w-3/4" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                             <Skeleton className="h-5 w-20" />
+                        </TableCell>
+                        <TableCell>
+                            <Skeleton className="h-5 w-16" />
+                        </TableCell>
+                         <TableCell className="text-right">
+                            <div className="flex justify-end items-center gap-2">
+                                <Skeleton className="h-8 w-8" />
+                                <Skeleton className="h-8 w-8" />
+                            </div>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
+
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -121,9 +162,7 @@ export default function ProductsPage() {
       </CardHeader>
       <CardContent>
         {loading ? (
-             <div className="flex justify-center items-center h-48">
-                <Loader2 className="animate-spin text-primary" size={32} />
-             </div>
+             <ProductTableSkeleton />
         ) : (
         <Table>
           <TableHeader>

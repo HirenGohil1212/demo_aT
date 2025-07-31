@@ -35,7 +35,6 @@ import { useState, useRef, useEffect, useTransition } from "react";
 import Image from "next/image";
 import { getProducts } from "@/actions/product-actions";
 import { getBanners } from "@/actions/banner-actions";
-import { uploadFile } from "@/lib/storage";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Skeleton } from "@/components/ui/skeleton";
 
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: () => void }) {
@@ -208,6 +208,39 @@ function DeleteBannerButton({ bannerId, onDelete }: { bannerId: string, onDelete
     )
 }
 
+function BannerTableSkeleton() {
+    return (
+        <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Image</TableHead>
+                <TableHead>Title</TableHead>
+                <TableHead>Linked Product</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell>
+                           <Skeleton className="w-[100px] h-[50px] rounded-md" />
+                        </TableCell>
+                        <TableCell>
+                             <Skeleton className="h-4 w-3/4" />
+                        </TableCell>
+                        <TableCell>
+                             <Skeleton className="h-4 w-1/2" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                             <Skeleton className="h-8 w-8 ml-auto" />
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
+
 
 export default function BannersPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -256,9 +289,7 @@ export default function BannersPage() {
         </CardHeader>
         <CardContent>
            {loading ? (
-            <div className="flex justify-center items-center h-24">
-                <Loader2 className="animate-spin" />
-            </div>
+            <BannerTableSkeleton />
            ) : (
           <Table>
             <TableHeader>

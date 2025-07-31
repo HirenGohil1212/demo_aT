@@ -33,6 +33,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: () => void }) {
     const formRef = useRef<HTMLFormElement>(null);
@@ -110,6 +111,31 @@ function DeleteCategoryButton({ category, onDelete }: { category: Category, onDe
     )
 }
 
+function CategoryTableSkeleton() {
+    return (
+         <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell>
+                           <Skeleton className="h-5 w-32" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                           <Skeleton className="h-8 w-8 ml-auto" />
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    )
+}
+
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -150,9 +176,7 @@ export default function CategoriesPage() {
         </CardHeader>
         <CardContent>
           {loading ? (
-             <div className="flex justify-center items-center h-24">
-                <Loader2 className="animate-spin" />
-            </div>
+             <CategoryTableSkeleton />
           ) : (
           <Table>
             <TableHeader>
