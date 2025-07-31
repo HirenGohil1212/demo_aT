@@ -30,7 +30,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Image as ImageIcon, Trash2 } from "lucide-react";
-import { useFormStatus } from "react-dom";
 import { useState, useRef, useEffect, useTransition } from "react";
 import Image from "next/image";
 import { getProducts } from "@/actions/product-actions";
@@ -45,10 +44,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
+import { uploadFile } from "@/lib/storage";
 
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: () => void }) {
@@ -61,6 +58,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
 
 
   const [error, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
+    if (!imageUrl) {
+        return { error: "Banner image is required and must be uploaded." };
+    }
     // Manually set imageUrl on formData before calling the action
     formData.set('imageUrl', imageUrl);
     const result = await addBanner(prevState, formData);
@@ -80,9 +80,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
       setIsUploading(true);
 
       try {
-        const storageRef = ref(storage, `banners/${uuidv4()}-${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        const downloadURL = await uploadFile(file, 'banners');
         setImageUrl(downloadURL);
       } catch (uploadError: any) {
         console.error("Image upload failed:", uploadError);
@@ -93,6 +91,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         })
         setImagePreview(null);
         setImageUrl("");
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
       } finally {
         setIsUploading(false);
       }
@@ -138,7 +139,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
                 disabled={isUploading}
             />
              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                {isUploading ? "Uploading..." : "Choose Image"}
+                {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Choose Image"}
             </Button>
             <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
           </div>
@@ -159,20 +160,20 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
           </SelectContent>
         </Select>
       </div>
-      <SubmitButton isUploading={isUploading} isPending={isPending} />
+      <SubmitButton isUploading={isUploading} isFormPending={isPending} />
       {error && 'error' in error && <p className="text-sm text-destructive">{error.error as string}</p>}
     </form>
   )
 }
 
 
-function SubmitButton({ isUploading, isPending }: { isUploading: boolean, isPending: boolean }) {
-    const isDisabled = isUploading || isPending;
+function SubmitButton({ isUploading, isFormPending }: { isUploading: boolean, isFormPending: boolean }) {
+    const isDisabled = isUploading || isFormPending;
     return (
         <Button type="submit" disabled={isDisabled}>
             {isUploading 
-                ? <><Loader2 className="animate-spin mr-2" /> Uploading...</>
-                : isPending 
+                ? <><Loader2 className="animate-spin mr-2" /> Waiting for upload...</>
+                : isFormPending
                 ? <><Loader2 className="animate-spin mr-2" /> Adding Banner...</>
                 : "Add Banner"
             }
@@ -233,13 +234,18 @@ export default function BannersPage() {
 
   async function loadData() {
       setLoading(true);
-      const [bannersData, productsData] = await Promise.all([
-        getBanners(),
-        getProducts(),
-      ]);
-      setBanners(bannersData);
-      setProducts(productsData);
-      setLoading(false);
+      try {
+        const [bannersData, productsData] = await Promise.all([
+          getBanners(),
+          getProducts(),
+        ]);
+        setBanners(bannersData);
+        setProducts(productsData);
+      } catch (error) {
+        console.error("Failed to load page data:", error);
+      } finally {
+        setLoading(false);
+      }
   }
 
   useEffect(() => {

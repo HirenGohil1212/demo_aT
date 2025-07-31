@@ -20,10 +20,8 @@ import { Loader2, Image as ImageIcon } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { v4 as uuidv4 } from "uuid";
 import { useToast } from "@/hooks/use-toast";
+import { uploadFile } from "@/lib/storage";
 
 
 type ProductFormProps = {
@@ -36,7 +34,7 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
     return (
         <Button type="submit" disabled={isDisabled} className="w-full">
             {isUploading 
-                ? <><Loader2 className="animate-spin mr-2" /> Uploading...</>
+                ? <><Loader2 className="animate-spin mr-2" /> Waiting for upload...</>
                 : pending 
                 ? <><Loader2 className="animate-spin mr-2" /> Adding Product...</>
                 : "Add Product"
@@ -47,6 +45,9 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState((prevState: unknown, formData: FormData) => {
+    if (!imageUrl) {
+        return { imageUrl: ["Product image is required and must be uploaded."] };
+    }
     formData.set('imageUrl', imageUrl);
     return addProduct(prevState, formData);
   }, {});
@@ -65,9 +66,7 @@ export function ProductForm({ categories }: ProductFormProps) {
       setIsUploading(true);
       
       try {
-        const storageRef = ref(storage, `products/${uuidv4()}-${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        const downloadURL = await uploadFile(file, 'products');
         setImageUrl(downloadURL); // Set the URL for the hidden input
       } catch (uploadError: any) {
         console.error("Image upload failed:", uploadError);
@@ -78,6 +77,9 @@ export function ProductForm({ categories }: ProductFormProps) {
         })
         setImagePreview(null);
         setImageUrl("");
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
       } finally {
         setIsUploading(false);
       }
@@ -151,7 +153,7 @@ export function ProductForm({ categories }: ProductFormProps) {
                 disabled={isUploading}
             />
              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                {isUploading ? "Uploading..." : "Choose Image"}
+                {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Choose Image"}
             </Button>
             <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1)</p>
           </div>
