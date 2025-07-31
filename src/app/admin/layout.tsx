@@ -21,7 +21,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/firebase";
-import { SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, isAdmin, loading } = useUser();
@@ -175,8 +175,9 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </header>
            <main className="p-4 sm:p-6">{children}</main>
         </SidebarInset>
-         {/* Mobile Menu Sheet */}
-        <Sidebar>
+        
+        {/* Mobile Menu Sheet */}
+        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetContent side="left" className="md:hidden flex flex-col p-0">
                 <SheetHeader className="border-b p-4">
                     <SheetTitle>
@@ -199,7 +200,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     </Button>
                 </div>
             </SheetContent>
-        </Sidebar>
+        </Sheet>
       </SidebarProvider>
     );
   }
