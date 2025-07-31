@@ -34,7 +34,7 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
             <CarouselContent>
               {banners.map((banner) => (
                 <CarouselItem key={banner.id}>
-                  <div className="relative h-[60vh] md:h-[70vh] w-full text-white">
+                  <div className="relative h-[50vh] sm:h-[60vh] md:h-[70vh] w-full text-white">
                      <Image
                         src={banner.imageUrl}
                         alt={banner.title}
