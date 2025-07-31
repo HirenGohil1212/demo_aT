@@ -79,8 +79,8 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImagePreview(URL.createObjectURL(file));
       setIsUploading(true);
+      setImagePreview(URL.createObjectURL(file));
 
       try {
         const downloadURL = await uploadFile(file, 'banners');
