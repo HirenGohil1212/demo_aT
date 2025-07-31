@@ -16,14 +16,19 @@ export const uploadFile = async (file: File, path: string): Promise<string> => {
         throw new Error("No file provided for upload.");
     }
     
-    // Create a unique path for the file in Firebase Storage
     const storagePath = `${path}/${uuidv4()}-${file.name}`;
     const storageRef = ref(storage, storagePath);
 
-    // Upload the file's raw data directly to the cloud
-    await uploadBytes(storageRef, file);
+    try {
+        // Upload the file's raw data directly to the cloud
+        await uploadBytes(storageRef, file);
 
-    // Get the permanent, public download URL for the uploaded file
-    const downloadUrl = await getDownloadURL(storageRef);
-    return downloadUrl;
+        // Get the permanent, public download URL for the uploaded file
+        const downloadUrl = await getDownloadURL(storageRef);
+        return downloadUrl;
+    } catch (error) {
+        console.error(`Firebase Storage upload failed for path: ${storagePath}`, error);
+        // Re-throw a more specific error to be caught by the calling component
+        throw new Error("Failed to upload file to Firebase Storage.");
+    }
 };

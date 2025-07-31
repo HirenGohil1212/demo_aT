@@ -58,8 +58,11 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
 
 
   const [error, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
-    if (!imageUrl) {
+    if (!imageUrl && !isUploading) {
         return { error: "Banner image is required and must be uploaded." };
+    }
+    if (isUploading) {
+        return { error: "Please wait for the image to finish uploading." };
     }
     // Manually set imageUrl on formData before calling the action
     formData.set('imageUrl', imageUrl);
@@ -87,7 +90,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         toast({
           variant: "destructive",
           title: "Upload Failed",
-          description: "There was a problem uploading your image. Please try again."
+          description: uploadError.message || "There was a problem uploading your image. Please try again."
         })
         setImagePreview(null);
         setImageUrl("");
@@ -105,9 +108,6 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
 
   return (
      <form ref={formRef} action={action} className="space-y-4">
-      {/* Hidden input to hold the uploaded image URL */}
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />
@@ -131,7 +131,6 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
                 id="imageFile" 
                 name="imageFile" 
                 type="file" 
-                required 
                 accept="image/*"
                 className="hidden"
                 ref={fileInputRef}

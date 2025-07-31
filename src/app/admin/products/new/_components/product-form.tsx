@@ -45,8 +45,11 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 
 export function ProductForm({ categories }: ProductFormProps) {
   const [error, action] = useActionState((prevState: unknown, formData: FormData) => {
-    if (!imageUrl) {
+    if (!imageUrl && !isUploading) {
         return { imageUrl: ["Product image is required and must be uploaded."] };
+    }
+    if (isUploading) {
+        return { imageUrl: ["Please wait for the image to finish uploading."] };
     }
     formData.set('imageUrl', imageUrl);
     return addProduct(prevState, formData);
@@ -73,8 +76,8 @@ export function ProductForm({ categories }: ProductFormProps) {
         toast({
           variant: "destructive",
           title: "Upload Failed",
-          description: "There was a problem uploading your image. Please try again."
-        })
+          description: uploadError.message || "There was a problem uploading your image. Please try again."
+        });
         setImagePreview(null);
         setImageUrl("");
         if (fileInputRef.current) {
@@ -91,9 +94,6 @@ export function ProductForm({ categories }: ProductFormProps) {
 
   return (
     <form action={action} className="space-y-6">
-       {/* Hidden input to hold the uploaded image URL */}
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-      
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required />
@@ -143,9 +143,8 @@ export function ProductForm({ categories }: ProductFormProps) {
           <div className="space-y-2 flex-grow">
             <Input 
                 id="image" 
-                name="image" 
+                name="imageFile" 
                 type="file" 
-                required 
                 accept="image/*"
                 className="hidden"
                 ref={fileInputRef}

@@ -46,8 +46,11 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 export function EditProductForm({ categories, product }: EditProductFormProps) {
   const updateProductWithId = updateProduct.bind(null, product.id);
   const [error, action] = useActionState((prevState: unknown, formData: FormData) => {
-    if (!imageUrl) {
+    if (!imageUrl && !isUploading) {
         return { imageUrl: ["Product image is required and must be uploaded."] };
+    }
+     if (isUploading) {
+        return { imageUrl: ["Please wait for the image to finish uploading."] };
     }
     formData.set('imageUrl', imageUrl);
     return updateProductWithId(prevState, formData);
@@ -74,9 +77,11 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
         toast({
           variant: "destructive",
           title: "Upload Failed",
-          description: "There was a problem uploading your image. Please try again."
-        })
-        setImagePreview(product.image); // Revert preview on fail
+          description: uploadError.message || "There was a problem uploading your image. Please try again."
+        });
+        // Revert preview on fail
+        setImagePreview(product.image);
+        setImageUrl(product.image);
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }
@@ -88,9 +93,6 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
 
   return (
     <form action={action} className="space-y-6">
-       {/* Hidden input to hold the uploaded image URL */}
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-      
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required defaultValue={product.name} />
@@ -140,7 +142,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
           <div className="space-y-2 flex-grow">
             <Input 
                 id="image" 
-                name="image" 
+                name="imageFile"
                 type="file" 
                 accept="image/*"
                 className="hidden"
