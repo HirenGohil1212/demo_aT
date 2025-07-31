@@ -102,15 +102,20 @@ export default function Header() {
             )}
         </nav>
 
-        {/* Mobile Header Layout */}
-        <div className="md:hidden flex-1 flex justify-center">
+        {/* Mobile Header Layout: Spacer for centering logo */}
+        <div className="md:hidden flex-1 flex justify-start">
+             {/* This div is intentionally left empty to push the logo to the center */}
+        </div>
+
+        {/* Mobile & Desktop Logo */}
+        <div className="flex-1 flex justify-center md:hidden">
             <Link href="/" className="font-headline text-2xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
                 LuxeLiquor
             </Link>
         </div>
 
 
-        <div className="flex items-center gap-2 md:gap-4 absolute right-4 md:static">
+        <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
           <Button asChild variant="outline" size="icon" className="relative border-accent text-accent hover:bg-accent hover:text-accent-foreground">
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -123,35 +128,37 @@ export default function Header() {
             </Link>
           </Button>
 
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" className="rounded-full">
-                  <UserIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+          <div className="hidden md:flex items-center gap-2">
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" className="rounded-full">
+                    <UserIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button asChild>
+                  <Link href="/login">Login</Link>
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
-                  Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div className="hidden md:flex items-center gap-2">
-               <Button asChild>
-                <Link href="/login">Login</Link>
-              </Button>
-              {allowSignups && (
-                <Button asChild variant="outline">
-                    <Link href="/signup">Sign Up</Link>
-                </Button>
-              )}
-            </div>
-          )}
+                {allowSignups && (
+                  <Button asChild variant="outline">
+                      <Link href="/signup">Sign Up</Link>
+                  </Button>
+                )}
+              </>
+            )}
+          </div>
 
 
           <div className="md:hidden">
@@ -163,7 +170,7 @@ export default function Header() {
               </SheetTrigger>
               <SheetContent side="right">
                  <SheetHeader>
-                    <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                    <SheetTitle>Navigation Menu</SheetTitle>
                  </SheetHeader>
                 <div className="flex flex-col gap-6 pt-10">
                 <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary mb-4">
@@ -179,14 +186,17 @@ export default function Header() {
                       Admin
                     </MobileNavLink>
                   )}
-                  <div className="flex flex-col gap-4 mt-4">
+                  <div className="flex flex-col gap-4 mt-4 border-t pt-6">
                      {user ? (
+                       <>
+                        <p className="text-sm text-center text-muted-foreground">{user.email}</p>
                         <Button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}>Logout</Button>
+                       </>
                      ) : (
                         <>
-                            <Button asChild><MobileNavLink href="/login">Login</MobileNavLink></Button>
+                            <Button asChild><Link href="/login" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Login</Link></Button>
                             {allowSignups && (
-                                <Button asChild variant="outline"><MobileNavLink href="/signup">Sign Up</MobileNavLink></Button>
+                                <Button asChild variant="outline"><Link href="/signup" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link></Button>
                             )}
                         </>
                      )}
