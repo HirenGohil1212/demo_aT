@@ -49,7 +49,7 @@ export function ProductForm({ categories }: ProductFormProps) {
         toast({ title: "Success", description: "Image uploaded successfully." });
       } catch (error) {
         console.error("Image upload failed:", error);
-        toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload image. Please try again." });
+        toast({ variant: "destructive", title: "Upload Failed", description: String(error) });
         setImagePreview(null);
         setImageUrl('');
         if (fileInputRef.current) {

@@ -68,8 +68,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         toast({ title: "Success", description: "Image uploaded successfully." });
       } catch (error) {
         console.error("Image upload failed:", error);
-        toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload image. Please try again." });
+        toast({ variant: "destructive", title: "Upload Failed", description: String(error) });
         setImagePreview(null);
+        setImageUrl('');
         if (fileInputRef.current) {
           fileInputRef.current.value = ""; // Reset file input
         }
@@ -127,7 +128,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
             </Button>
             <Input
               id="imageFile"
-              name="imageFile" // Name is not used for submission, just for the ref
+              name="imageFile" 
               type="file"
               accept="image/*"
               ref={fileInputRef}
