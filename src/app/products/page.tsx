@@ -10,6 +10,7 @@ type ProductsPageProps = {
   searchParams: {
     search?: string;
     category?: string;
+    sort?: string;
   };
 };
 
@@ -19,8 +20,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const searchTerm = searchParams.search || '';
   const selectedCategory = searchParams.category || 'All';
+  const sortOrder = searchParams.sort || 'relevance';
 
-  const filteredProducts = allProducts.filter((product) => {
+  let filteredProducts = allProducts.filter((product) => {
     const matchesCategory =
       selectedCategory === 'All' || product.category === selectedCategory;
     const matchesSearch =
@@ -28,6 +30,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       product.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  // Apply sorting
+  if (sortOrder === 'price_asc') {
+    filteredProducts.sort((a, b) => a.price - b.price);
+  } else if (sortOrder === 'price_desc') {
+    filteredProducts.sort((a, b) => b.price - a.price);
+  }
+
 
   return (
     <div className="container mx-auto px-4 py-8">
