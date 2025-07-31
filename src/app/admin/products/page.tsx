@@ -139,13 +139,15 @@ export default function ProductsPage() {
             {products.map((product) => (
               <TableRow key={product.id}>
                 <TableCell className="hidden sm:table-cell">
-                  <Image
-                    src={product.image || "https://placehold.co/600x600.png"}
-                    alt={product.name}
-                    width={50}
-                    height={50}
-                    className="rounded-md object-contain bg-white"
-                  />
+                  <div className="w-[50px] h-[50px] bg-white rounded-md flex items-center justify-center">
+                    <Image
+                      src={product.image || "https://placehold.co/600x600.png"}
+                      alt={product.name}
+                      width={50}
+                      height={50}
+                      className="rounded-md object-contain"
+                    />
+                  </div>
                 </TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
                 <TableCell className="hidden md:table-cell">
