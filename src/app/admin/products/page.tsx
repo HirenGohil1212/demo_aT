@@ -28,7 +28,7 @@ export default async function ProductsPage() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex justify-between items-start">
+        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
             <CardTitle>Products</CardTitle>
             <CardDescription>
@@ -46,16 +46,16 @@ export default async function ProductsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80px]">Image</TableHead>
+              <TableHead className="hidden sm:table-cell">Image</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead className="hidden md:table-cell">Category</TableHead>
               <TableHead>Price</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.map((product) => (
               <TableRow key={product.id}>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <Image
                     src={product.image || "https://placehold.co/600x600.png"}
                     alt={product.name}
@@ -65,7 +65,7 @@ export default async function ProductsPage() {
                   />
                 </TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>
+                <TableCell className="hidden md:table-cell">
                   <Badge variant="outline">{product.category}</Badge>
                 </TableCell>
                 <TableCell>${product.price.toFixed(2)}</TableCell>

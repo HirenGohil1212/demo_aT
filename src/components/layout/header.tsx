@@ -64,8 +64,8 @@ export default function Header() {
   
   return (
     <header className="bg-card shadow-lg sticky top-0 z-40 border-b-2 border-primary/50">
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="font-headline text-3xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
+      <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+        <Link href="/" className="font-headline text-2xl md:text-3xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
           LuxeLiquor
         </Link>
         
@@ -82,10 +82,10 @@ export default function Header() {
             )}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 md:gap-4">
           <Button asChild variant="outline" size="icon" className="relative border-accent text-accent hover:bg-accent hover:text-accent-foreground">
             <Link href="/cart">
-              <ShoppingCart className="h-6 w-6" />
+              <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
               {itemCount > 0 && (
                 <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center text-xs p-1 bg-primary text-primary-foreground">
                   {itemCount}
@@ -99,7 +99,7 @@ export default function Header() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="icon" className="rounded-full">
-                  <UserIcon className="h-6 w-6" />
+                  <UserIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">

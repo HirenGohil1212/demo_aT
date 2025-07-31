@@ -70,7 +70,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background p-4">
       <Card className="w-full max-w-sm">
         <form onSubmit={handleLogin}>
           <CardHeader>

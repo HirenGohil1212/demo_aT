@@ -11,7 +11,7 @@ export default async function SignUpPage() {
 
     if (!settings.allowSignups) {
         return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background">
+            <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background p-4">
                 <Card className="w-full max-w-sm text-center">
                     <CardHeader>
                          <CardTitle className="flex items-center justify-center gap-2 text-xl text-primary">
@@ -33,7 +33,7 @@ export default async function SignUpPage() {
     }
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background">
+    <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background p-4">
       <Card className="w-full max-w-sm">
           <CardHeader>
             <CardTitle className="text-2xl text-primary">Create an Account</CardTitle>

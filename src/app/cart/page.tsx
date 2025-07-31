@@ -38,7 +38,7 @@ export default function CartPage() {
     return (
       <div className="container mx-auto px-4 py-12 flex flex-col items-center justify-center text-center min-h-[calc(100vh-400px)]">
         <ShoppingCart className="mx-auto h-24 w-24 text-muted-foreground mb-6" />
-        <h1 className="font-headline text-4xl font-bold text-primary mb-4">Your Cart is Empty</h1>
+        <h1 className="font-headline text-3xl md:text-4xl font-bold text-primary mb-4">Your Cart is Empty</h1>
         <p className="text-muted-foreground mb-8 max-w-md">It seems you haven't added any spirits to your cart yet. Explore our collection and find your new favorite.</p>
         <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
           <Link href="/products">
@@ -52,11 +52,11 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="font-headline text-4xl font-bold text-center mb-12 text-primary">Your Shopping Cart</h1>
+      <h1 className="font-headline text-3xl md:text-4xl font-bold text-center mb-8 md:mb-12 text-primary">Your Shopping Cart</h1>
       <div className="grid lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map(({ product, quantity }) => (
-            <Card key={product.id} className="flex items-center p-4 shadow-sm hover:shadow-md transition-shadow">
+            <Card key={product.id} className="flex items-start sm:items-center p-4 shadow-sm hover:shadow-md transition-shadow flex-col sm:flex-row gap-4">
               <div className="w-24 h-24 relative rounded-md overflow-hidden mr-6 flex-shrink-0">
                 <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={`${product.category} bottle`} />
               </div>
@@ -73,8 +73,8 @@ export default function CartPage() {
                   </Button>
                 </div>
               </div>
-              <div className="text-right ml-4">
-                <p className="font-bold text-lg">${(product.price * quantity).toFixed(2)}</p>
+              <div className="text-right ml-auto sm:ml-4">
+                <p className="font-bold text-lg mb-2 sm:mb-0">${(product.price * quantity).toFixed(2)}</p>
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive mt-2" onClick={() => removeFromCart(product.id)}>
                   <Trash2 className="h-5 w-5" />
                 </Button>
