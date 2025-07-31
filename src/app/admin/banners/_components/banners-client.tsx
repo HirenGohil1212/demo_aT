@@ -108,7 +108,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
       </div>
       <div className="space-y-2">
         <Label htmlFor="imageFile">Banner Image</Label>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <div className="w-48 h-24 border rounded-md flex items-center justify-center bg-muted/30 flex-shrink-0">
             {imagePreview ? (
               <Image src={imagePreview} alt="Image Preview" width={192} height={96} className="object-cover w-full h-full rounded-md" />
