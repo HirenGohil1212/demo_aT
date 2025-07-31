@@ -7,13 +7,13 @@ import { getStorage } from "firebase/storage";
 // Your web app's Firebase configuration is loaded from environment variables
 // This is a public configuration and is safe to expose.
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyA4wClnjyaAG7Fq4D1gDJ1EFk9DtjOuJtY",
+  authDomain: "fir-5d78f.firebaseapp.com",
+  projectId: "fir-5d78f",
+  storageBucket: "fir-5d78f.appspot.com",
+  messagingSenderId: "31823748514",
+  appId: "1:31823748514:web:71afefa9f1b0e294b466fb",
+  measurementId: "G-DLZXNPR7CG"
 };
 
 // Initialize Firebase
