@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Image as ImageIcon, Trash2, Upload } from "lucide-react";
-import { useState, useRef, useTransition } from "react";
+import { useState, useRef, useTransition, useActionState, useEffect } from "react";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -38,13 +38,35 @@ import { useToast } from "@/hooks/use-toast";
 import { uploadFile } from "@/lib/storage";
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: (newBanner: Banner) => void }) {
+  const [state, formAction, isPending] = useActionState(addBanner, undefined);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
-  const [isSubmitting, startSubmitting] = useTransition();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (state?.success && state.banner) {
+      toast({ title: "Success", description: "New banner has been added." });
+      onBannerAdded(state.banner as Banner);
+      formRef.current?.reset();
+      setImagePreview(null);
+      setImageUrl('');
+      if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+      }
+    } else if (state?.error) {
+       const errorMessages = Object.values(state.error).flat().join(" \n");
+       toast({
+          variant: "destructive",
+          title: "Error adding banner",
+          description: errorMessages,
+       });
+    }
+  }, [state, onBannerAdded, toast]);
+
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -69,38 +91,11 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
       }
     }
   };
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    
-    startSubmitting(async () => {
-        const result = await addBanner(undefined, formData);
-        
-        if (result?.success && result.banner) {
-          toast({ title: "Success", description: "New banner has been added." });
-          onBannerAdded(result.banner as Banner);
-          formRef.current?.reset();
-          setImagePreview(null);
-          setImageUrl('');
-          if (fileInputRef.current) {
-              fileInputRef.current.value = "";
-          }
-        } else if (result?.error) {
-           const errorMessages = Object.values(result.error).flat().join(" \n");
-           toast({
-              variant: "destructive",
-              title: "Error adding banner",
-              description: errorMessages,
-           });
-        }
-    });
-  };
   
-  const isSubmitDisabled = isUploading || isSubmitting || !imageUrl;
+  const isSubmitDisabled = isUploading || isPending || !imageUrl;
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="imageUrl" value={imageUrl} />
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
@@ -153,7 +148,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         </Select>
       </div>
        <Button type="submit" disabled={isSubmitDisabled}>
-          {isSubmitting && <Loader2 className="animate-spin mr-2" />}
+          {isPending && <Loader2 className="animate-spin mr-2" />}
           {isUploading ? "Waiting for upload..." : "Add Banner"}
       </Button>
     </form>

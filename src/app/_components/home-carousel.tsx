@@ -13,6 +13,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from '@/components/ui/carousel';
 
 type HomeCarouselProps = {
@@ -20,17 +21,28 @@ type HomeCarouselProps = {
 }
 
 export function HomeCarousel({ banners }: HomeCarouselProps) {
-    if (banners.length === 0) {
-        return null;
-    }
+    const [api, setApi] = React.useState<CarouselApi>()
     
     const plugin = React.useRef(
         Autoplay({ delay: 5000, stopOnInteraction: true, stopOnMouseEnter: true })
     );
+
+    // This effect re-initializes the carousel when the number of banners changes.
+    // This is a robust way to handle dynamic content and avoid HMR issues.
+    React.useEffect(() => {
+      if (api) {
+        api.reInit();
+      }
+    }, [api, banners.length]);
+    
+    if (banners.length === 0) {
+        return null;
+    }
     
     return (
         <section className="w-full relative">
           <Carousel
+            setApi={setApi}
             className="w-full"
             opts={{
               align: 'start',

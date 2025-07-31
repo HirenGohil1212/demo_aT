@@ -67,13 +67,14 @@ export async function addBanner(prevState: unknown, formData: FormData) {
  */
 export async function getBanners(): Promise<Banner[]> {
   try {
-    const snapshot = await db.collection('banners').where("active", "==", true).orderBy("createdAt", "desc").get();
+    // First, fetch all banners ordered by creation date.
+    const snapshot = await db.collection('banners').orderBy("createdAt", "desc").get();
     
     if (snapshot.empty) {
       return [];
     }
     
-    return snapshot.docs.map(doc => {
+    const allBanners = snapshot.docs.map(doc => {
         const data = doc.data();
         const createdAt = data.createdAt;
         return { 
@@ -83,6 +84,10 @@ export async function getBanners(): Promise<Banner[]> {
             createdAt: createdAt?.toDate ? createdAt.toDate().toISOString() : new Date().toISOString()
         } as Banner
     });
+
+    // Then, filter for active banners in the code.
+    // This avoids needing a composite index in Firestore.
+    return allBanners.filter(banner => banner.active);
 
   } catch (error) {
     console.error("Error in getBanners:", error);
