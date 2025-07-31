@@ -8,20 +8,14 @@ export default function Loading() {
       <Skeleton className="h-10 w-1/2 mx-auto mb-8" />
 
       {/* Filters Skeleton */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <Skeleton className="h-10 flex-grow" />
-        <div className="flex flex-col sm:flex-row flex-wrap gap-2 justify-start items-center">
-            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                <Skeleton className="h-10 w-16" />
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-10 w-20" />
-                <Skeleton className="h-10 w-28" />
-            </div>
-            <div className="w-full sm:w-auto sm:ml-auto">
-                <Skeleton className="h-10 w-full sm:w-[180px]" />
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <Skeleton className="h-10 md:col-span-1" />
+        <div className="md:col-span-2 grid sm:grid-cols-2 gap-4">
+          <Skeleton className="h-10" />
+          <Skeleton className="h-10" />
         </div>
       </div>
+
 
       {/* Products Grid Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
