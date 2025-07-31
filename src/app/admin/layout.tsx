@@ -101,7 +101,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                     <PanelLeft />
                     <span className="sr-only">Open Menu</span>
                 </Button>
-                <h2 className="text-xl font-semibold hidden lg:block">Admin Dashboard</h2>
+                <h2 className="text-xl font-semibold">Admin Dashboard</h2>
             </header>
             <main className="p-4 sm:p-6 flex-1">
                 {children}

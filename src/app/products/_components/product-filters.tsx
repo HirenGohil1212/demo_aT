@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 
 type ProductFiltersProps = {
@@ -25,6 +26,7 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+  const isMobile = useIsMobile();
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'All');
@@ -35,21 +37,18 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
     
-    // Handle search term
     if (debouncedSearchTerm) {
       params.set('search', debouncedSearchTerm);
     } else {
       params.delete('search');
     }
     
-    // Handle category
     if (selectedCategory && selectedCategory !== 'All') {
         params.set('category', selectedCategory);
     } else {
         params.delete('category');
     }
 
-    // Handle sort order
     if (sortOrder && sortOrder !== 'relevance') {
       params.set('sort', sortOrder);
     } else {
@@ -59,10 +58,14 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
     replace(`${pathname}?${params.toString()}`);
   }, [debouncedSearchTerm, selectedCategory, sortOrder, pathname, replace, searchParams]);
 
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  }
+
   return (
     <div className="space-y-4 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="relative lg:col-span-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                 type="text"
@@ -72,35 +75,60 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
                 className="pl-10"
                 />
             </div>
+            
+            <div className={isMobile ? "lg:col-span-1" : "hidden"}></div>
 
-             <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="relevance">Relevance</SelectItem>
-                    <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                    <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                </SelectContent>
-            </Select>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:col-span-2 lg:col-span-2 lg:grid-cols-2 gap-4">
+                {isMobile ? (
+                    <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select Category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="All">All Categories</SelectItem>
+                            {categories.map((category) => (
+                                <SelectItem key={category.id} value={category.name}>
+                                    {category.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                ) : null}
+
+
+                <Select value={sortOrder} onValueChange={setSortOrder}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="relevance">Relevance</SelectItem>
+                        <SelectItem value="price_asc">Price: Low to High</SelectItem>
+                        <SelectItem value="price_desc">Price: High to Low</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-            <Button
-                variant={selectedCategory === 'All' ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory('All')}
-            >
-                All
-            </Button>
-            {categories.map((category) => (
+        
+        {!isMobile && (
+             <div className="hidden md:flex flex-wrap items-center gap-2">
                 <Button
-                    key={category.id}
-                    variant={selectedCategory === category.name ? 'default' : 'outline'}
-                    onClick={() => setSelectedCategory(category.name)}
+                    variant={selectedCategory === 'All' ? 'default' : 'outline'}
+                    onClick={() => handleCategoryChange('All')}
                 >
-                    {category.name}
+                    All
                 </Button>
-            ))}
-        </div>
+                {categories.map((category) => (
+                    <Button
+                        key={category.id}
+                        variant={selectedCategory === category.name ? 'default' : 'outline'}
+                        onClick={() => handleCategoryChange(category.name)}
+                    >
+                        {category.name}
+                    </Button>
+                ))}
+            </div>
+        )}
     </div>
   );
 }

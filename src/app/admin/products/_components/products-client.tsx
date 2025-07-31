@@ -98,7 +98,7 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
               <TableHead className="hidden sm:table-cell">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead className="hidden md:table-cell">Category</TableHead>
-              <TableHead>Price</TableHead>
+              <TableHead className="hidden sm:table-cell">Price</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -120,7 +120,7 @@ export function ProductsClient({ initialProducts }: { initialProducts: Product[]
                 <TableCell className="hidden md:table-cell">
                   <Badge variant="outline">{product.category}</Badge>
                 </TableCell>
-                <TableCell>INR {product.price.toFixed(2)}</TableCell>
+                <TableCell className="hidden sm:table-cell">INR {product.price.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
                     <div className="flex justify-end items-center gap-2">
                          <Button asChild variant="outline" size="icon" className="h-8 w-8">
