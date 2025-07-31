@@ -28,6 +28,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               fill
               className="object-cover group-hover:scale-105 transition-transform duration-300"
               data-ai-hint={`${product.category} bottle`}
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           </div>
         </Link>

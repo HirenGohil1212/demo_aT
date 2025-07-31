@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, MessageSquareText } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, totalPrice, itemCount } = useCart();
@@ -57,7 +58,7 @@ export default function CartPage() {
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map(({ product, quantity }) => (
             <Card key={product.id} className="flex items-start sm:items-center p-4 shadow-sm hover:shadow-md transition-shadow flex-col sm:flex-row gap-4">
-              <div className="w-24 h-24 relative rounded-md overflow-hidden mr-6 flex-shrink-0">
+              <div className="w-24 h-24 relative rounded-md overflow-hidden mr-2 sm:mr-6 flex-shrink-0">
                 <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={`${product.category} bottle`} />
               </div>
               <div className="flex-grow">
@@ -73,9 +74,9 @@ export default function CartPage() {
                   </Button>
                 </div>
               </div>
-              <div className="text-right ml-auto sm:ml-4">
+              <div className="text-right ml-auto sm:ml-4 flex flex-col sm:items-end justify-between self-stretch">
                 <p className="font-bold text-lg mb-2 sm:mb-0">₹{(product.price * quantity).toFixed(2)}</p>
-                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive mt-2" onClick={() => removeFromCart(product.id)}>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive mt-auto" onClick={() => removeFromCart(product.id)}>
                   <Trash2 className="h-5 w-5" />
                 </Button>
               </div>

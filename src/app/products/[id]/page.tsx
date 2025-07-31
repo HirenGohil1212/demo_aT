@@ -39,12 +39,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <h1 className="font-headline text-3xl md:text-5xl font-bold text-primary mb-4">
             {product.name}
           </h1>
-          <p className="text-2xl font-bold text-primary mb-2">₹{product.price.toFixed(2)}</p>
+          <p className="text-3xl md:text-4xl font-bold text-primary mb-2">₹{product.price.toFixed(2)}</p>
           <div className="flex items-center text-muted-foreground mb-6">
             <Droplets className="h-4 w-4 mr-2" />
             <span>{product.quantity}ml</span>
           </div>
-          <p className="text-muted-foreground mb-6">{product.description}</p>
+          <p className="text-muted-foreground mb-6 leading-relaxed">{product.description}</p>
           
           {product.details && product.details.length > 0 && (
             <div className="mb-8">

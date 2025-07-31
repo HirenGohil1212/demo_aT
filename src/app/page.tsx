@@ -1,20 +1,13 @@
 
 "use server";
-import Image from 'next/image';
 import Link from 'next/link';
 import { getProducts } from '@/actions/product-actions';
 import { getCategories } from '@/actions/category-actions';
 import { getBanners } from '@/actions/banner-actions';
 import ProductCard from '@/components/product-card';
 import { Button } from '@/components/ui/button';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from '@/components/ui/carousel';
 import { ArrowRight } from 'lucide-react';
+import { HomeCarousel } from './_components/home-carousel';
 
 export default async function Home() {
   const allProducts = await getProducts();
@@ -26,49 +19,7 @@ export default async function Home() {
   return (
     <div>
       {/* Hero Carousel */}
-      {allBanners.length > 0 && (
-        <section className="w-full relative">
-          <Carousel
-            className="w-full"
-            opts={{
-              align: 'start',
-              loop: true,
-            }}
-          >
-            <CarouselContent>
-              {allBanners.map((banner) => (
-                <CarouselItem key={banner.id}>
-                  <div className="relative h-[60vh] md:h-[70vh] w-full text-white">
-                     <Image
-                        src={banner.imageUrl}
-                        alt={banner.title}
-                        fill
-                        priority
-                        className="object-cover brightness-50"
-                        data-ai-hint={`cocktail drink`}
-                      />
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-4">
-                         <h2 className="font-headline text-4xl md:text-6xl font-bold text-primary drop-shadow-lg mb-4">
-                          {banner.title}
-                        </h2>
-                        <p className="text-lg md:text-xl max-w-2xl mb-6 drop-shadow-md">
-                          {banner.subtitle}
-                        </p>
-                        <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                          <Link href={`/products/${banner.productId}`}>
-                            Discover More
-                          </Link>
-                        </Button>
-                      </div>
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex" />
-            <CarouselNext className="hidden sm:flex" />
-          </Carousel>
-        </section>
-      )}
+      <HomeCarousel banners={allBanners} />
 
       <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Featured Products Grid */}
