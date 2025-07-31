@@ -52,10 +52,22 @@ import {
 // For this form, we'll assume they are fetched and passed in.
 type BannerFormProps = {
   products: Product[];
+  onBannerAdded: () => void;
 };
 
-function BannerForm({ products }: BannerFormProps) {
-  const [error, action] = useActionState(addBanner, undefined);
+function BannerForm({ products, onBannerAdded }: BannerFormProps) {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const [error, action] = useActionState(async (prevState: unknown, formData: FormData) => {
+    const result = await addBanner(prevState, formData);
+    if (!result?.error) {
+        onBannerAdded();
+        formRef.current?.reset();
+        setImagePreview(null);
+    }
+    return result;
+  }, undefined);
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,7 +85,7 @@ function BannerForm({ products }: BannerFormProps) {
   };
 
   return (
-     <form action={action} className="space-y-4">
+     <form ref={formRef} action={action} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />
@@ -141,13 +153,16 @@ function SubmitButton() {
     )
 }
 
-function DeleteBannerButton({ bannerId }: { bannerId: string }) {
+function DeleteBannerButton({ bannerId, onDelete }: { bannerId: string, onDelete: (id: string) => void }) {
     const [isPending, startTransition] = useTransition();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     
     const handleDelete = () => {
         startTransition(async () => {
-            await deleteBanner(bannerId);
+            const result = await deleteBanner(bannerId);
+            if (!result?.error) {
+                onDelete(bannerId);
+            }
             setIsDialogOpen(false);
         });
     }
@@ -184,25 +199,29 @@ function DeleteBannerButton({ bannerId }: { bannerId: string }) {
 }
 
 
-// We need a client component to use hooks for fetching data
 export default function BannersPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
 
+  async function loadData() {
+      setLoading(true);
+      const [bannersData, productsData] = await Promise.all([
+        getBanners(),
+        getProducts(),
+      ]);
+      setBanners(bannersData);
+      setProducts(productsData);
+      setLoading(false);
+  }
+
   useEffect(() => {
-    async function loadData() {
-        setLoading(true);
-        const [bannersData, productsData] = await Promise.all([
-          getBanners(),
-          getProducts(),
-        ]);
-        setBanners(bannersData);
-        setProducts(productsData);
-        setLoading(false);
-    }
     loadData();
   }, [])
+
+  const handleBannerDeleted = (deletedBannerId: string) => {
+    setBanners(prevBanners => prevBanners.filter(banner => banner.id !== deletedBannerId));
+  }
 
 
   const productMap = new Map(products.map((p) => [p.id, p]));
@@ -217,7 +236,7 @@ export default function BannersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <BannerForm products={products} />
+          <BannerForm products={products} onBannerAdded={loadData} />
         </CardContent>
       </Card>
 
@@ -257,7 +276,7 @@ export default function BannersPage() {
                     <TableCell className="font-medium">{banner.title}</TableCell>
                     <TableCell>{product?.name || "N/A"}</TableCell>
                     <TableCell className="text-right">
-                       <DeleteBannerButton bannerId={banner.id} />
+                       <DeleteBannerButton bannerId={banner.id} onDelete={handleBannerDeleted} />
                     </TableCell>
                   </TableRow>
                 );

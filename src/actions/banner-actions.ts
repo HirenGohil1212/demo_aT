@@ -70,14 +70,14 @@ export async function addBanner(prevState: unknown, formData: FormData) {
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       active: true,
     });
+    
+    revalidatePath("/admin/banners");
+    revalidatePath("/");
+
   } catch (error) {
     console.error("Error in addBanner:", error);
     return { error: "Failed to add banner due to a server error." };
   }
-
-  revalidatePath("/admin/banners");
-  revalidatePath("/");
-  redirect('/admin/banners');
 }
 
 /**
@@ -154,12 +154,12 @@ export async function deleteBanner(bannerId: string) {
         
         // Delete the banner document from Firestore
         await bannerRef.delete();
+        revalidatePath("/admin/banners");
+        revalidatePath("/");
+        return { success: true };
 
     } catch (error) {
         console.error("Error in deleteBanner:", error);
         return { error: "Failed to delete banner due to a server error." };
     }
-
-    revalidatePath("/admin/banners");
-    revalidatePath("/");
 }
