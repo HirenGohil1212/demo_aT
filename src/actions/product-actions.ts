@@ -6,6 +6,10 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db, storage } from '@/lib/firebase-admin';
 import type { Product } from '@/types';
+import { uploadFile } from '@/lib/storage';
+
+
+const fileSchema = z.instanceof(File).refine(file => file.size > 0, "An image is required.");
 
 // Zod schema for product validation
 const productSchema = z.object({
@@ -14,8 +18,16 @@ const productSchema = z.object({
   price: z.coerce.number().positive({ message: 'Price must be a positive number' }),
   quantity: z.coerce.number().positive({ message: 'Quantity must be a positive number' }),
   category: z.string().min(1, { message: 'Category is required' }),
-  imageUrl: z.string().url({ message: 'An uploaded image is required.' }),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
+});
+
+const addProductSchema = productSchema.extend({
+  imageFile: fileSchema,
+});
+
+const updateProductSchema = productSchema.extend({
+  imageFile: fileSchema.optional(), // Image is optional on update
+  imageUrl: z.string().url().optional(), // Keep existing image if no new file
 });
 
 
@@ -24,14 +36,15 @@ const productSchema = z.object({
  * This is a server action that handles form submission.
  */
 export async function addProduct(prevState: unknown, formData: FormData) {
-  const result = productSchema.safeParse(Object.fromEntries(formData.entries()));
+  const result = addProductSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (result.success === false) {
-    return result.error.formErrors.fieldErrors;
+    return { error: result.error.flatten().fieldErrors };
   }
 
   try {
     const data = result.data;
+    const imageUrl = await uploadFile(data.imageFile, 'products');
 
     await db.collection('products').add({
       name: data.name,
@@ -39,7 +52,7 @@ export async function addProduct(prevState: unknown, formData: FormData) {
       category: data.category,
       price: data.price,
       quantity: data.quantity,
-      image: data.imageUrl,
+      image: imageUrl,
       featured: data.featured || false,
       details: [],
       recipe: null,
@@ -47,7 +60,8 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 
   } catch (error) {
     console.error("Full error in addProduct:", error);
-    return { serverError: ["Failed to add product due to a server error."] };
+    const errorMessage = error instanceof Error ? error.message : "Failed to add product due to a server error.";
+    return { error: { _server: [errorMessage] } };
   }
 
   revalidatePath('/');
@@ -61,33 +75,43 @@ export async function addProduct(prevState: unknown, formData: FormData) {
  */
 export async function updateProduct(id: string, prevState: unknown, formData: FormData) {
   if (!id) {
-    return { serverError: ["Invalid product ID."] };
+    return { error: { _server: ["Invalid product ID."] } };
   }
   
-  const result = productSchema.safeParse(Object.fromEntries(formData.entries()));
+  const result = updateProductSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (result.success === false) {
-    return result.error.formErrors.fieldErrors;
+    return { error: result.error.flatten().fieldErrors };
   }
 
   try {
     const data = result.data;
+    let imageUrl = data.imageUrl;
+
+    // If a new file is uploaded, upload it and get the new URL
+    if (data.imageFile && data.imageFile.size > 0) {
+      imageUrl = await uploadFile(data.imageFile, 'products');
+    }
+
+    if (!imageUrl) {
+        return { error: { imageFile: ["An image is required."] } };
+    }
 
     const productRef = db.collection('products').doc(id);
-
     await productRef.update({
       name: data.name,
       description: data.description,
       category: data.category,
       price: data.price,
       quantity: data.quantity,
-      image: data.imageUrl, // This assumes the imageUrl might change
+      image: imageUrl,
       featured: data.featured || false,
     });
 
   } catch (error) {
     console.error("Full error in updateProduct:", error);
-    return { serverError: ["Failed to update product due to a server error."] };
+    const errorMessage = error instanceof Error ? error.message : "Failed to update product due to a server error.";
+    return { error: { _server: [errorMessage] } };
   }
 
   revalidatePath('/');

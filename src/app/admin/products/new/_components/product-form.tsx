@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useRef, useState, useActionState } from "react";
 import { addProduct } from "@/actions/product-actions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -17,10 +17,8 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Category } from "@/types";
 import { Loader2, Image as ImageIcon } from "lucide-react";
-import { useState, useRef } from "react";
 import Image from "next/image";
 import { useToast } from "@/hooks/use-toast";
-import { uploadFile } from "@/lib/storage";
 
 
 type ProductFormProps = {
@@ -29,71 +27,53 @@ type ProductFormProps = {
 
 
 export function ProductForm({ categories }: ProductFormProps) {
-  const [isSubmitting, startSubmitting] = useTransition();
-  const [error, setError] = useState<Record<string, string[]> | { serverError: string[] } | null>(null);
-  
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [state, formAction, isPending] = useActionState(addProduct, undefined);
+  const formRef = useRef<HTMLFormElement>(null);
   const { toast } = useToast();
+  
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setIsUploading(true);
-      setImagePreview(URL.createObjectURL(file));
-      
-      try {
-        const downloadURL = await uploadFile(file, 'products');
-        setImageUrl(downloadURL);
-      } catch (uploadError: any) {
-        console.error("Upload failed:", uploadError);
-        toast({
-          variant: "destructive",
-          title: "Upload Failed",
-          description: uploadError.message || "There was a problem with the upload. Please try again."
-        });
-        setImagePreview(null);
-        setImageUrl("");
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
-        }
-      } finally {
-        setIsUploading(false);
-      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = async (formData: FormData) => {
-    formData.set('imageUrl', imageUrl);
-    startSubmitting(async () => {
-      const result = await addProduct(null, formData);
-      if (result) { // addProduct redirects on success, so we only handle errors
-        setError(result);
-      }
-    });
-  };
+  useEffect(() => {
+    if (state?.error) {
+       const errorMessages = Object.values(state.error).flat().join(" \n");
+       toast({
+          variant: "destructive",
+          title: "Error adding product",
+          description: errorMessages,
+       });
+    }
+    // No need to handle success here as addProduct redirects
+  }, [state, toast]);
 
   return (
-    <form action={handleSubmit} className="space-y-6">
-      <input type="hidden" name="imageUrl" value={imageUrl} />
+    <form ref={formRef} action={formAction} className="space-y-6">
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required />
-        {error && 'name' in error && <div className="text-destructive text-sm">{error.name[0]}</div>}
+        {state?.error?.name && <div className="text-destructive text-sm">{state.error.name[0]}</div>}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
             <Label htmlFor="price">Price (INR)</Label>
             <Input type="number" step="0.01" id="price" name="price" required />
-            {error && 'price' in error && <div className="text-destructive text-sm">{error.price[0]}</div>}
+            {state?.error?.price && <div className="text-destructive text-sm">{state.error.price[0]}</div>}
         </div>
         <div className="space-y-2">
             <Label htmlFor="quantity">Quantity (ml)</Label>
             <Input type="number" id="quantity" name="quantity" placeholder="e.g. 750" required />
-            {error && 'quantity' in error && <div className="text-destructive text-sm">{error.quantity[0]}</div>}
+            {state?.error?.quantity && <div className="text-destructive text-sm">{state.error.quantity[0]}</div>}
         </div>
       </div>
       
@@ -111,11 +91,11 @@ export function ProductForm({ categories }: ProductFormProps) {
             ))}
           </SelectContent>
         </Select>
-        {error && 'category' in error && <div className="text-destructive text-sm">{error.category[0]}</div>}
+        {state?.error?.category && <div className="text-destructive text-sm">{state.error.category[0]}</div>}
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">Product Image</Label>
+        <Label htmlFor="imageFile">Product Image</Label>
         <div className="flex items-center gap-4">
           <div className="w-32 h-32 border rounded-md flex items-center justify-center bg-muted/30">
             {imagePreview ? (
@@ -126,28 +106,23 @@ export function ProductForm({ categories }: ProductFormProps) {
           </div>
           <div className="space-y-2 flex-grow">
             <Input 
-                id="image" 
+                id="imageFile" 
                 name="imageFile" 
                 type="file" 
                 accept="image/*"
-                className="hidden"
-                ref={fileInputRef}
+                required
                 onChange={handleImageChange}
-                disabled={isUploading}
             />
-             <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Choose Image"}
-            </Button>
             <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1)</p>
           </div>
         </div>
-         {error && 'imageUrl' in error && <div className="text-destructive text-sm">{error.imageUrl[0]}</div>}
+         {state?.error?.imageFile && <div className="text-destructive text-sm">{state.error.imageFile[0]}</div>}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <Textarea id="description" name="description" required />
-        {error && 'description' in error && <div className="text-destructive text-sm">{error.description[0]}</div>}
+        {state?.error?.description && <div className="text-destructive text-sm">{state.error.description[0]}</div>}
       </div>
       
       <div className="flex items-center space-x-2">
@@ -155,15 +130,10 @@ export function ProductForm({ categories }: ProductFormProps) {
         <Label htmlFor="featured">Featured Product</Label>
       </div>
       
-      {error && 'serverError' in error && <div className="text-destructive text-sm">{error.serverError[0]}</div>}
+      {state?.error?._server && <div className="text-destructive text-sm">{state.error._server[0]}</div>}
 
-      <Button type="submit" disabled={isUploading || isSubmitting} className="w-full">
-        {isUploading 
-            ? <><Loader2 className="animate-spin mr-2" /> Waiting for upload...</>
-            : isSubmitting 
-            ? <><Loader2 className="animate-spin mr-2" /> Adding Product...</>
-            : "Add Product"
-        }
+      <Button type="submit" disabled={isPending} className="w-full">
+        {isPending ? <><Loader2 className="animate-spin mr-2" /> Adding Product...</> : "Add Product"}
       </Button>
     </form>
   );

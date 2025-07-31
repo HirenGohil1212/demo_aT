@@ -6,34 +6,38 @@ import { revalidatePath } from 'next/cache';
 import { db, storage } from '@/lib/firebase-admin';
 import type { Banner } from '@/types';
 import admin from 'firebase-admin';
+import { uploadFile } from '@/lib/storage';
 
 // Zod schema for banner validation
 const bannerSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   subtitle: z.string().min(1, { message: "Subtitle is required" }),
-  imageUrl: z.string().url({ message: 'An uploaded image is required.' }),
+  imageFile: z.instanceof(File).refine(file => file.size > 0, "An image is required."),
   productId: z.string().min(1, { message: "A product must be linked" }),
 });
 
 /**
  * Adds a new banner to Firestore.
- * This is a server action that handles form submission with a pre-uploaded image URL.
+ * This is a server action that handles form submission including file upload.
  */
 export async function addBanner(prevState: unknown, formData: FormData) {
   const result = bannerSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (result.success === false) {
-    console.error("Banner validation error:", result.error.formErrors.fieldErrors);
-    return { error: result.error.formErrors.fieldErrors };
+    const fieldErrors = result.error.flatten().fieldErrors;
+    console.error("Banner validation error:", fieldErrors);
+    return { error: fieldErrors };
   }
 
   try {
     const data = result.data;
+    const imageUrl = await uploadFile(data.imageFile, 'banners');
+
     await db.collection("banners").add({
       title: data.title,
       subtitle: data.subtitle,
       productId: data.productId,
-      imageUrl: data.imageUrl,
+      imageUrl: imageUrl,
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
       active: true,
     });
@@ -44,7 +48,8 @@ export async function addBanner(prevState: unknown, formData: FormData) {
 
   } catch (error) {
     console.error("Error in addBanner:", error);
-    return { error: "Failed to add banner due to a server error." };
+    const errorMessage = error instanceof Error ? error.message : "Failed to add banner due to a server error.";
+    return { error: { _server: [errorMessage] } };
   }
 }
 

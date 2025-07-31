@@ -30,7 +30,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Loader2, Image as ImageIcon, Trash2 } from "lucide-react";
-import { useState, useRef, useEffect, useTransition } from "react";
+import { useState, useRef, useEffect, useTransition, useActionState } from "react";
 import Image from "next/image";
 import {
   AlertDialog,
@@ -43,79 +43,56 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { uploadFile } from "@/lib/storage";
 
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: () => void }) {
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [isUploading, setIsUploading] = useState(false);
-  const [isSubmitting, startSubmitting] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [state, formAction, isPending] = useActionState(addBanner, undefined);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setIsUploading(true);
-      setImagePreview(URL.createObjectURL(file));
-      setError(null);
-
-      try {
-        const downloadURL = await uploadFile(file, 'banners');
-        setImageUrl(downloadURL);
-      } catch (uploadError: any) {
-        console.error("Upload failed:", uploadError);
-        toast({
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  useEffect(() => {
+    if (!state) return;
+    if (state.success) {
+      toast({ title: "Success", description: "New banner has been added." });
+      onBannerAdded();
+      formRef.current?.reset();
+      setImagePreview(null);
+    } else if (state.error) {
+       const errorMessages = Object.values(state.error).flat().join(" \n");
+       toast({
           variant: "destructive",
-          title: "Upload Failed",
-          description: uploadError.message || "There was a problem with the upload. Please try again."
-        });
-        setImagePreview(null);
-        setImageUrl("");
-        if (fileInputRef.current) {
-          fileInputRef.current.value = "";
-        }
-      } finally {
-        setIsUploading(false);
-      }
+          title: "Error adding banner",
+          description: errorMessages,
+       });
     }
-  };
+  }, [state, onBannerAdded, toast]);
 
-  const handleSubmit = async (formData: FormData) => {
-    if (!imageUrl) {
-      setError("Banner image is required. Please upload an image.");
-      return;
-    }
-    formData.set('imageUrl', imageUrl);
-
-    startSubmitting(async () => {
-      const result = await addBanner(null, formData);
-      if (result?.success) {
-        toast({ title: "Success", description: "New banner has been added." });
-        onBannerAdded();
-        formRef.current?.reset();
-        setImagePreview(null);
-        setImageUrl("");
-        setError(null);
-      } else if (result?.error) {
-        const errorMessages = Object.values(result.error).flat().join(", ");
-        setError(typeof result.error === 'string' ? result.error : errorMessages);
-      }
-    });
-  };
 
   return (
-    <form ref={formRef} action={handleSubmit} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />
+        {state?.error?.title && <p className="text-sm text-destructive mt-1">{state.error.title[0]}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="subtitle">Banner Subtitle</Label>
         <Input name="subtitle" id="subtitle" placeholder="e.g. The finest spirits for the season" required />
+        {state?.error?.subtitle && <p className="text-sm text-destructive mt-1">{state.error.subtitle[0]}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="imageFile">Banner Image</Label>
@@ -133,18 +110,14 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
               name="imageFile"
               type="file"
               accept="image/*"
-              className="hidden"
+              required
               ref={fileInputRef}
               onChange={handleImageChange}
-              disabled={isUploading}
             />
-             <input type="hidden" name="imageUrl" value={imageUrl} />
-            <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-              {isUploading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</> : "Choose Image"}
-            </Button>
             <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
           </div>
         </div>
+        {state?.error?.imageFile && <p className="text-sm text-destructive mt-1">{state.error.imageFile[0]}</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="productId">Link to Product</Label>
@@ -160,16 +133,12 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
             ))}
           </SelectContent>
         </Select>
+        {state?.error?.productId && <p className="text-sm text-destructive mt-1">{state.error.productId[0]}</p>}
       </div>
-       <Button type="submit" disabled={isUploading || isSubmitting}>
-        {isUploading
-          ? <><Loader2 className="animate-spin mr-2" /> Waiting for upload...</>
-          : isSubmitting
-          ? <><Loader2 className="animate-spin mr-2" /> Adding Banner...</>
-          : "Add Banner"
-        }
+       <Button type="submit" disabled={isPending}>
+          {isPending ? <><Loader2 className="animate-spin mr-2" /> Adding Banner...</> : "Add Banner"}
       </Button>
-      {error && <p className="text-sm text-destructive mt-2">{error}</p>}
+      {state?.error?._server && <p className="text-sm text-destructive mt-2">{state.error._server[0]}</p>}
     </form>
   )
 }
