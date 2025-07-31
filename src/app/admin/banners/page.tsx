@@ -60,11 +60,11 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
     const file = e.target.files?.[0];
     if (file) {
       setIsUploading(true);
-      setImagePreview(URL.createObjectURL(file)); // Show preview immediately
+      setImagePreview(URL.createObjectURL(file));
 
       try {
         const url = await uploadFile(file, 'banners');
-        setImageUrl(url); // Set the URL for form submission
+        setImageUrl(url); 
         toast({ title: "Success", description: "Image uploaded successfully." });
       } catch (error) {
         console.error("Image upload failed:", error);
@@ -72,7 +72,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         setImagePreview(null);
         setImageUrl('');
         if (fileInputRef.current) {
-          fileInputRef.current.value = ""; // Reset file input
+          fileInputRef.current.value = "";
         }
       } finally {
         setIsUploading(false);

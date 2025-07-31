@@ -48,7 +48,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
       } catch (error) {
         console.error("Image upload failed:", error);
         toast({ variant: "destructive", title: "Upload Failed", description: String(error) });
-        setImagePreview(product.image); // Revert to original image on failure
+        setImagePreview(product.image); 
         setImageUrl(product.image);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
