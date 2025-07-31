@@ -4,30 +4,70 @@
 import { useEffect, type ReactNode, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/use-user";
-import { Loader2, Home, ShoppingBag, Tag, GalleryHorizontal, LogOut, Settings } from "lucide-react";
-import {
-  SidebarProvider,
-  Sidebar,
-  SidebarHeader,
-  SidebarContent,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarInset,
-  SidebarTrigger,
-  SidebarFooter,
-} from "@/components/ui/sidebar";
+import { Loader2, Home, ShoppingBag, Tag, GalleryHorizontal, LogOut, Settings, PanelLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isActive = pathname.startsWith(href);
+  return (
+    <Button asChild variant={isActive ? "secondary" : "ghost"} className="w-full justify-start">
+      <Link href={href}>
+        {children}
+      </Link>
+    </Button>
+  );
+}
+
+function MobileNavLink({ href, children, closeSheet }: { href: string, children: React.ReactNode, closeSheet: () => void }) {
+  const pathname = usePathname();
+  const isActive = pathname.startsWith(href);
+  return (
+    <Button asChild variant={isActive ? "default" : "ghost"} className="w-full justify-start text-lg h-12" onClick={closeSheet}>
+        <Link href={href}>
+            {children}
+        </Link>
+    </Button>
+  )
+}
+
+function SidebarContent() {
+    const handleLogout = async () => {
+        await auth.signOut();
+    }
+    return (
+        <div className="flex flex-col h-full">
+            <div className="p-4 border-b">
+                 <Link href="/" className="flex items-center gap-2">
+                    <h1 className="font-headline text-2xl font-bold text-primary">
+                        LuxeLiquor
+                    </h1>
+                </Link>
+            </div>
+            <nav className="flex-grow p-4 space-y-2">
+                <NavLink href="/admin/products"><ShoppingBag className="mr-2"/>Products</NavLink>
+                <NavLink href="/admin/categories"><Tag className="mr-2"/>Categories</NavLink>
+                <NavLink href="/admin/banners"><GalleryHorizontal className="mr-2"/>Banners</NavLink>
+                <NavLink href="/admin/settings"><Settings className="mr-2"/>Settings</NavLink>
+            </nav>
+            <div className="p-4 border-t">
+                <Button onClick={handleLogout} variant="outline" className="w-full justify-start">
+                    <LogOut className="mr-2"/>
+                    Logout
+                </Button>
+            </div>
+        </div>
+    )
+}
+
+
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, isAdmin, loading } = useUser();
   const router = useRouter();
-  const pathname = usePathname();
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -46,122 +86,35 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       </div>
     );
   }
-  
-  const handleLogout = async () => {
-    await auth.signOut();
-    router.push('/');
-  }
-
-  const MobileNavLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
-    <Button asChild variant={pathname === href ? "default" : "ghost"} className="w-full justify-start text-lg h-12">
-        <Link href={href} onClick={() => setIsMobileMenuOpen(false)}>
-            {children}
-        </Link>
-    </Button>
-  )
 
   if (user && isAdmin) {
     return (
-      <SidebarProvider>
-        <Sidebar>
-          <SidebarHeader>
-            <Link href="/" className="flex items-center gap-2 p-2">
-              <h1 className="font-headline text-2xl font-bold text-primary">
-                LuxeLiquor
-              </h1>
-            </Link>
-          </SidebarHeader>
-          <SidebarContent className="mt-4">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/admin"} tooltip="Dashboard">
-                  <Link href="/admin">
-                    <Home />
-                    <span>Dashboard</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-               <SidebarMenuItem>
-                 <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/banners")} tooltip="Banners">
-                  <Link href="/admin/banners">
-                    <GalleryHorizontal />
-                    <span>Banners</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/products")} tooltip="Products">
-                    <Link href="/admin/products">
-                        <ShoppingBag />
-                        <span>Products</span>
-                    </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/categories")} tooltip="Categories">
-                  <Link href="/admin/categories">
-                    <Tag />
-                    <span>Categories</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/settings")} tooltip="Settings">
-                  <Link href="/admin/settings">
-                    <Settings />
-                    <span>Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarContent>
-           <SidebarFooter>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                    <SidebarMenuButton onClick={handleLogout} tooltip="Logout">
-                        <LogOut />
-                        <span>Logout</span>
-                    </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-          </SidebarFooter>
-        </Sidebar>
-        <SidebarInset>
-          <header className="flex h-14 items-center justify-between border-b px-4 lg:justify-end">
-             <div className="flex items-center gap-4">
-                <h2 className="text-xl font-semibold hidden lg:block">Admin Dashboard</h2>
-             </div>
-            <SidebarTrigger className="lg:hidden" onClick={() => setIsMobileMenuOpen(true)}/>
-          </header>
-           <main className="p-4 sm:p-6">{children}</main>
-        </SidebarInset>
+      <div className="flex min-h-screen">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:block w-64 border-r bg-card">
+            <SidebarContent />
+        </aside>
         
-        {/* Mobile Menu Sheet */}
+        {/* Mobile Sidebar */}
         <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetContent side="left" className="md:hidden flex flex-col p-0">
-                <SheetHeader className="border-b p-4">
-                    <SheetTitle>
-                        <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary">
-                            LuxeLiquor
-                        </Link>
-                    </SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col gap-2 p-4">
-                    <MobileNavLink href="/admin"><Home className="mr-2"/>Dashboard</MobileNavLink>
-                    <MobileNavLink href="/admin/banners"><GalleryHorizontal className="mr-2"/>Banners</MobileNavLink>
-                    <MobileNavLink href="/admin/products"><ShoppingBag className="mr-2"/>Products</MobileNavLink>
-                    <MobileNavLink href="/admin/categories"><Tag className="mr-2"/>Categories</MobileNavLink>
-                    <MobileNavLink href="/admin/settings"><Settings className="mr-2"/>Settings</MobileNavLink>
-                </div>
-                <div className="mt-auto border-t p-4">
-                    <Button onClick={handleLogout} variant="outline" className="w-full justify-start">
-                        <LogOut className="mr-2"/>
-                        <span>Logout</span>
-                    </Button>
-                </div>
+            <SheetContent side="left" className="p-0 w-72">
+                <SidebarContent />
             </SheetContent>
         </Sheet>
-      </SidebarProvider>
+
+        <div className="flex-1 flex flex-col">
+            <header className="flex h-14 items-center justify-between border-b px-4 lg:justify-end bg-card">
+                <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
+                    <PanelLeft />
+                    <span className="sr-only">Open Menu</span>
+                </Button>
+                <h2 className="text-xl font-semibold hidden lg:block">Admin Dashboard</h2>
+            </header>
+            <main className="p-4 sm:p-6 flex-1">
+                {children}
+            </main>
+        </div>
+      </div>
     );
   }
 
