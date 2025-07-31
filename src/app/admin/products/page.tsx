@@ -144,7 +144,7 @@ export default function ProductsPage() {
                     alt={product.name}
                     width={50}
                     height={50}
-                    className="rounded-md object-cover"
+                    className="rounded-md object-contain bg-white"
                   />
                 </TableCell>
                 <TableCell className="font-medium">{product.name}</TableCell>

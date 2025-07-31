@@ -68,8 +68,8 @@ export default function CartPage() {
         <div className="lg:col-span-2 space-y-4">
           {cartItems.map(({ product, quantity }) => (
             <Card key={product.id} className="flex items-start sm:items-center p-4 shadow-sm hover:shadow-md transition-shadow flex-col sm:flex-row gap-4">
-              <div className="w-24 h-24 relative rounded-md overflow-hidden mr-2 sm:mr-6 flex-shrink-0">
-                <Image src={product.image} alt={product.name} fill className="object-cover" data-ai-hint={`${product.category} bottle`} />
+              <div className="w-24 h-24 relative rounded-md overflow-hidden mr-2 sm:mr-6 flex-shrink-0 bg-white">
+                <Image src={product.image} alt={product.name} fill className="object-contain" data-ai-hint={`${product.category} bottle`} />
               </div>
               <div className="flex-grow">
                 <Link href={`/products/${product.id}`} className="font-bold text-lg hover:text-primary transition-colors">{product.name}</Link>

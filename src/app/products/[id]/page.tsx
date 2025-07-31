@@ -24,12 +24,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
   return (
     <div className="container mx-auto px-4 py-8 md:py-12">
       <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
-        <div className="aspect-square relative rounded-lg overflow-hidden shadow-lg">
+        <div className="aspect-square relative rounded-lg overflow-hidden shadow-lg bg-white">
           <Image
             src={product.image}
             alt={product.name}
             fill
-            className="object-cover"
+            className="object-contain"
             data-ai-hint={`${product.category} bottle`}
             sizes="(max-width: 768px) 100vw, 50vw"
           />

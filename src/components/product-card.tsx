@@ -21,12 +21,12 @@ export default function ProductCard({ product }: ProductCardProps) {
     <Card className="flex flex-col overflow-hidden h-full group transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <CardHeader className="p-0">
         <Link href={`/products/${product.id}`} className="block">
-          <div className="aspect-square relative overflow-hidden">
+          <div className="aspect-square relative overflow-hidden bg-white">
             <Image
               src={product.image}
               alt={product.name}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-contain group-hover:scale-105 transition-transform duration-300"
               data-ai-hint={`${product.category} bottle`}
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
