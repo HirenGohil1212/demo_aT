@@ -8,20 +8,15 @@ const serviceAccountKey = process.env.SERVICE_ACCOUNT_KEY
 
 const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET;
 
+// This pattern ensures we only initialize the app once
 if (!getApps().length) {
     try {
-        if (serviceAccountKey) {
-            // Initialize with service account key
-            admin.initializeApp({
-                credential: admin.credential.cert(serviceAccountKey),
-                storageBucket,
-            });
-        } else {
-            // Initialize with application default credentials for App Hosting
-            admin.initializeApp({
-                storageBucket,
-            });
-        }
+        admin.initializeApp({
+            // Use application default credentials if available (recommended for App Hosting)
+            // Fall back to service account key for local development
+            credential: serviceAccountKey ? admin.credential.cert(serviceAccountKey) : admin.credential.applicationDefault(),
+            storageBucket,
+        });
     } catch (error: any) {
         console.error("Firebase Admin Initialization Error", error.stack);
     }
