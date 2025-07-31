@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import type { Category, Product } from "@/types";
-import { Loader2, Image as ImageIcon, UploadCloud } from "lucide-react";
+import { Loader2, Image as ImageIcon } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { uploadFile } from "@/lib/storage";
-import { Progress } from "@/components/ui/progress";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
+import { useToast } from "@/hooks/use-toast";
 
 type EditProductFormProps = {
   categories: Category[];
@@ -34,7 +36,7 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
     return (
         <Button type="submit" disabled={isDisabled} className="w-full">
             {isUploading 
-                ? <><UploadCloud className="animate-bounce mr-2" /> Uploading Image...</>
+                ? <><Loader2 className="animate-spin mr-2" /> Uploading...</>
                 : pending 
                 ? <><Loader2 className="animate-spin mr-2" /> Saving Changes...</>
                 : "Save Changes"
@@ -45,14 +47,16 @@ function SubmitButton({ isUploading }: { isUploading: boolean }) {
 
 export function EditProductForm({ categories, product }: EditProductFormProps) {
   const updateProductWithId = updateProduct.bind(null, product.id);
-  const [error, action] = useActionState(updateProductWithId, {});
+  const [error, action] = useActionState((prevState: unknown, formData: FormData) => {
+    formData.set('imageUrl', imageUrl);
+    return updateProductWithId(prevState, formData);
+  }, {});
   
   const [imagePreview, setImagePreview] = useState<string | null>(product.image);
   const [imageUrl, setImageUrl] = useState<string>(product.image);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,14 +64,20 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
     if (file) {
       setImagePreview(URL.createObjectURL(file));
       setIsUploading(true);
-      setUploadProgress(0);
-      setUploadError(null);
+
       try {
-        const url = await uploadFile(file, 'products', setUploadProgress);
-        setImageUrl(url); // Set the URL for the hidden input
+        const storageRef = ref(storage, `products/${uuidv4()}-${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        setImageUrl(downloadURL); // Set the URL for the hidden input
       } catch (uploadError: any) {
         console.error("Image upload failed:", uploadError);
-        setUploadError(uploadError.message || "Image upload failed. Please try again.");
+        toast({
+          variant: "destructive",
+          title: "Upload Failed",
+          description: "There was a problem uploading your image. Please try again."
+        })
+        setImagePreview(product.image); // Revert preview on fail
       } finally {
         setIsUploading(false);
       }
@@ -137,16 +147,9 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
                 disabled={isUploading}
             />
              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                Change Image
+                {isUploading ? "Uploading..." : "Change Image"}
             </Button>
             <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1)</p>
-            {isUploading && (
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Uploading... {Math.round(uploadProgress)}%</p>
-                <Progress value={uploadProgress} className="w-full h-2" />
-              </div>
-            )}
-             {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
           </div>
         </div>
          {error?.imageUrl && !imageUrl && <div className="text-destructive text-sm">{error.imageUrl[0]}</div>}

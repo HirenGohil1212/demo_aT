@@ -29,7 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Image as ImageIcon, Trash2, UploadCloud } from "lucide-react";
+import { Loader2, Image as ImageIcon, Trash2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { useState, useRef, useEffect, useTransition } from "react";
 import Image from "next/image";
@@ -45,8 +45,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { uploadFile } from "@/lib/storage";
-import { Progress } from "@/components/ui/progress";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { v4 as uuidv4 } from "uuid";
+import { useToast } from "@/hooks/use-toast";
 
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: () => void }) {
@@ -55,11 +57,12 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const { toast } = useToast();
 
 
   const [error, action, isPending] = useActionState(async (prevState: unknown, formData: FormData) => {
+    // Manually set imageUrl on formData before calling the action
+    formData.set('imageUrl', imageUrl);
     const result = await addBanner(prevState, formData);
     if (result?.success) {
         onBannerAdded();
@@ -75,14 +78,21 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
     if (file) {
       setImagePreview(URL.createObjectURL(file));
       setIsUploading(true);
-      setUploadProgress(0);
-      setUploadError(null);
+
       try {
-        const url = await uploadFile(file, 'banners', setUploadProgress);
-        setImageUrl(url);
+        const storageRef = ref(storage, `banners/${uuidv4()}-${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(snapshot.ref);
+        setImageUrl(downloadURL);
       } catch (uploadError: any) {
         console.error("Image upload failed:", uploadError);
-        setUploadError(uploadError.message || "Image upload failed. Please try again.");
+        toast({
+          variant: "destructive",
+          title: "Upload Failed",
+          description: "There was a problem uploading your image. Please try again."
+        })
+        setImagePreview(null);
+        setImageUrl("");
       } finally {
         setIsUploading(false);
       }
@@ -118,7 +128,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
            <div className="space-y-2 flex-grow">
             <Input 
                 id="imageFile" 
-                name="imageFile" // This input is just for file selection, not submission
+                name="imageFile" 
                 type="file" 
                 required 
                 accept="image/*"
@@ -128,16 +138,9 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
                 disabled={isUploading}
             />
              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-                Choose Image
+                {isUploading ? "Uploading..." : "Choose Image"}
             </Button>
             <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
-            {isUploading && (
-                <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Uploading... {Math.round(uploadProgress)}%</p>
-                    <Progress value={uploadProgress} className="w-full h-2" />
-                </div>
-            )}
-            {uploadError && <p className="text-sm text-destructive">{uploadError}</p>}
           </div>
         </div>
       </div>
@@ -168,7 +171,7 @@ function SubmitButton({ isUploading, isPending }: { isUploading: boolean, isPend
     return (
         <Button type="submit" disabled={isDisabled}>
             {isUploading 
-                ? <><UploadCloud className="animate-bounce mr-2" /> Uploading Image...</>
+                ? <><Loader2 className="animate-spin mr-2" /> Uploading...</>
                 : isPending 
                 ? <><Loader2 className="animate-spin mr-2" /> Adding Banner...</>
                 : "Add Banner"
@@ -229,6 +232,7 @@ export default function BannersPage() {
   const [loading, setLoading] = useState(true);
 
   async function loadData() {
+      setLoading(true);
       const [bannersData, productsData] = await Promise.all([
         getBanners(),
         getProducts(),
@@ -268,8 +272,9 @@ export default function BannersPage() {
           <CardTitle>Existing Banners</CardTitle>
         </CardHeader>
         <CardContent>
-           {loading && <Loader2 className="animate-spin" />}
-           {!loading && (
+           {loading && <div className="flex justify-center items-center p-8"><Loader2 className="animate-spin" /></div>}
+           {!loading && banners.length === 0 && <p className="text-muted-foreground text-center">No banners have been created yet.</p>}
+           {!loading && banners.length > 0 && (
           <Table>
             <TableHeader>
               <TableRow>
