@@ -141,7 +141,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                 Change Image
             </Button>
-            <p className="text-xs text-muted-foreground">PNG, JPG, GIF up to 5MB</p>
+            <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1 aspect ratio)</p>
           </div>
         </div>
          {error?.imageUrl && !imageUrl && <div className="text-destructive text-sm">{error.imageUrl[0]}</div>}
