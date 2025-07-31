@@ -29,7 +29,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading) {
@@ -38,14 +37,6 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       }
     }
   }, [user, isAdmin, loading, router]);
-  
-  // Reset navigation loading state when route changes
-  useEffect(() => {
-    if (navigatingTo) {
-      setNavigatingTo(null);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
 
   if (loading) {
     return (
@@ -61,44 +52,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     router.push('/');
   }
 
-  const MobileNavLink = ({ href, children }: { href: string, children: React.ReactNode }) => {
-    const isNavigating = navigatingTo === href;
-
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-      // Don't do anything if we are already on this page
-      if (pathname === href) {
-        setIsMobileMenuOpen(false);
-        return;
-      }
-
-      e.preventDefault();
-      setNavigatingTo(href);
-
-      // Navigate after a short delay to allow loader to be seen
-      setTimeout(() => {
-        router.push(href);
-        // The drawer will close when the route changes via the other useEffect
-        setIsMobileMenuOpen(false);
-      }, 300); 
-    };
-
-    return (
-        <Button
-            asChild
-            variant={pathname === href ? "default" : "ghost"}
-            className="w-full justify-start text-lg h-12"
-            disabled={isNavigating}
-        >
-            <Link href={href} onClick={handleClick}>
-                {isNavigating ? (
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                ) : (
-                    children
-                )}
-            </Link>
-        </Button>
-    )
-  }
+  const MobileNavLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
+    <Button asChild variant={pathname === href ? "default" : "ghost"} className="w-full justify-start text-lg h-12">
+        <Link href={href} onClick={() => setIsMobileMenuOpen(false)}>
+            {children}
+        </Link>
+    </Button>
+  )
 
   if (user && isAdmin) {
     return (
