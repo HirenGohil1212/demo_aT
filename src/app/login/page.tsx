@@ -57,7 +57,7 @@ export default function LoginPage() {
       console.error("Login failed:", error);
       let description = "Please check your email and password.";
       if (error.code === 'auth/invalid-credential') {
-        description = "Only admin can login."
+        description = "Invalid credentials. Please try again."
       }
       toast({
         variant: "destructive",

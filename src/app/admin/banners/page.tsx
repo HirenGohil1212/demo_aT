@@ -45,7 +45,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Skeleton } from "@/components/ui/skeleton";
+import { uploadFile } from "@/lib/storage";
 
 
 function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: () => void }) {
@@ -208,39 +208,6 @@ function DeleteBannerButton({ bannerId, onDelete }: { bannerId: string, onDelete
     )
 }
 
-function BannerTableSkeleton() {
-    return (
-        <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Image</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Linked Product</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-                {Array.from({ length: 3 }).map((_, i) => (
-                    <TableRow key={i}>
-                        <TableCell>
-                           <Skeleton className="w-[100px] h-[50px] rounded-md" />
-                        </TableCell>
-                        <TableCell>
-                             <Skeleton className="h-4 w-3/4" />
-                        </TableCell>
-                        <TableCell>
-                             <Skeleton className="h-4 w-1/2" />
-                        </TableCell>
-                        <TableCell className="text-right">
-                             <Skeleton className="h-8 w-8 ml-auto" />
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    )
-}
-
 
 export default function BannersPage() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -248,7 +215,6 @@ export default function BannersPage() {
   const [loading, setLoading] = useState(true);
 
   async function loadData() {
-      setLoading(true);
       const [bannersData, productsData] = await Promise.all([
         getBanners(),
         getProducts(),
@@ -288,9 +254,8 @@ export default function BannersPage() {
           <CardTitle>Existing Banners</CardTitle>
         </CardHeader>
         <CardContent>
-           {loading ? (
-            <BannerTableSkeleton />
-           ) : (
+           {loading && <Loader2 className="animate-spin" />}
+           {!loading && (
           <Table>
             <TableHeader>
               <TableRow>

@@ -8,38 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, MessageSquareText, Loader2 } from 'lucide-react';
+import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, MessageSquareText } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useEffect } from 'react';
-import type { AppSettings } from '@/types';
-
-async function fetchSettings() {
-    try {
-        const res = await fetch('/api/settings');
-        if (!res.ok) return null; 
-        const data = await res.json();
-        return data as AppSettings;
-    } catch {
-        return null;
-    }
-}
+import { useState } from 'react';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, totalPrice, itemCount } = useCart();
   const [fullName, setFullName] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
   const [contactNumber, setContactNumber] = useState('');
-  const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [loadingSettings, setLoadingSettings] = useState(true);
-
-  useEffect(() => {
-    async function loadSettings() {
-        const fetchedSettings = await fetchSettings();
-        setSettings(fetchedSettings);
-        setLoadingSettings(false);
-    }
-    loadSettings();
-  }, []);
 
   const isDetailsComplete = fullName.trim() !== '' && shippingAddress.trim() !== '' && contactNumber.trim() !== '';
 
@@ -48,12 +25,8 @@ export default function CartPage() {
       alert("Please fill in all your details before placing an order.");
       return;
     }
-    if (!settings?.whatsappNumber) {
-      alert("Store contact information is not available at the moment. Please try again later.");
-      return;
-    }
 
-    const adminPhoneNumber = settings.whatsappNumber;
+    const adminPhoneNumber = '917990305570'; // Hardcoded number
     
     let message = 'Hello LuxeLiquor, I would like to place an order for the following items:\n\n';
     
@@ -154,13 +127,10 @@ export default function CartPage() {
                 size="lg" 
                 className="w-full bg-accent text-accent-foreground hover:bg-accent/90" 
                 onClick={handleWhatsAppOrder}
-                disabled={!isDetailsComplete || loadingSettings}
+                disabled={!isDetailsComplete}
                 title={!isDetailsComplete ? "Please fill in all your details" : "Place Order"}
               >
-                {loadingSettings ? 
-                    <Loader2 className="mr-2 animate-spin"/> :
-                    <MessageSquareText className="mr-2"/>
-                }
+                <MessageSquareText className="mr-2"/>
                 Place Order via WhatsApp
               </Button>
             </CardFooter>

@@ -10,7 +10,6 @@ import { Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AppSettings } from "@/types";
-import { Input } from "@/components/ui/input";
 
 type SettingsFormProps = {
   settings: AppSettings;
@@ -19,7 +18,7 @@ type SettingsFormProps = {
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending} size="sm">
+    <Button type="submit" disabled={pending}>
       {pending ? <Loader2 className="animate-spin" /> : "Save Changes"}
     </Button>
   );
@@ -33,15 +32,16 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       <Card>
         <CardHeader>
             <CardTitle>User Settings</CardTitle>
+            <CardDescription>Control user registration for your application.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between space-x-2">
-            <div className="space-y-1">
-                <Label htmlFor="allow-signups" className="font-bold">Allow New User Signups</Label>
-                <p className="text-sm text-muted-foreground">
-                    Enable this to allow new users to create accounts.
-                </p>
-            </div>
+            <Label htmlFor="allow-signups" className="flex flex-col space-y-1">
+              <span>Allow New User Signups</span>
+              <span className="font-normal leading-snug text-muted-foreground">
+                Enable this to allow new users to create accounts.
+              </span>
+            </Label>
             <Switch
               id="allow-signups"
               name="allowSignups"
@@ -49,27 +49,6 @@ export function SettingsForm({ settings }: SettingsFormProps) {
             />
           </div>
         </CardContent>
-      </Card>
-
-      <Card>
-          <CardHeader>
-            <CardTitle>Order Settings</CardTitle>
-          </CardHeader>
-          <CardContent>
-             <div className="space-y-2">
-                <Label htmlFor="whatsappNumber" className="font-bold">WhatsApp Order Number</Label>
-                <p className="text-sm text-muted-foreground">
-                    The number to which WhatsApp orders will be sent. Include country code without "+".
-                </p>
-                <Input 
-                    id="whatsappNumber" 
-                    name="whatsappNumber"
-                    defaultValue={settings.whatsappNumber}
-                    placeholder="e.g. 917990305570"
-                    required
-                />
-            </div>
-          </CardContent>
       </Card>
       
       {error && <div className="text-destructive text-sm mt-2">{error.message}</div>}
@@ -80,4 +59,3 @@ export function SettingsForm({ settings }: SettingsFormProps) {
     </form>
   );
 }
-

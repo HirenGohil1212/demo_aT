@@ -3,13 +3,6 @@
 
 import { getSettings } from "@/actions/settings-actions";
 import { SettingsForm } from "./_components/settings-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 
 export default async function SettingsPage() {
   const settings = await getSettings();
@@ -26,4 +19,3 @@ export default async function SettingsPage() {
     </div>
   );
 }
-
