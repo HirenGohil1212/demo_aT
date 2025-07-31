@@ -45,6 +45,7 @@ export default function Header() {
   const { user, isAdmin } = useUser();
   const router = useRouter();
   const [allowSignups, setAllowSignups] = useState(true);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     async function checkSettings() {
@@ -63,11 +64,19 @@ export default function Header() {
     await auth.signOut();
     router.push('/');
   }
+
+  const MobileNavLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
+    <Link href={href} onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium hover:text-primary transition-colors">
+        {children}
+    </Link>
+  )
   
   return (
     <header className="bg-card shadow-lg sticky top-0 z-40 border-b-2 border-primary/50">
       <div className="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-        <Link href="/" className="font-headline text-2xl md:text-3xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
+        
+        {/* Desktop Logo */}
+        <Link href="/" className="hidden md:block font-headline text-2xl md:text-3xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
           LuxeLiquor
         </Link>
         
@@ -93,7 +102,15 @@ export default function Header() {
             )}
         </nav>
 
-        <div className="flex items-center gap-2 md:gap-4">
+        {/* Mobile Header Layout */}
+        <div className="md:hidden flex-1 flex justify-center">
+            <Link href="/" className="font-headline text-2xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
+                LuxeLiquor
+            </Link>
+        </div>
+
+
+        <div className="flex items-center gap-2 md:gap-4 absolute right-4 md:static">
           <Button asChild variant="outline" size="icon" className="relative border-accent text-accent hover:bg-accent hover:text-accent-foreground">
             <Link href="/cart">
               <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -138,7 +155,7 @@ export default function Header() {
 
 
           <div className="md:hidden">
-            <Sheet>
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <Menu className="h-6 w-6" />
@@ -149,27 +166,27 @@ export default function Header() {
                     <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                  </SheetHeader>
                 <div className="flex flex-col gap-6 pt-10">
-                <Link href="/" className="font-headline text-2xl font-bold text-primary mb-4">
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary mb-4">
                   LuxeLiquor
                 </Link>
                   {navLinks.map(link => (
-                    <Link key={link.href} href={link.href} className="text-lg font-medium hover:text-primary transition-colors">
+                    <MobileNavLink key={link.href} href={link.href}>
                       {link.label}
-                    </Link>
+                    </MobileNavLink>
                   ))}
                   {isAdmin && (
-                    <Link href="/admin" className="text-lg font-medium hover:text-primary transition-colors">
+                    <MobileNavLink href="/admin">
                       Admin
-                    </Link>
+                    </MobileNavLink>
                   )}
                   <div className="flex flex-col gap-4 mt-4">
                      {user ? (
-                        <Button onClick={handleLogout}>Logout</Button>
+                        <Button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}>Logout</Button>
                      ) : (
                         <>
-                            <Button asChild><Link href="/login">Login</Link></Button>
+                            <Button asChild><MobileNavLink href="/login">Login</MobileNavLink></Button>
                             {allowSignups && (
-                                <Button asChild variant="outline"><Link href="/signup">Sign Up</Link></Button>
+                                <Button asChild variant="outline"><MobileNavLink href="/signup">Sign Up</MobileNavLink></Button>
                             )}
                         </>
                      )}
