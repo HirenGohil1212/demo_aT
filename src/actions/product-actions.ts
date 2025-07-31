@@ -57,6 +57,47 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 }
 
 /**
+ * Updates an existing product in Firestore.
+ */
+export async function updateProduct(id: string, prevState: unknown, formData: FormData) {
+  if (!id) {
+    return { serverError: ["Invalid product ID."] };
+  }
+  
+  const result = productSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  if (result.success === false) {
+    return result.error.formErrors.fieldErrors;
+  }
+
+  try {
+    const data = result.data;
+
+    const productRef = db.collection('products').doc(id);
+
+    await productRef.update({
+      name: data.name,
+      description: data.description,
+      category: data.category,
+      price: data.price,
+      quantity: data.quantity,
+      image: data.imageUrl, // This assumes the imageUrl might change
+      featured: data.featured || false,
+    });
+
+  } catch (error) {
+    console.error("Full error in updateProduct:", error);
+    return { serverError: ["Failed to update product due to a server error."] };
+  }
+
+  revalidatePath('/');
+  revalidatePath(`/products/${id}`);
+  revalidatePath('/admin/products');
+  redirect('/admin/products');
+}
+
+
+/**
  * Fetches all products from Firestore.
  * @returns An array of products.
  */

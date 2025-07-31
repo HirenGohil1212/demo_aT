@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { PlusCircle, Loader2, Trash2 } from "lucide-react";
+import { PlusCircle, Loader2, Trash2, Pencil } from "lucide-react";
 import type { Product } from "@/types";
 import {
   AlertDialog,
@@ -57,6 +57,7 @@ function DeleteProductButton({ productId, onDelete }: { productId: string, onDel
             size="icon"
             onClick={() => setIsDialogOpen(true)}
             disabled={isPending}
+            className="h-8 w-8"
         >
             {isPending ? <Loader2 className="animate-spin h-4 w-4" /> : <Trash2 className="h-4 w-4" />}
         </Button>
@@ -152,7 +153,14 @@ export default function ProductsPage() {
                 </TableCell>
                 <TableCell>₹{product.price.toFixed(2)}</TableCell>
                 <TableCell className="text-right">
-                    <DeleteProductButton productId={product.id} onDelete={handleProductDeleted} />
+                    <div className="flex justify-end items-center gap-2">
+                         <Button asChild variant="outline" size="icon" className="h-8 w-8">
+                            <Link href={`/admin/products/edit/${product.id}`}>
+                                <Pencil className="h-4 w-4" />
+                            </Link>
+                        </Button>
+                        <DeleteProductButton productId={product.id} onDelete={handleProductDeleted} />
+                    </div>
                 </TableCell>
               </TableRow>
             ))}
