@@ -41,12 +41,7 @@ function SidebarContent() {
     }
     return (
         <div className="flex flex-col h-full">
-            <div className="p-4 border-b">
-                 <h1 className="font-headline text-2xl font-bold text-primary">
-                    Admin
-                </h1>
-            </div>
-            <nav className="flex-grow p-4 space-y-2">
+            <nav className="flex-grow p-4 space-y-2 mt-4">
                 <NavLink href="/admin/products"><ShoppingBag className="mr-2"/>Products</NavLink>
                 <NavLink href="/admin/categories"><Tag className="mr-2"/>Categories</NavLink>
                 <NavLink href="/admin/banners"><GalleryHorizontal className="mr-2"/>Banners</NavLink>
