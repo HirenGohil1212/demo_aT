@@ -102,12 +102,53 @@ export default function Header() {
             )}
         </nav>
 
-        {/* Mobile Header Layout: Spacer for centering logo */}
+        {/* Mobile Header: Drawer Trigger on the Left */}
         <div className="md:hidden flex-1 flex justify-start">
-             {/* This div is intentionally left empty to push the logo to the center */}
+             <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left">
+                 <SheetHeader>
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                 </SheetHeader>
+                <div className="flex flex-col gap-6 pt-10">
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary mb-4">
+                  LuxeLiquor
+                </Link>
+                  {navLinks.map(link => (
+                    <MobileNavLink key={link.href} href={link.href}>
+                      {link.label}
+                    </MobileNavLink>
+                  ))}
+                  {isAdmin && (
+                    <MobileNavLink href="/admin">
+                      Admin
+                    </MobileNavLink>
+                  )}
+                  <div className="flex flex-col gap-4 mt-4 border-t pt-6">
+                     {user ? (
+                       <>
+                        <p className="text-sm text-center text-muted-foreground">{user.email}</p>
+                        <Button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}>Logout</Button>
+                       </>
+                     ) : (
+                        <>
+                            <Button asChild><Link href="/login" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Login</Link></Button>
+                            {allowSignups && (
+                                <Button asChild variant="outline"><Link href="/signup" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link></Button>
+                            )}
+                        </>
+                     )}
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
         </div>
 
-        {/* Mobile & Desktop Logo */}
+        {/* Mobile Header: Centered Logo */}
         <div className="flex-1 flex justify-center md:hidden">
             <Link href="/" className="font-headline text-2xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
                 LuxeLiquor
@@ -160,51 +201,6 @@ export default function Header() {
             )}
           </div>
 
-
-          <div className="md:hidden">
-            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right">
-                 <SheetHeader>
-                    <SheetTitle>Navigation Menu</SheetTitle>
-                 </SheetHeader>
-                <div className="flex flex-col gap-6 pt-10">
-                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary mb-4">
-                  LuxeLiquor
-                </Link>
-                  {navLinks.map(link => (
-                    <MobileNavLink key={link.href} href={link.href}>
-                      {link.label}
-                    </MobileNavLink>
-                  ))}
-                  {isAdmin && (
-                    <MobileNavLink href="/admin">
-                      Admin
-                    </MobileNavLink>
-                  )}
-                  <div className="flex flex-col gap-4 mt-4 border-t pt-6">
-                     {user ? (
-                       <>
-                        <p className="text-sm text-center text-muted-foreground">{user.email}</p>
-                        <Button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}>Logout</Button>
-                       </>
-                     ) : (
-                        <>
-                            <Button asChild><Link href="/login" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Login</Link></Button>
-                            {allowSignups && (
-                                <Button asChild variant="outline"><Link href="/signup" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link></Button>
-                            )}
-                        </>
-                     )}
-                  </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
         </div>
       </div>
     </header>
