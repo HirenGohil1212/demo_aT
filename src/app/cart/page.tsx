@@ -12,6 +12,7 @@ import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, MessageSquareText, Loader
 import { Textarea } from '@/components/ui/textarea';
 import { useState, useEffect } from 'react';
 import type { AppSettings } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 // We fetch settings on the client to get the WhatsApp number
 async function fetchSettings(): Promise<AppSettings> {
@@ -35,6 +36,7 @@ export default function CartPage() {
   const [shippingAddress, setShippingAddress] = useState('');
   const [contactNumber, setContactNumber] = useState('');
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     async function loadSettings() {
@@ -45,15 +47,33 @@ export default function CartPage() {
   }, []);
 
   const isDetailsComplete = fullName.trim() !== '' && shippingAddress.trim() !== '' && contactNumber.trim() !== '';
+  const isMinOrderMet = itemCount >= 4;
 
   const handleWhatsAppOrder = () => {
+    if (!isMinOrderMet) {
+      toast({
+        variant: "destructive",
+        title: "Minimum Order Not Met",
+        description: "You need at least 4 items in your cart to place an order.",
+      });
+      return;
+    }
+
     if (!isDetailsComplete) {
-      alert("Please fill in all your details before placing an order.");
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill in your full name, shipping address, and contact number.",
+      });
       return;
     }
     
     if (!settings || !settings.whatsappNumber) {
-      alert("Store contact information is not available at the moment. Please try again later.");
+      toast({
+        variant: "destructive",
+        title: "Store Not Available",
+        description: "Contact information is not available at the moment. Please try again later.",
+      });
       return;
     }
 
@@ -177,7 +197,7 @@ export default function CartPage() {
                   size="lg" 
                   className="w-full h-12 font-bold text-lg bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg shadow-lg hover:scale-105 transition-transform disabled:scale-100 disabled:shadow-none" 
                   onClick={handleWhatsAppOrder}
-                  disabled={!isDetailsComplete || !settings}
+                  disabled={!settings}
                   title={!isDetailsComplete ? "Please fill in all your details" : "Place Order"}
                 >
                   {settings ? <MessageSquareText className="mr-2 h-5 w-5"/> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
