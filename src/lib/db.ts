@@ -9,7 +9,11 @@ const dbConfig = {
   user: process.env.DB_USER || 'u782359236_Hiren',
   password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
   database: process.env.DB_NAME || 'u782359236_demo',
-  // port: 3306 // The default MySQL port
+  port: 3306, // Explicitly define the port
+  ssl: {
+    // Required for many remote connections, including Hostinger
+    rejectUnauthorized: false 
+  }
 };
 
 // Create a connection pool. This is more efficient than creating a new
