@@ -33,7 +33,7 @@ export function DbTestButton() {
                  toast({
                     variant: "destructive",
                     title: "Database Connection Refused",
-                    description: "Connection was refused. Is your XAMPP MySQL server running? Please check your XAMPP control panel and ensure the MySQL module is started.",
+                    description: "Your app connected to your local machine, but the connection was refused. Please ensure your XAMPP MySQL server is running and check that it is using port 3306.",
                     duration: 10000, 
                 });
             } else if (errorMessage.includes("ETIMEDOUT")) {
