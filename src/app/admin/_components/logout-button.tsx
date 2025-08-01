@@ -1,4 +1,3 @@
-
 "use client";
 
 import { LogOut } from "lucide-react";
@@ -10,8 +9,13 @@ export function LogoutButton({ onLinkClick }: { onLinkClick?: () => void }) {
     const router = useRouter();
 
     const handleLogout = async () => {
+        // First, navigate to the home page.
         router.push('/');
+        
+        // Then, sign the user out.
         await auth.signOut();
+
+        // Close the mobile menu if it's open.
         if (onLinkClick) {
             onLinkClick();
         }
