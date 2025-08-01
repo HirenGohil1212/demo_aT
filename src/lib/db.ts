@@ -6,9 +6,9 @@ import mysql from 'mysql2/promise';
 // It is strongly recommended to use environment variables for these values.
 const dbConfig = {
   host: process.env.DB_HOST || 'srv1835.hstgr.io',
-  user: process.env.DB_USER || 'u782359236_Hiren',
+  user: process.env.DB_USER || 'u782359236_jay',
   password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
-  database: process.env.DB_NAME || 'u782359236_demo',
+  database: process.env.DB_NAME || 'u782359236_jay',
   port: 3306, // Explicitly define the port
   ssl: {
     // Required for many remote connections, including Hostinger
