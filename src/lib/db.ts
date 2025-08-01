@@ -5,10 +5,10 @@ import mysql from 'mysql2/promise';
 // Database configuration.
 // It is strongly recommended to use environment variables for these values.
 const dbConfig = {
-  host: process.env.DB_HOST || 'sql.freedb.tech',
-  user: process.env.DB_USER || 'freedb_Hiren_123',
-  password: process.env.DB_PASSWORD || 'fC3!7bEa8s@wN*d',
-  database: process.env.DB_NAME || 'freedb_SGP-1',
+  host: process.env.DB_HOST || 'growkrishi.com',
+  user: process.env.DB_USER || 'u782359236_Hiren',
+  password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
+  database: process.env.DB_NAME || 'u782359236_demo',
 };
 
 // Create a connection pool. This is more efficient than creating a new
@@ -54,3 +54,4 @@ export async function query(sql: string, params: any[] = []) {
     }
   }
 }
+
