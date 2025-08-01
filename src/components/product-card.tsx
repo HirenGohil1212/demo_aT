@@ -20,7 +20,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <Card className="flex flex-col overflow-hidden h-full group transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
       <CardHeader className="p-0">
-        <Link href={`/products/${product.id}`} className="block">
+        {/* <Link href={`/products/${product.id}`} className="block"> */}
           <div className="aspect-square relative overflow-hidden bg-white">
             <Image
               src={product.image}
@@ -31,18 +31,18 @@ export default function ProductCard({ product }: ProductCardProps) {
               sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 23vw"
             />
           </div>
-        </Link>
+        {/* </Link> */}
       </CardHeader>
       <CardContent className="p-4 flex-grow">
         <div className="flex justify-between items-center mb-2">
             <Badge variant="secondary">{product.category}</Badge>
             <span className="text-xs text-muted-foreground">{product.quantity}ml</span>
         </div>
-        <Link href={`/products/${product.id}`}>
-          <CardTitle className="font-headline text-xl leading-tight hover:text-primary transition-colors">
+        {/* <Link href={`/products/${product.id}`}> */}
+          <CardTitle className="font-headline text-xl leading-tight">
             {product.name}
           </CardTitle>
-        </Link>
+        {/* </Link> */}
       </CardContent>
       <CardFooter className="p-4 flex justify-between items-center">
         <p className="text-xl font-bold text-primary">INR {product.price.toFixed(2)}</p>
