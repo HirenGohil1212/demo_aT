@@ -114,12 +114,14 @@ export default function Header() {
                 </SheetTrigger>
                 <SheetContent side="left">
                     <SheetHeader>
-                        <SheetTitle>Navigation</SheetTitle>
+                        {/* <SheetTitle>Navigation</SheetTitle> */}
+                        <SheetTitle asChild>
+                          <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary text-left">
+                            LuxeLiquor
+                          </Link>
+                        </SheetTitle>
                     </SheetHeader>
-                    <div className="flex flex-col gap-6 pt-10">
-                    <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary mb-4">
-                    LuxeLiquor
-                    </Link>
+                    <div className="flex flex-col gap-6 pt-8">
                     {navLinks.map(link => (
                         <MobileNavLink key={link.href} href={link.href}>
                         {link.label}
