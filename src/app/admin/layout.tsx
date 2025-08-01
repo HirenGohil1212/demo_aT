@@ -26,8 +26,10 @@ function NavLink({ href, children, onLinkClick }: { href: string; children: Reac
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     const router = useRouter();
     const handleLogout = async () => {
-        await auth.signOut();
+        // Redirect to home first, then sign out.
+        // This prevents the layout's effect from redirecting to /login.
         router.push('/');
+        await auth.signOut();
         if (onLinkClick) onLinkClick();
     }
     return (
