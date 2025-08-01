@@ -42,10 +42,10 @@ export async function testConnection() {
     
     let connection;
     try {
-        console.log("Attempting to connect to the database...");
+        // console.log("Attempting to connect to the database...");
         connection = await currentPool.getConnection();
         // If we get here, the connection was successful.
-        console.log("Database connection successful!");
+        // console.log("Database connection successful!");
         return { success: true, message: "Database connection successful!" };
     } catch (error: any) {
         // This will log the specific MySQL error to the console.
@@ -58,7 +58,7 @@ export async function testConnection() {
         throw error; // Re-throw to be caught by the API route.
     } finally {
         if (connection) {
-            console.log("Closing database connection.");
+            // console.log("Closing database connection.");
             connection.release();
         }
     }
@@ -99,3 +99,4 @@ export async function query(sql: string, params: any[] = []) {
     }
   }
 }
+
