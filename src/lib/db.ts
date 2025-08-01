@@ -30,8 +30,7 @@ function getPool() {
     return pool;
 }
 
-// THIS IS A TEMPORARY CONNECTION TEST.
-// IT WILL BE REPLACED ONCE THE CONNECTION IS VERIFIED.
+// A dedicated function to test the database connection.
 export async function testConnection() {
     const currentPool = getPool();
     if (!currentPool) {
@@ -46,6 +45,7 @@ export async function testConnection() {
         connection = await currentPool.getConnection();
         // If we get here, the connection was successful.
         // console.log("Database connection successful!");
+        await connection.ping(); // A simple and fast check.
         return { success: true, message: "Database connection successful!" };
     } catch (error: any) {
         // This will log the specific MySQL error to the console.
@@ -87,5 +87,3 @@ export async function query(sql: string, params: any[] = []) {
     }
   }
 }
-
-

@@ -16,6 +16,7 @@ export async function getCategories(): Promise<Category[]> {
    return results as Category[];
   } catch (error) {
     console.error("Error in getCategories:", error);
+    // Return empty array on error to prevent site crash
     return [];
   }
 }
