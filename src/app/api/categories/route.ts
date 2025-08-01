@@ -1,5 +1,6 @@
 
 // src/app/api/categories/route.ts
+/*
 import { NextResponse } from 'next/server';
 import { query, testConnection } from '@/lib/db'; // Import testConnection
 import type { Category } from '@/types';
@@ -30,3 +31,4 @@ export async function GET() {
     );
   }
 }
+*/
