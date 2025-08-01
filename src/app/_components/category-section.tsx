@@ -21,7 +21,7 @@ type CategorySectionProps = {
 
 export function CategorySection({ category, products }: CategorySectionProps) {
   return (
-    <div className="py-8 md:py-12">
+    <div>
         <div className="text-center mb-6 md:mb-8">
           <h2 className="font-headline text-3xl md:text-5xl font-bold text-primary mb-2">
             {category.name}
