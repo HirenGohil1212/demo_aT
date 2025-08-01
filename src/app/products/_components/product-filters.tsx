@@ -14,9 +14,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
-
 
 type ProductFiltersProps = {
   categories: Category[];
@@ -26,7 +23,6 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
-  const isMobile = useIsMobile();
 
   const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'All');
@@ -64,8 +60,8 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
 
   return (
     <div className="space-y-4 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="relative lg:col-span-1">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="relative md:col-span-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                 type="text"
@@ -76,26 +72,20 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
                 />
             </div>
             
-            <div className={isMobile ? "lg:col-span-1" : "hidden"}></div>
-
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:col-span-2 lg:col-span-2 lg:grid-cols-2 gap-4">
-                {isMobile ? (
-                    <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="All">All Categories</SelectItem>
-                            {categories.map((category) => (
-                                <SelectItem key={category.id} value={category.name}>
-                                    {category.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                ) : null}
-
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:col-span-2 gap-4">
+                <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Select Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="All">All Categories</SelectItem>
+                        {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.name}>
+                                {category.name}
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
 
                 <Select value={sortOrder} onValueChange={setSortOrder}>
                     <SelectTrigger>
@@ -109,26 +99,6 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
                 </Select>
             </div>
         </div>
-        
-        {!isMobile && (
-             <div className="hidden md:flex flex-wrap items-center gap-2">
-                <Button
-                    variant={selectedCategory === 'All' ? 'default' : 'outline'}
-                    onClick={() => handleCategoryChange('All')}
-                >
-                    All
-                </Button>
-                {categories.map((category) => (
-                    <Button
-                        key={category.id}
-                        variant={selectedCategory === category.name ? 'default' : 'outline'}
-                        onClick={() => handleCategoryChange(category.name)}
-                    >
-                        {category.name}
-                    </Button>
-                ))}
-            </div>
-        )}
     </div>
   );
 }
