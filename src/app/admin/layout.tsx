@@ -11,11 +11,11 @@ import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/firebase";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({ href, children, onLinkClick }: { href: string; children: React.ReactNode; onLinkClick?: () => void; }) {
   const pathname = usePathname();
   const isActive = pathname.startsWith(href);
   return (
-    <Button asChild variant={isActive ? "secondary" : "ghost"} className="w-full justify-start">
+    <Button asChild variant={isActive ? "secondary" : "ghost"} className="w-full justify-start" onClick={onLinkClick}>
       <Link href={href}>
         {children}
       </Link>
@@ -23,29 +23,18 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   );
 }
 
-function MobileNavLink({ href, children, closeSheet }: { href: string, children: React.ReactNode, closeSheet: () => void }) {
-  const pathname = usePathname();
-  const isActive = pathname.startsWith(href);
-  return (
-    <Button asChild variant={isActive ? "default" : "ghost"} className="w-full justify-start text-lg h-12" onClick={closeSheet}>
-        <Link href={href}>
-            {children}
-        </Link>
-    </Button>
-  )
-}
-
-function SidebarContent() {
+function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     const handleLogout = async () => {
         await auth.signOut();
+        if (onLinkClick) onLinkClick();
     }
     return (
         <div className="flex flex-col h-full">
             <nav className="flex-grow p-4 space-y-2 mt-4">
-                <NavLink href="/admin/products"><ShoppingBag className="mr-2"/>Products</NavLink>
-                <NavLink href="/admin/categories"><Tag className="mr-2"/>Categories</NavLink>
-                <NavLink href="/admin/banners"><GalleryHorizontal className="mr-2"/>Banners</NavLink>
-                <NavLink href="/admin/settings"><Settings className="mr-2"/>Settings</NavLink>
+                <NavLink href="/admin/products" onLinkClick={onLinkClick}><ShoppingBag className="mr-2"/>Products</NavLink>
+                <NavLink href="/admin/categories" onLinkClick={onLinkClick}><Tag className="mr-2"/>Categories</NavLink>
+                <NavLink href="/admin/banners" onLinkClick={onLinkClick}><GalleryHorizontal className="mr-2"/>Banners</NavLink>
+                <NavLink href="/admin/settings" onLinkClick={onLinkClick}><Settings className="mr-2"/>Settings</NavLink>
             </nav>
             <div className="p-4 border-t">
                 <Button onClick={handleLogout} variant="outline" className="w-full justify-start">
@@ -94,7 +83,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
                 <SheetHeader>
                   <SheetTitle className="sr-only">Admin Menu</SheetTitle>
                 </SheetHeader>
-                <SidebarContent />
+                <SidebarContent onLinkClick={() => setIsMobileMenuOpen(false)} />
             </SheetContent>
         </Sheet>
 
