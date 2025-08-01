@@ -5,11 +5,11 @@ import mysql from 'mysql2/promise';
 // Database configuration.
 // It is strongly recommended to use environment variables for these values.
 const dbConfig = {
-  host: process.env.DB_HOST || '127.0.0.1',
+  host: process.env.DB_HOST || 'srv1835.hstgr.io',
   port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '', // Default XAMPP password is often empty
-  database: process.env.DB_NAME || 'luxeliquor',
+  user: process.env.DB_USER || 'u782359236_Hiren',
+  password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
+  database: process.env.DB_NAME || 'u782359236_demo',
 };
 
 // Create a connection pool. This is more efficient than creating a new
@@ -57,7 +57,7 @@ export async function query(sql: string, params: any[] = []) {
     });
 
     // Re-throw the error to be caught by the API route.
-    throw new Error('Failed to execute database query.');
+    throw error;
   } finally {
     // Ensure the connection is always released back to the pool.
     if (connection) {
