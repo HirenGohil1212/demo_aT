@@ -26,8 +26,6 @@ function NavLink({ href, children, onLinkClick }: { href: string; children: Reac
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     const router = useRouter();
     const handleLogout = async () => {
-        // Redirect to home first, then sign out.
-        // This prevents the layout's effect from redirecting to /login.
         router.push('/');
         await auth.signOut();
         if (onLinkClick) onLinkClick();
@@ -75,7 +73,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (user && isAdmin) {
     return (
-      <div className="flex min-h-screen">
+      <div className="grid md:grid-cols-[256px_1fr] flex-1">
         {/* Desktop Sidebar */}
         <aside className="hidden md:block w-64 border-r bg-card">
             <SidebarContent />
@@ -91,13 +89,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
             </SheetContent>
         </Sheet>
 
-        <div className="flex-1 flex flex-col">
+        <div className="flex flex-col">
             <header className="flex h-14 items-center justify-between border-b px-4 lg:px-6 bg-card">
                 <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
                     <PanelLeft />
                     <span className="sr-only">Open Menu</span>
                 </Button>
-                <div className="flex-1 text-center md:text-right">
+                <div className="flex-1 text-center md:text-left">
                     <h2 className="text-xl font-semibold">Admin Dashboard</h2>
                 </div>
             </header>
