@@ -64,22 +64,20 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-8 md:mb-12 text-primary">Your Shopping Cart</h1>
+      <h1 className="font-headline text-3xl sm:text-4xl font-bold text-center mb-8 md:mb-12 text-primary">Your Shopping Cart</h1>
       <div className="grid lg:grid-cols-3 gap-8 md:gap-12 items-start">
         <div className="lg:col-span-2 space-y-6">
           {cartItems.map(({ product, quantity }) => (
             <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm">
                 <div className="flex flex-col md:flex-row items-center gap-4 p-4">
-                    <div className="w-28 h-28 relative rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-md">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 relative rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-md">
                         <Image src={product.image} alt={product.name} fill className="object-contain p-2" data-ai-hint={`${product.category} bottle`} />
                     </div>
-                    <div className="flex-grow w-full text-center md:text-left">
-                        {/* The Link component is commented out as requested */}
-                        {/* <Link href={`/products/${product.id}`} className="font-headline text-xl font-bold hover:text-primary transition-colors">{product.name}</Link> */}
+                    <div className="flex-grow w-full flex flex-col items-center md:items-start text-center md:text-left">
                         <span className="font-headline text-xl font-bold text-primary transition-colors">{product.name}</span>
                         <p className="text-lg font-semibold text-primary/90 mt-1">INR {product.price.toFixed(2)}</p>
                     </div>
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-2 flex-shrink-0">
                         <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
                             <Minus className="h-4 w-4" />
                         </Button>
@@ -88,10 +86,10 @@ export default function CartPage() {
                             <Plus className="h-4 w-4" />
                         </Button>
                     </div>
-                    <div className="text-center md:text-right md:ml-4">
+                    <div className="text-center md:text-right md:ml-4 flex-shrink-0">
                         <p className="font-bold text-xl">INR {(product.price * quantity).toFixed(2)}</p>
                     </div>
-                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive self-center md:self-auto" onClick={() => removeFromCart(product.id)}>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive self-center flex-shrink-0" onClick={() => removeFromCart(product.id)}>
                         <Trash2 className="h-5 w-5" />
                     </Button>
                 </div>
@@ -129,7 +127,7 @@ export default function CartPage() {
             <CardFooter>
               <Button 
                 size="lg" 
-                className="w-full h-14 font-bold text-xl bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl shadow-lg hover:scale-105 transition-transform disabled:scale-100 disabled:shadow-none" 
+                className="w-full h-14 font-bold text-lg sm:text-xl bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl shadow-lg hover:scale-105 transition-transform disabled:scale-100 disabled:shadow-none" 
                 onClick={handleWhatsAppOrder}
                 disabled={!isDetailsComplete}
                 title={!isDetailsComplete ? "Please fill in all your details" : "Place Order"}
