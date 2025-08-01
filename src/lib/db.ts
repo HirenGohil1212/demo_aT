@@ -1,3 +1,4 @@
+
 // src/lib/db.ts
 import mysql from 'mysql2/promise';
 
@@ -13,13 +14,26 @@ const dbConfig = {
 
 // Create a connection pool. This is more efficient than creating a new
 // connection for every query.
-const pool = mysql.createPool(dbConfig);
+// It's wrapped in a try-catch to handle cases where the db isn't available.
+let pool: mysql.Pool | null = null;
+try {
+  pool = mysql.createPool(dbConfig);
+} catch (error) {
+    console.warn("Could not connect to database. Continuing in mock mode.", error);
+}
+
 
 // The query function executes a SQL query and returns the result.
 // It's a generic function that can be used for any query.
 export async function query(sql: string, params: any[] = []) {
-  const connection = await pool.getConnection();
+  if (!pool) {
+      console.warn(`Database not available. Returning empty mock data for query: ${sql}`);
+      return [];
+  }
+
+  let connection;
   try {
+    connection = await pool.getConnection();
     const [results] = await connection.execute(sql, params);
     return results;
   } catch (error) {
@@ -29,6 +43,8 @@ export async function query(sql: string, params: any[] = []) {
     throw new Error('Failed to execute database query.');
   } finally {
     // Ensure the connection is always released back to the pool.
-    connection.release();
+    if (connection) {
+      connection.release();
+    }
   }
 }
