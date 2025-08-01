@@ -24,7 +24,7 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
     const [api, setApi] = React.useState<CarouselApi>()
     
     const plugin = React.useRef(
-        Autoplay({ delay: 5000, stopOnInteraction: true })
+        Autoplay({ delay: 2000, stopOnInteraction: true })
     );
 
     // This effect re-initializes the carousel when the number of banners changes.
