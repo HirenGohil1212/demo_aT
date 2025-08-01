@@ -72,11 +72,11 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
                         <p className="text-lg sm:text-xl md:text-3xl max-w-4xl mb-6 sm:mb-8 drop-shadow-xl font-light tracking-wider">
                           {banner.subtitle}
                         </p>
-                        <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold px-8 py-6 rounded-full shadow-lg hover:scale-105 transition-transform">
+                        {/* <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold px-8 py-6 rounded-full shadow-lg hover:scale-105 transition-transform">
                           <Link href={`/products/${banner.productId}`}>
                             Discover More
                           </Link>
-                        </Button>
+                        </Button> */}
                       </div>
                   </div>
                 </CarouselItem>
