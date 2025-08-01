@@ -24,7 +24,7 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
     const [current, setCurrent] = useState(0);
     
     const plugin = useRef(
-        Autoplay({ delay: 4000, stopOnInteraction: true })
+        Autoplay({ delay: 4000, stopOnInteraction: false })
     );
 
     useEffect(() => {
@@ -53,8 +53,6 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
               loop: true,
             }}
             plugins={[plugin.current]}
-            onMouseEnter={plugin.current.stop}
-            onMouseLeave={plugin.current.reset}
           >
             <CarouselContent>
               {banners.map((banner, index) => (
