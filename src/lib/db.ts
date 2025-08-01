@@ -5,7 +5,7 @@ import mysql from 'mysql2/promise';
 // Database configuration for a local XAMPP server.
 // Ensure your XAMPP MySQL server is running.
 const dbConfig = {
-  host: process.env.DB_HOST || 'host.docker.internal', // Use special DNS name to reach host machine from container
+  host: process.env.DB_HOST || '192.168.1.6', // Use local network IP
   user: process.env.DB_USER || 'root',      // Default XAMPP user
   password: process.env.DB_PASSWORD || '',  // Default XAMPP password is empty
   database: process.env.DB_NAME || 'drink', // Connect to the 'drink' database
