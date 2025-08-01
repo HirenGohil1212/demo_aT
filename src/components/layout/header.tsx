@@ -39,6 +39,62 @@ async function fetchSignupSetting() {
     }
 }
 
+function AuthCta() {
+    const { user } = useUser();
+    const router = useRouter();
+    const [allowSignups, setAllowSignups] = useState(true);
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+        async function checkSettings() {
+            const setting = await fetchSignupSetting();
+            setAllowSignups(setting);
+        }
+        checkSettings();
+    }, []);
+
+    const handleLogout = async () => {
+        await auth.signOut();
+        router.push('/');
+    }
+
+    if (!isClient) {
+        return null;
+    }
+    
+    if (user) {
+        return (
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="icon" className="rounded-full">
+                        <UserIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                        Logout
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        )
+    }
+
+    if (allowSignups) {
+        return (
+            <Button asChild variant="outline">
+                <Link href="/signup">Sign Up</Link>
+            </Button>
+        )
+    }
+
+    return null;
+}
+
 
 export default function Header() {
   const { itemCount } = useCart();
@@ -172,32 +228,7 @@ export default function Header() {
           </Button>
 
           <div className="hidden md:flex items-center gap-2">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className="rounded-full">
-                    <UserIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <>
-                {allowSignups && (
-                  <Button asChild variant="outline">
-                      <Link href="/signup">Sign Up</Link>
-                  </Button>
-                )}
-              </>
-            )}
+            <AuthCta />
           </div>
 
         </div>
