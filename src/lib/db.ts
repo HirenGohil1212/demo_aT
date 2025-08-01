@@ -8,7 +8,7 @@ const dbConfig = {
   host: process.env.DB_HOST || '127.0.0.1', // Standard localhost IP
   user: process.env.DB_USER || 'root',      // Default XAMPP user
   password: process.env.DB_PASSWORD || '',  // Default XAMPP password is empty
-  database: process.env.DB_NAME || 'u782359236_jay', // Make sure this database exists in your XAMPP
+  database: process.env.DB_NAME || 'drink', // Connect to the 'drink' database
   port: 3306, // Default MySQL port
 };
 
