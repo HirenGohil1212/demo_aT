@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="bg-card shadow-inner mt-12">
+    <footer className="bg-card shadow-inner">
       <div className="container mx-auto px-4 py-6 text-center text-muted-foreground">
         <p>&copy; {new Date().getFullYear()} LuxeLiquor. All rights reserved.</p>
         <div className="text-xs mt-2 space-x-2">

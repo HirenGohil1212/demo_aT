@@ -1,12 +1,10 @@
 
 "use client";
 
-import * as React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import Autoplay from "embla-carousel-autoplay";
 import type { Banner } from '@/types';
-import { Button } from '@/components/ui/button';
 import {
   Carousel,
   CarouselContent,
@@ -22,14 +20,14 @@ type HomeCarouselProps = {
 }
 
 export function HomeCarousel({ banners }: HomeCarouselProps) {
-    const [api, setApi] = React.useState<CarouselApi>()
-    const [current, setCurrent] = React.useState(0);
+    const [api, setApi] = useState<CarouselApi>()
+    const [current, setCurrent] = useState(0);
     
-    const plugin = React.useRef(
+    const plugin = useRef(
         Autoplay({ delay: 4000, stopOnInteraction: true })
     );
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!api) return;
 
         setCurrent(api.selectedScrollSnap());
@@ -71,27 +69,6 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
                         className="object-cover"
                         data-ai-hint={`cocktail drink`}
                       />
-                      {/*
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"/>
-                      <div className="absolute inset-0 flex flex-col items-start justify-end text-left p-6 sm:p-8 md:p-12 text-white">
-                        <h2 
-                            className={cn(
-                                "font-headline text-4xl sm:text-6xl md:text-7xl font-bold text-primary drop-shadow-2xl tracking-tight mb-2 sm:mb-4 transition-all duration-700 ease-out",
-                                current === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                            )}
-                        >
-                            {banner.title}
-                        </h2>
-                        <p 
-                            className={cn(
-                                "text-lg sm:text-xl md:text-2xl max-w-2xl mb-6 sm:mb-8 drop-shadow-xl font-light tracking-wider transition-all duration-700 ease-out delay-200",
-                                current === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                            )}
-                        >
-                            {banner.subtitle}
-                        </p>
-                      </div>
-                      */}
                   </div>
                 </CarouselItem>
               ))}

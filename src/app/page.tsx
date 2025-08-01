@@ -1,13 +1,23 @@
 
 "use server";
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { getProducts } from '@/actions/product-actions';
 import { getCategories } from '@/actions/category-actions';
 import { getBanners } from '@/actions/banner-actions';
 import ProductCard from '@/components/product-card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
-import { HomeCarousel } from './_components/home-carousel';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const HomeCarousel = dynamic(
+    () => import('./_components/home-carousel').then(mod => mod.HomeCarousel),
+    { 
+        ssr: false,
+        loading: () => <Skeleton className="aspect-[16/9] md:aspect-[2/1] lg:aspect-[2.5/1] w-full" />
+    }
+);
+
 
 export default async function Home() {
   const allProducts = await getProducts();
@@ -52,7 +62,7 @@ export default async function Home() {
                         {category.name}
                       </h2>
                       <Button asChild variant="link" className="text-primary hover:text-primary/90 text-md">
-                        <Link href={`/products?category=${category.name}`}>
+                        <Link href={`/products?category=${encodeURIComponent(category.name)}`}>
                           View All {category.name} <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
                       </Button>
