@@ -68,7 +68,7 @@ export default function CartPage() {
       <div className="grid lg:grid-cols-3 gap-8 md:gap-12 items-start">
         <div className="lg:col-span-2 space-y-6">
           {cartItems.map(({ product, quantity }) => (
-            <Card key={product.id} className="w-full max-w-sm mx-auto lg:max-w-none lg:mx-0 overflow-hidden shadow-lg hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm">
+            <Card key={product.id} className="max-w-sm mx-auto lg:max-w-none lg:mx-0 overflow-hidden shadow-lg hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm">
                 <div className="flex flex-col items-center gap-6 p-4">
                     <div className="w-24 h-24 relative rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-md">
                         <Image src={product.image} alt={product.name} fill className="object-contain p-2" data-ai-hint={`${product.category} bottle`} />
