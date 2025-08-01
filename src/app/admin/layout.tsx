@@ -24,8 +24,10 @@ function NavLink({ href, children, onLinkClick }: { href: string; children: Reac
 }
 
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
+    const router = useRouter();
     const handleLogout = async () => {
         await auth.signOut();
+        router.push('/');
         if (onLinkClick) onLinkClick();
     }
     return (
