@@ -50,15 +50,15 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Welcome back!",
       });
-      // The UserProvider will see the auth state change and handle
-      // checking for admin status and redirection. We can just go home.
       router.push('/');
     } catch (error: any) {
       console.error("Login failed:", error);
-      let description = "Please check your email and password.";
-      if (error.code === 'auth/invalid-credential') {
+      let description = "An unknown error occurred. Please try again.";
+      
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         description = "Invalid credentials. Please try again."
       }
+
       toast({
         variant: "destructive",
         title: "Login Failed",
