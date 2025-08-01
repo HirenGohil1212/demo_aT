@@ -11,7 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Minus, Plus, Trash2, ShoppingCart, ArrowLeft, MessageSquareText } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { useState } from 'react';
-import { Separator } from '@/components/ui/separator';
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart, totalPrice, itemCount } = useCart();
@@ -72,53 +71,34 @@ export default function CartPage() {
         {/* Cart Items */}
         <div className="lg:col-span-7 space-y-6">
           {cartItems.map(({ product, quantity }) => (
-            <Card key={product.id} className="overflow-hidden shadow-lg border-primary/10">
-                <CardContent className="p-4 flex gap-4">
-                    <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 bg-white rounded-md border p-1">
-                        <Image src={product.image} alt={product.name} fill className="object-contain" data-ai-hint={`${product.category} bottle`} />
+            <Card key={product.id} className="overflow-hidden shadow-lg border-primary/10 flex flex-col sm:flex-row">
+                <div className="relative w-full sm:w-32 md:w-40 flex-shrink-0 bg-card p-2 aspect-square">
+                    <Image src={product.image} alt={product.name} fill className="object-contain" data-ai-hint={`${product.category} bottle`} />
+                </div>
+                
+                <div className="p-4 flex-grow flex flex-col justify-between gap-4">
+                    <div className="flex-grow">
+                        <div className="flex justify-between items-start">
+                        <Link href={`/products/${product.id}`} className="font-headline text-lg font-bold text-primary hover:underline transition-colors pr-2">{product.name}</Link>
+                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-7 w-7 flex-shrink-0" onClick={() => removeFromCart(product.id)}>
+                            <Trash2 className="h-5 w-5" />
+                        </Button>
+                        </div>
+                        <p className="text-md font-semibold text-primary/90">INR {product.price.toFixed(2)}</p>
                     </div>
                     
-                    <div className="flex-grow flex flex-col sm:flex-row justify-between gap-4">
-                        {/* Details Section */}
-                        <div className="flex-grow space-y-2">
-                           <div className="flex justify-between items-start">
-                             <Link href={`/products/${product.id}`} className="font-headline text-lg font-bold text-primary hover:underline transition-colors pr-2">{product.name}</Link>
-                             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-7 w-7 flex-shrink-0" onClick={() => removeFromCart(product.id)}>
-                                <Trash2 className="h-5 w-5" />
-                             </Button>
-                           </div>
-                           <p className="text-md font-semibold text-primary/90">INR {product.price.toFixed(2)}</p>
-                           
-                           {/* Quantity for Mobile */}
-                           <div className="sm:hidden flex items-center gap-2 pt-2">
-                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
-                                    <Minus className="h-4 w-4" />
-                                </Button>
-                                <Input type="number" value={quantity} readOnly className="h-9 w-14 text-center font-bold bg-transparent border-x-0 border-t-0 border-b-2 border-primary/50 focus-visible:ring-0" />
-                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity + 1)}>
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
+                    <div className="flex justify-between items-center pt-2 mt-2 border-t border-border/20">
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
+                                <Minus className="h-4 w-4" />
+                            </Button>
+                            <Input type="number" value={quantity} readOnly className="h-8 w-12 text-center font-bold bg-transparent border-x-0 border-t-0 border-b-2 border-primary/50 focus-visible:ring-0" />
+                            <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateQuantity(product.id, quantity + 1)}>
+                                <Plus className="h-4 w-4" />
+                            </Button>
                         </div>
-
-                        {/* Quantity & Total for Desktop */}
-                        <div className="hidden sm:flex flex-col items-end justify-between">
-                            <div className="flex items-center gap-2">
-                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
-                                    <Minus className="h-4 w-4" />
-                                </Button>
-                                <Input type="number" value={quantity} readOnly className="h-9 w-14 text-center font-bold bg-transparent border-x-0 border-t-0 border-b-2 border-primary/50 focus-visible:ring-0" />
-                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity + 1)}>
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
-                            <p className="font-bold text-lg mt-2">INR {(product.price * quantity).toFixed(2)}</p>
-                        </div>
+                        <p className="font-bold text-lg">INR {(product.price * quantity).toFixed(2)}</p>
                     </div>
-                </CardContent>
-                 {/* Total for Mobile */}
-                <div className="sm:hidden border-t p-4 text-right">
-                    <p className="font-bold text-lg">Total: <span className="text-primary">INR {(product.price * quantity).toFixed(2)}</span></p>
                 </div>
             </Card>
           ))}
