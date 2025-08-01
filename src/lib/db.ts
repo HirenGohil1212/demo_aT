@@ -5,45 +5,56 @@ import mysql from 'mysql2/promise';
 // Database configuration.
 // It is strongly recommended to use environment variables for these values.
 const dbConfig = {
-  host: process.env.DB_HOST || 'growkrishi.com',
-  user: process.env.DB_USER || 'u782359236_Hiren',
-  password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
-  database: process.env.DB_NAME || 'u782359236_demo',
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '', // Default XAMPP password is often empty
+  database: process.env.DB_NAME || 'luxeliquor',
 };
 
 // Create a connection pool. This is more efficient than creating a new
 // connection for every query.
 let pool: mysql.Pool | null = null;
 
-try {
-  pool = mysql.createPool(dbConfig);
-  console.log("Database connection pool created successfully.");
-} catch (error) {
-    console.error("CRITICAL: Could not create database pool.", error);
+function getPool() {
+    if (!pool) {
+        try {
+            pool = mysql.createPool(dbConfig);
+            console.log("Database connection pool created successfully.");
+        } catch (error) {
+            console.error("CRITICAL: Could not create database pool.", error);
+            // In case of a catastrophic error, we ensure the pool remains null.
+            pool = null; 
+        }
+    }
+    return pool;
 }
 
 
 // The query function executes a SQL query and returns the result.
 // It's a generic function that can be used for any query.
 export async function query(sql: string, params: any[] = []) {
-  if (!pool) {
+  const currentPool = getPool();
+  if (!currentPool) {
       console.error("Database pool is not available. Cannot execute query.");
       throw new Error("Database connection is not configured.");
   }
 
   let connection;
   try {
-    connection = await pool.getConnection();
+    connection = await currentPool.getConnection();
     const [results] = await connection.execute(sql, params);
     return results;
   } catch (error: any) {
     // This is the new, more detailed logging.
-    console.error('DATABASE_QUERY_FAILED:', error);
-    console.error('Error Code:', error.code);
-    console.error('Error No:', error.errno);
-    console.error('SQL State:', error.sqlState);
-    console.error('Failing Query:', sql);
-    console.error('Query Params:', params);
+    console.error('DATABASE_QUERY_FAILED:', {
+        message: error.message,
+        code: error.code,
+        errno: error.errno,
+        sqlState: error.sqlState,
+        failingQuery: sql,
+        queryParams: params,
+    });
 
     // Re-throw the error to be caught by the API route.
     throw new Error('Failed to execute database query.');
