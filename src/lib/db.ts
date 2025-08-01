@@ -2,13 +2,13 @@
 // src/lib/db.ts
 import mysql from 'mysql2/promise';
 
-// This is a placeholder for your database configuration.
-// In a real application, you should use environment variables
-// to store sensitive information like database credentials.
+// Database configuration.
+// For local development with XAMPP, the default user is 'root' with no password.
+// For production, use environment variables.
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || 'password',
+  password: process.env.DB_PASSWORD || '', // Default XAMPP password is an empty string
   database: process.env.DB_NAME || 'luxeliquor',
 };
 
@@ -19,7 +19,7 @@ let pool: mysql.Pool | null = null;
 try {
   pool = mysql.createPool(dbConfig);
 } catch (error) {
-    console.warn("Could not connect to database. Continuing in mock mode.", error);
+    console.warn("Could not create database pool. Continuing in mock mode.", error);
 }
 
 
