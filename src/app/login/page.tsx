@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter, notFound } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,6 @@ export default function LoginPage() {
       });
       router.push('/');
     } catch (error: any) {
-      console.error("Login failed:", error);
       let description = "An unknown error occurred. Please try again.";
       
       // Handle specific Firebase auth errors for invalid credentials
