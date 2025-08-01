@@ -13,7 +13,7 @@ const bannerSchema = z.object({
   title: z.string().min(1, { message: "Title is required" }),
   subtitle: z.string().min(1, { message: "Subtitle is required" }),
   imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }),
-  productId: z.string().min(1, { message: "A product must be linked" }),
+  productId: z.string().optional(), // ProductId is now optional
 });
 
 /**
@@ -36,7 +36,7 @@ export async function addBanner(prevState: unknown, formData: FormData) {
     const docRef = await db.collection("banners").add({
       title: data.title,
       subtitle: data.subtitle,
-      productId: data.productId,
+      productId: data.productId || '', // Provide a default empty string
       imageUrl: data.imageUrl, // The URL comes directly from the form
       createdAt: createdAt,
       active: true,
@@ -49,6 +49,7 @@ export async function addBanner(prevState: unknown, formData: FormData) {
         id: docRef.id,
         ...data,
         active: true,
+        productId: data.productId || '',
         createdAt: new Date().toISOString(), // Return a serializable date
     }
     

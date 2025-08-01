@@ -133,6 +133,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
           </div>
         </div>
       </div>
+      {/*
       <div className="space-y-2">
         <Label htmlFor="productId">Link to Product</Label>
         <Select name="productId" required>
@@ -148,6 +149,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
           </SelectContent>
         </Select>
       </div>
+      */}
        <Button type="submit" disabled={isSubmitDisabled}>
           {isPending && <Loader2 className="animate-spin mr-2" />}
           {isUploading ? "Waiting for upload..." : "Add Banner"}
