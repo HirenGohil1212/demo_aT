@@ -18,13 +18,13 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="flex flex-col overflow-hidden h-full group transition-all duration-300 ease-in-out hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 border-transparent hover:border-primary/30 bg-card/80 backdrop-blur-sm">
-      <CardHeader className="p-0 relative">
+      <div className="relative">
           <div className="aspect-square relative overflow-hidden bg-transparent">
             <Image
               src={product.image}
               alt={product.name}
               fill
-              className="object-contain group-hover:scale-110 transition-transform duration-500 ease-in-out"
+              className="object-contain group-hover:scale-110 transition-transform duration-500 ease-in-out p-4"
               data-ai-hint={`${product.category} bottle`}
               sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 23vw"
             />
@@ -36,7 +36,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.name}
             </CardTitle>
           </div>
-      </CardHeader>
+      </div>
       <CardContent className="p-4 flex-grow flex flex-col justify-end">
         <div className="flex justify-between items-baseline mb-4">
             <p className="text-2xl font-bold text-primary">INR {product.price.toFixed(2)}</p>
