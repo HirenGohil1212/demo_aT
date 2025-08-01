@@ -13,6 +13,7 @@ import { query } from '@/lib/db';
  */
 export async function getCategories(): Promise<Category[]> {
   try {
+    /*
     // Construct the absolute URL for the API endpoint.
     // In a real deployment, you'd want to use an environment variable
     // for the base URL.
@@ -29,6 +30,8 @@ export async function getCategories(): Promise<Category[]> {
 
     const data = await res.json();
     return data;
+    */
+   return [];
   } catch (error) {
     console.error("Error in getCategories:", error);
     return [];
