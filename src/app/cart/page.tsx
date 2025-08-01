@@ -64,7 +64,7 @@ export default function CartPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="font-headline text-4xl md:text-5xl font-bold text-center mb-8 md:mb-12 text-primary">Your Shopping Cart</h1>
+      <h1 className="font-headline text-3xl sm:text-4xl md:text-5xl font-bold text-center mb-8 md:mb-12 text-primary">Your Shopping Cart</h1>
       <div className="grid lg:grid-cols-3 gap-8 md:gap-12 items-start">
         <div className="lg:col-span-2 space-y-6">
           {cartItems.map(({ product, quantity }) => (
