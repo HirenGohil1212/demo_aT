@@ -2,6 +2,7 @@
 "use server";
 
 import { getProducts } from "@/actions/product-actions";
+import { getCategories } from "@/actions/category-actions";
 import {
   Card,
   CardContent,
@@ -13,7 +14,10 @@ import { ProductsClient } from "./_components/products-client";
 
 
 export default async function ProductsPage() {
-  const initialProducts = await getProducts();
+  const [initialProducts, categories] = await Promise.all([
+    getProducts(),
+    getCategories(),
+  ]);
 
   return (
     <Card>
@@ -28,7 +32,7 @@ export default async function ProductsPage() {
         </div>
       </CardHeader>
       <CardContent>
-        <ProductsClient initialProducts={initialProducts} />
+        <ProductsClient initialProducts={initialProducts} categories={categories} />
       </CardContent>
     </Card>
   );
