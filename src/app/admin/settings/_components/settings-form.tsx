@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { updateSettings } from "@/actions/settings-actions";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -10,6 +10,8 @@ import { Loader2 } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AppSettings } from "@/types";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 type SettingsFormProps = {
   settings: AppSettings;
@@ -19,13 +21,27 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? <Loader2 className="animate-spin" /> : "Save Changes"}
+      {pending ? <><Loader2 className="animate-spin mr-2" /> Saving...</> : "Save Changes"}
     </Button>
   );
 }
 
 export function SettingsForm({ settings }: SettingsFormProps) {
-  const [error, action] = useActionState(updateSettings, undefined);
+  const [state, action] = useActionState(updateSettings, undefined);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (state?.success) {
+      toast({ title: "Success", description: "Settings have been updated." });
+    } else if (state?.error) {
+       const errorMessages = Object.values(state.error).flat().join(" \n");
+       toast({
+          variant: "destructive",
+          title: "Error updating settings",
+          description: errorMessages,
+       });
+    }
+  }, [state, toast]);
 
   return (
     <form action={action} className="space-y-6">
@@ -51,7 +67,30 @@ export function SettingsForm({ settings }: SettingsFormProps) {
         </CardContent>
       </Card>
       
-      {error && <div className="text-destructive text-sm mt-2">{error.message}</div>}
+      <Card>
+        <CardHeader>
+            <CardTitle>Contact Settings</CardTitle>
+            <CardDescription>Manage contact information for your store.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
+            <Input
+              id="whatsappNumber"
+              name="whatsappNumber"
+              type="tel"
+              placeholder="e.g. 911234567890"
+              defaultValue={settings.whatsappNumber}
+            />
+            <p className="text-xs text-muted-foreground">
+              Enter the number including country code, without '+' or spaces.
+            </p>
+            {state?.error?.whatsappNumber && <p className="text-destructive text-sm">{state.error.whatsappNumber[0]}</p>}
+          </div>
+        </CardContent>
+      </Card>
+
+      {state?.error?._server && <div className="text-destructive text-sm mt-2">{state.error._server[0]}</div>}
 
       <div className="mt-6 flex justify-end">
         <SubmitButton />

@@ -8,6 +8,7 @@ import type { AppSettings } from '@/types';
 
 const defaultSettings: AppSettings = {
   allowSignups: true,
+  whatsappNumber: '1234567890', // Default placeholder number
 };
 
 /**
@@ -43,12 +44,14 @@ export async function updateSettings(prevState: unknown, formData: FormData) {
     // A switch sends "on" when checked, and nothing when unchecked.
     // We preprocess this to a boolean.
     allowSignups: z.preprocess((val) => val === 'on', z.boolean().default(false)),
+    whatsappNumber: z.string().min(10, { message: "WhatsApp number must be at least 10 digits."}).regex(/^\d+$/, { message: "WhatsApp number must contain only digits."}),
   });
 
   const result = settingsSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (result.success === false) {
-    return { message: "Invalid data provided." };
+    // We can return the flattened error object for better client-side handling
+    return { error: result.error.flatten().fieldErrors };
   }
 
   try {
@@ -56,9 +59,11 @@ export async function updateSettings(prevState: unknown, formData: FormData) {
     revalidatePath('/admin/settings');
     revalidatePath('/signup');
     revalidatePath('/login');
+    revalidatePath('/cart'); // Revalidate cart to get new number
     revalidatePath('/api/settings'); // Revalidate the API route
+    return { success: true };
   } catch (error) {
     console.error("Error in updateSettings:", error);
-    return { message: "Failed to update settings due to a server error." };
+    return { error: { _server: ["Failed to update settings due to a server error."] }};
   }
 }
