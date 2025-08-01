@@ -1,3 +1,4 @@
+
 "use client";
 
 import { LogOut } from "lucide-react";
@@ -5,10 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/firebase";
 
-export function LogoutButton({ onLinkClick }: { onLinkClick?: () => void }) {
+export function LogoutButton({ onLinkClick, onLogoutStarted }: { onLinkClick?: () => void, onLogoutStarted: () => void }) {
     const router = useRouter();
 
     const handleLogout = async () => {
+        // Signal that the logout process has started.
+        onLogoutStarted();
+
         // First, navigate to the home page.
         router.push('/');
         

@@ -23,7 +23,7 @@ function NavLink({ href, children, onLinkClick }: { href: string; children: Reac
   );
 }
 
-function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
+function SidebarContent({ onLinkClick, onLogoutStarted }: { onLinkClick?: () => void, onLogoutStarted: () => void }) {
     return (
         <div className="flex flex-col h-full">
             <div className="flex-grow">
@@ -32,7 +32,7 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
                     <NavLink href="/admin/categories" onLinkClick={onLinkClick}><Tag className="mr-2"/>Categories</NavLink>
                     <NavLink href="/admin/banners" onLinkClick={onLinkClick}><GalleryHorizontal className="mr-2"/>Banners</NavLink>
                     <NavLink href="/admin/settings" onLinkClick={onLinkClick}><Settings className="mr-2"/>Settings</NavLink>
-                    <LogoutButton onLinkClick={onLinkClick} />
+                    <LogoutButton onLinkClick={onLinkClick} onLogoutStarted={onLogoutStarted} />
                 </nav>
             </div>
         </div>
@@ -43,16 +43,24 @@ export function AdminClientLayout({ children }: { children: ReactNode }) {
   const { user, isAdmin, loading } = useUser();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
+    // Do not redirect if we are in the process of logging out.
+    if (isLoggingOut) return;
+
     if (!loading) {
       if (!user || !isAdmin) {
         router.push("/login");
       }
     }
-  }, [user, isAdmin, loading, router]);
+  }, [user, isAdmin, loading, router, isLoggingOut]);
 
-  if (loading) {
+  const handleLogoutStarted = () => {
+    setIsLoggingOut(true);
+  }
+
+  if (loading && !isLoggingOut) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -66,7 +74,7 @@ export function AdminClientLayout({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex flex-col w-64 border-r bg-card">
-          <SidebarContent />
+          <SidebarContent onLogoutStarted={handleLogoutStarted} />
         </aside>
 
         {/* Mobile Header & Main Content */}
@@ -84,7 +92,7 @@ export function AdminClientLayout({ children }: { children: ReactNode }) {
                 <SheetHeader>
                   <SheetTitle className="sr-only">Admin Menu</SheetTitle>
                 </SheetHeader>
-                <SidebarContent onLinkClick={() => setIsMobileMenuOpen(false)} />
+                <SidebarContent onLinkClick={() => setIsMobileMenuOpen(false)} onLogoutStarted={handleLogoutStarted} />
               </SheetContent>
             </Sheet>
             <div className="flex-1 text-center">
