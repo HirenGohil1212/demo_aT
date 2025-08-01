@@ -109,7 +109,6 @@ export default function LoginPage() {
               {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Sign In
             </Button>
-            {/* The sign up link is now completely removed from here
             {allowSignups && (
                 <div className="text-sm text-center text-muted-foreground">
                 Don't have an account?{' '}
@@ -118,7 +117,6 @@ export default function LoginPage() {
                 </Link>
                 </div>
             )}
-            */}
           </CardFooter>
         </form>
       </Card>
