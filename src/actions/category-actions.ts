@@ -3,8 +3,9 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/firebase-admin';
+import { db as firestoreDb } from '@/lib/firebase-admin'; // Keep for product check for now
 import type { Category } from '@/types';
+import { query } from '@/lib/db';
 
 /**
  * Fetches all categories by calling the new API endpoint.
@@ -35,9 +36,8 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 /**
- * Adds a new category to Firestore.
+ * Adds a new category to the MySQL database.
  * This is a server action that handles form submission.
- * This function will be migrated next.
  */
 export async function addCategory(prevState: unknown, formData: FormData) {
   const categorySchema = z.object({
@@ -55,22 +55,23 @@ export async function addCategory(prevState: unknown, formData: FormData) {
   }
 
   try {
-    // This part still uses Firebase and will be migrated.
-    await db.collection('categories').add(validatedFields.data);
+    await query('INSERT INTO categories (name) VALUES (?)', [validatedFields.data.name]);
     revalidatePath('/admin/categories');
     revalidatePath('/admin/products/new'); // Revalidate to update category dropdown
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in addCategory:", error);
+    // Handle potential duplicate entry error
+    if (error.code === 'ER_DUP_ENTRY') {
+      return { error: `Category "${validatedFields.data.name}" already exists.` };
+    }
     return { error: "Failed to add category due to a server error." };
   }
 }
 
 /**
- * Deletes a category from Firestore.
- * It first checks if any products are using this category.
+ * Deletes a category from the MySQL database.
  * @param categoryId The ID of the category to delete.
- * This function will be migrated next.
  */
 export async function deleteCategory(categoryId: string) {
     if (!categoryId) {
@@ -78,24 +79,23 @@ export async function deleteCategory(categoryId: string) {
     }
 
     try {
-        const categoryRef = db.collection('categories').doc(categoryId);
-        const categoryDoc = await categoryRef.get();
-
-        if (!categoryDoc.exists) {
+        // TODO: Re-implement this check after products are migrated to MySQL
+        // For now, we are checking against Firestore data.
+        const categoryResult = await query('SELECT name FROM categories WHERE id = ?', [categoryId]) as any[];
+        if (categoryResult.length === 0) {
             return { error: "Category not found." };
         }
-        
-        const categoryName = categoryDoc.data()?.name;
+        const categoryName = categoryResult[0].name;
 
-        // Check if any products are using this category
-        const productsSnapshot = await db.collection('products').where('category', '==', categoryName).limit(1).get();
+        // Check if any products in Firestore are using this category
+        const productsSnapshot = await firestoreDb.collection('products').where('category', '==', categoryName).limit(1).get();
 
         if (!productsSnapshot.empty) {
             return { error: `Cannot delete category "${categoryName}" as it is currently in use by one or more products.` };
         }
 
-        // Delete the category document from Firestore
-        await categoryRef.delete();
+        // Delete the category from MySQL
+        await query('DELETE FROM categories WHERE id = ?', [categoryId]);
         
         revalidatePath('/admin/categories');
         revalidatePath('/admin/products');
