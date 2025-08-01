@@ -3,47 +3,33 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { db } from '@/lib/firebase-admin';
 import type { AppSettings } from '@/types';
 
+// TODO: These settings should be stored in a 'settings' table in MySQL.
+
 const defaultSettings: AppSettings = {
-  allowSignups: true,
-  whatsappNumber: '1234567890', // Default placeholder number
-  minOrderQuantity: 4, // Default minimum order
+  allowSignups: false, // Defaulting to false as there's no auth system
+  whatsappNumber: '1234567890',
+  minOrderQuantity: 4,
 };
 
 /**
- * Fetches application settings from Firestore.
- * If no settings exist, it creates them with default values.
+ * Fetches application settings from the database.
  * @returns The application settings object.
+ * TODO: Implement MySQL fetching logic.
  */
 export async function getSettings(): Promise<AppSettings> {
-  try {
-    const settingsDoc = await db.collection('settings').doc('config').get();
-
-    if (!settingsDoc.exists) {
-      // If settings don't exist, create them with default values
-      await db.collection('settings').doc('config').set(defaultSettings);
-      return defaultSettings;
-    }
-    const data = settingsDoc.data();
-    // Merge with defaults to ensure new settings are present
-    return { ...defaultSettings, ...data } as AppSettings;
-  } catch (error) {
-    console.error("Error in getSettings:", error);
-    // Return default settings on error to avoid crashing the app
-    return defaultSettings;
-  }
+  console.log("getSettings called, but not implemented for MySQL yet. Returning default settings.");
+  return defaultSettings;
 }
 
 /**
- * Updates application settings in Firestore.
+ * Updates application settings in the database.
  * This is a server action that handles form submission.
+ * TODO: Implement MySQL update logic.
  */
 export async function updateSettings(prevState: unknown, formData: FormData) {
   const settingsSchema = z.object({
-    // A switch sends "on" when checked, and nothing when unchecked.
-    // We preprocess this to a boolean.
     allowSignups: z.preprocess((val) => val === 'on', z.boolean().default(false)),
     whatsappNumber: z.string().min(10, { message: "WhatsApp number must be at least 10 digits."}).regex(/^\d+$/, { message: "WhatsApp number must contain only digits."}),
     minOrderQuantity: z.coerce.number().int().positive({ message: "Minimum order quantity must be a positive whole number."}),
@@ -52,20 +38,14 @@ export async function updateSettings(prevState: unknown, formData: FormData) {
   const result = settingsSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (result.success === false) {
-    // We can return the flattened error object for better client-side handling
     return { error: result.error.flatten().fieldErrors };
   }
-
-  try {
-    await db.collection('settings').doc('config').set(result.data, { merge: true });
-    revalidatePath('/admin/settings');
-    revalidatePath('/signup');
-    revalidatePath('/ab_login');
-    revalidatePath('/cart'); // Revalidate cart to get new number
-    revalidatePath('/api/settings'); // Revalidate the API route
-    return { success: true };
-  } catch (error) {
-    console.error("Error in updateSettings:", error);
-    return { error: { _server: ["Failed to update settings due to a server error."] }};
-  }
+  
+  console.log("updateSettings called, but not implemented for MySQL yet. Data:", result.data);
+  revalidatePath('/admin/settings');
+  revalidatePath('/signup');
+  revalidatePath('/ab_login');
+  revalidatePath('/cart');
+  revalidatePath('/api/settings'); 
+  return { success: true };
 }

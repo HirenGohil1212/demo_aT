@@ -13,7 +13,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { useUser } from '@/hooks/use-user';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,46 +21,20 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { DbTestButton } from './db-test-button';
 
-
-// We can't use the server-side getSettings here, so we fetch it on the client
-async function fetchSignupSetting() {
-    try {
-        const res = await fetch('/api/settings');
-        if (!res.ok) return true; // Default to true on error
-        const data = await res.json();
-        return data.allowSignups;
-    } catch {
-        return true; // Default to true on error
-    }
-}
-
 function AuthCta() {
-    const { user } = useUser();
     const router = useRouter();
-    const [allowSignups, setAllowSignups] = useState(true);
-    const [isClient, setIsClient] = useState(false);
 
-    useEffect(() => {
-        setIsClient(true);
-        async function checkSettings() {
-            const setting = await fetchSignupSetting();
-            setAllowSignups(setting);
-        }
-        checkSettings();
-    }, []);
+    // This is a placeholder for the new auth system.
+    const user = null; // No user logged in by default
+    const isAdmin = false; // No admin by default
 
     const handleLogout = async () => {
-        await auth.signOut();
-        router.push('/');
-    }
-
-    if (!isClient) {
-        return null;
+      // Logic to clear session/cookie will go here
+      router.push('/');
     }
     
     if (user) {
@@ -75,7 +48,7 @@ function AuthCta() {
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                    <DropdownMenuItem disabled>{"user-email@example.com"}</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                         Logout
@@ -85,24 +58,19 @@ function AuthCta() {
         )
     }
 
-    return null;
+    return (
+        <Button onClick={() => router.push('/ab_login')}>Login</Button>
+    )
 }
 
 
 export default function Header() {
   const { itemCount } = useCart();
-  const { user, isAdmin } = useUser();
   const router = useRouter();
-  const [allowSignups, setAllowSignups] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    async function checkSettings() {
-        const setting = await fetchSignupSetting();
-        setAllowSignups(setting);
-    }
-    checkSettings();
-  }, []);
+  
+  // This is a placeholder. A real implementation will need a proper way to check admin status.
+  const isAdmin = true;
 
   const navLinks = [
     { href: '/', label: 'Home' },
@@ -110,7 +78,7 @@ export default function Header() {
   ];
 
   const handleLogout = async () => {
-    await auth.signOut();
+    // Logic for new auth system will go here
     router.push('/');
   }
 
@@ -163,7 +131,6 @@ export default function Header() {
                 </SheetTrigger>
                 <SheetContent side="left">
                     <SheetHeader>
-                        {/* <SheetTitle>Navigation</SheetTitle> */}
                         <SheetTitle asChild>
                           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary text-left">
                             LuxeLiquor
@@ -182,16 +149,7 @@ export default function Header() {
                         </MobileNavLink>
                     )}
                     <div className="flex flex-col gap-4 mt-4 border-t pt-6">
-                        {user ? (
-                        <>
-                            <p className="text-sm text-center text-muted-foreground">{user.email}</p>
-                            <Button onClick={() => { handleLogout(); setIsMobileMenuOpen(false); }}>Logout</Button>
-                        </>
-                        ) : (
-                            <>
-                                {/* Signup button removed from here */}
-                            </>
-                        )}
+                        <Button onClick={() => { router.push('/ab_login'); setIsMobileMenuOpen(false); }}>Login</Button>
                     </div>
                     </div>
                 </SheetContent>

@@ -1,12 +1,12 @@
+
 "use client";
 
-import { useContext } from 'react';
-import { UserContext } from '@/components/user-provider';
-
+// This is a placeholder hook. A real implementation will need a new
+// authentication context provider that does not rely on Firebase.
 export const useUser = () => {
-  const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error('useUser must be used within a UserProvider');
-  }
-  return context;
+  return {
+    user: null,
+    isAdmin: false, // Default to false
+    loading: false, // Default to false as there's no auth check
+  };
 };

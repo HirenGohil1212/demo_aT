@@ -10,8 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
-    "set-admin": "node -r dotenv/config ./set-admin.js"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.14.1",
@@ -45,8 +44,6 @@
     "dotenv": "^16.4.5",
     "embla-carousel-autoplay": "^8.1.5",
     "embla-carousel-react": "^8.1.5",
-    "firebase": "^10.12.2",
-    "firebase-admin": "^12.2.0",
     "genkit": "^1.14.1",
     "lucide-react": "^0.475.0",
     "mysql2": "^3.10.1",

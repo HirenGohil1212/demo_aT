@@ -1,15 +1,12 @@
 
 "use client";
 
-import { useEffect, type ReactNode, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "@/hooks/use-user";
-import { Loader2, ShoppingBag, Tag, GalleryHorizontal, Settings, PanelLeft } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { ShoppingBag, Tag, GalleryHorizontal, Settings, PanelLeft, LogOut } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { LogoutButton } from "./logout-button";
 
 function NavLink({ href, children, onLinkClick }: { href: string; children: React.ReactNode; onLinkClick?: () => void; }) {
   const pathname = usePathname();
@@ -23,7 +20,27 @@ function NavLink({ href, children, onLinkClick }: { href: string; children: Reac
   );
 }
 
-function SidebarContent({ onLinkClick, onLogoutStarted }: { onLinkClick?: () => void, onLogoutStarted: () => void }) {
+function LogoutButton({ onLinkClick }: { onLinkClick?: () => void }) {
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        // In a real app, you'd call a server action to clear the session/cookie.
+        console.log("Logout functionality to be implemented.");
+        router.push('/');
+        if (onLinkClick) {
+            onLinkClick();
+        }
+    }
+
+    return (
+        <Button onClick={handleLogout} variant="ghost" className="w-full justify-start">
+            <LogOut className="mr-2" />
+            Logout
+        </Button>
+    )
+}
+
+function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     return (
         <div className="flex flex-col h-full">
             <div className="flex-grow">
@@ -32,7 +49,8 @@ function SidebarContent({ onLinkClick, onLogoutStarted }: { onLinkClick?: () => 
                     <NavLink href="/admin/categories" onLinkClick={onLinkClick}><Tag className="mr-2"/>Categories</NavLink>
                     <NavLink href="/admin/banners" onLinkClick={onLinkClick}><GalleryHorizontal className="mr-2"/>Banners</NavLink>
                     <NavLink href="/admin/settings" onLinkClick={onLinkClick}><Settings className="mr-2"/>Settings</NavLink>
-                    <LogoutButton onLinkClick={onLinkClick} onLogoutStarted={onLogoutStarted} />
+                    {/* For now, we will keep a simple logout button. This can be enhanced later. */}
+                    <LogoutButton onLinkClick={onLinkClick} />
                 </nav>
             </div>
         </div>
@@ -40,41 +58,18 @@ function SidebarContent({ onLinkClick, onLogoutStarted }: { onLinkClick?: () => 
 }
 
 export function AdminClientLayout({ children }: { children: ReactNode }) {
-  const { user, isAdmin, loading } = useUser();
-  const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  useEffect(() => {
-    // Do not redirect if we are in the process of logging out.
-    if (isLoggingOut) return;
+  // Since Firebase Auth is removed, we are temporarily assuming anyone accessing
+  // this layout is an admin. This MUST be replaced with a proper auth check.
+  const isAdmin = true; 
 
-    if (!loading) {
-      if (!user || !isAdmin) {
-        router.push("/ab_login");
-      }
-    }
-  }, [user, isAdmin, loading, router, isLoggingOut]);
-
-  const handleLogoutStarted = () => {
-    setIsLoggingOut(true);
-  }
-
-  if (loading && !isLoggingOut) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Verifying permissions...</p>
-      </div>
-    );
-  }
-
-  if (user && isAdmin) {
+  if (isAdmin) {
     return (
       <div className="flex min-h-screen">
         {/* Desktop Sidebar */}
         <aside className="hidden md:flex flex-col w-64 border-r bg-card">
-          <SidebarContent onLogoutStarted={handleLogoutStarted} />
+          <SidebarContent />
         </aside>
 
         {/* Mobile Header & Main Content */}
@@ -92,7 +87,7 @@ export function AdminClientLayout({ children }: { children: ReactNode }) {
                 <SheetHeader>
                   <SheetTitle className="sr-only">Admin Menu</SheetTitle>
                 </SheetHeader>
-                <SidebarContent onLinkClick={() => setIsMobileMenuOpen(false)} onLogoutStarted={handleLogoutStarted} />
+                <SidebarContent onLinkClick={() => setIsMobileMenuOpen(false)} />
               </SheetContent>
             </Sheet>
             <div className="flex-1 text-center">
@@ -116,6 +111,11 @@ export function AdminClientLayout({ children }: { children: ReactNode }) {
       </div>
     );
   }
-
-  return null;
+  
+  // This part would redirect non-admins, but for now it's unreachable.
+  return (
+    <div className="flex h-screen items-center justify-center bg-background">
+        <p>Access Denied. You must be an administrator to view this page.</p>
+    </div>
+  );
 }

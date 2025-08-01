@@ -4,7 +4,6 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { db, storage } from '@/lib/firebase-admin';
 import type { Product } from '@/types';
 
 // Base schema for product fields
@@ -15,50 +14,17 @@ const productSchema = z.object({
   quantity: z.coerce.number().positive({ message: 'Quantity must be a positive number' }),
   category: z.string().min(1, { message: 'Category is required' }),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
-});
-
-// Schema for adding a new product, requiring a valid image URL
-const addProductSchema = productSchema.extend({
-  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }),
-});
-
-// Schema for updating a product, image URL is also required
-const updateProductSchema = productSchema.extend({
   imageUrl: z.string().url({ message: "A valid image URL is required." }),
 });
 
 
 /**
- * Adds a new product to the Firestore database.
+ * Adds a new product to the database.
+ * TODO: Implement MySQL insertion logic.
  */
 export async function addProduct(prevState: unknown, formData: FormData) {
-  const result = addProductSchema.safeParse(Object.fromEntries(formData.entries()));
-
-  if (result.success === false) {
-    return { error: result.error.flatten().fieldErrors };
-  }
-
-  try {
-    const data = result.data;
-
-    await db.collection('products').add({
-      name: data.name,
-      description: data.description,
-      category: data.category,
-      price: data.price,
-      quantity: data.quantity,
-      image: data.imageUrl,
-      featured: data.featured || false,
-      details: [],
-      recipe: null,
-    });
-
-  } catch (error) {
-    console.error("Full error in addProduct:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to add product due to a server error.";
-    return { error: { _server: [errorMessage] } };
-  }
-
+  console.log("addProduct called, but not implemented for MySQL yet.");
+  // This is a placeholder. We will implement this with MySQL later.
   revalidatePath('/');
   revalidatePath('/products');
   revalidatePath('/admin/products');
@@ -66,39 +32,15 @@ export async function addProduct(prevState: unknown, formData: FormData) {
 }
 
 /**
- * Updates an existing product in Firestore.
+ * Updates an existing product in the database.
+ * TODO: Implement MySQL update logic.
  */
 export async function updateProduct(id: string, prevState: unknown, formData: FormData) {
   if (!id) {
     return { error: { _server: ["Invalid product ID."] } };
   }
-  
-  const result = updateProductSchema.safeParse(Object.fromEntries(formData.entries()));
-
-  if (result.success === false) {
-    return { error: result.error.flatten().fieldErrors };
-  }
-
-  try {
-    const data = result.data;
-
-    const productRef = db.collection('products').doc(id);
-    await productRef.update({
-      name: data.name,
-      description: data.description,
-      category: data.category,
-      price: data.price,
-      quantity: data.quantity,
-      image: data.imageUrl,
-      featured: data.featured || false,
-    });
-
-  } catch (error) {
-    console.error("Full error in updateProduct:", error);
-    const errorMessage = error instanceof Error ? error.message : "Failed to update product due to a server error.";
-    return { error: { _server: [errorMessage] } };
-  }
-
+  console.log(`updateProduct called for ID: ${id}, but not implemented for MySQL yet.`);
+  // This is a placeholder.
   revalidatePath('/');
   revalidatePath(`/products/${id}`);
   revalidatePath('/admin/products');
@@ -107,102 +49,39 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
 
 
 /**
- * Fetches all products from Firestore.
+ * Fetches all products from the database.
  * @returns An array of products.
+ * TODO: Implement MySQL fetching logic.
  */
 export async function getProducts(): Promise<Product[]> {
-  try {
-    const snapshot = await db.collection('products').orderBy('name').get();
-    if (snapshot.empty) {
-      return [];
-    }
-    return snapshot.docs.map(doc => {
-      const data = doc.data();
-      return { 
-        id: doc.id, 
-        ...data, 
-        price: data.price || 0,
-        quantity: data.quantity || 0,
-      } as Product;
-    });
-  } catch (error) {
-    console.error("Error in getProducts:", error);
-    // In case of an error, return an empty array to prevent the page from crashing.
-    return [];
-  }
+  console.log("getProducts called, but not implemented for MySQL yet. Returning empty array.");
+  return [];
 }
 
 /**
- * Fetches a single product by its ID from Firestore.
+ * Fetches a single product by its ID from the database.
  * @param id The ID of the product to fetch.
  * @returns The product object or null if not found.
+ * TODO: Implement MySQL fetching logic.
  */
 export async function getProductById(id: string): Promise<Product | null> {
-  try {
-    const doc = await db.collection('products').doc(id).get();
-    if (!doc.exists) {
-      return null;
-    }
-    const data = doc.data();
-    return { 
-        id: doc.id, 
-        ...data, 
-        price: data?.price || 0,
-        quantity: data?.quantity || 0,
-    } as Product;
-  } catch (error) {
-    console.error("Error in getProductById:", error);
-    return null;
-  }
+  console.log(`getProductById called for ID: ${id}, but not implemented for MySQL yet. Returning null.`);
+  return null;
 }
 
 /**
- * Deletes a product from Firestore and its image from Storage.
+ * Deletes a product from the database and its image from Storage.
  * @param productId The ID of the product to delete.
+ * TODO: Implement MySQL deletion logic.
  */
 export async function deleteProduct(productId: string) {
     if (!productId) {
         return { error: "Invalid product ID." };
     }
+    console.log(`deleteProduct called for ID: ${productId}, but not implemented for MySQL yet.`);
+    revalidatePath('/admin/products');
+    revalidatePath('/products');
+    revalidatePath('/');
 
-    try {
-        const productRef = db.collection('products').doc(productId);
-        const productDoc = await productRef.get();
-
-        if (!productDoc.exists) {
-            return { error: "Product not found." };
-        }
-
-        const productData = productDoc.data() as Product;
-        const imageUrl = productData.image;
-
-        // Delete the image from Firebase Storage
-        if (imageUrl) {
-            try {
-                const bucket = storage.bucket();
-                // Extract the file path from the URL
-                const decodedUrl = decodeURIComponent(imageUrl);
-                const gcsPath = decodedUrl.substring(decodedUrl.indexOf('/o/') + 3).split('?')[0];
-                
-                if(gcsPath && gcsPath.startsWith('products/')) { // Safety check
-                    await bucket.file(gcsPath).delete();
-                }
-            } catch (storageError) {
-                console.error("Error deleting product image from storage, continuing with firestore deletion:", storageError);
-            }
-        }
-        
-        // Delete the product document from Firestore
-        await productRef.delete();
-        
-        revalidatePath('/admin/products');
-        revalidatePath('/products');
-        revalidatePath('/');
-
-        return { success: true };
-
-    } catch (error) {
-        console.error("Error in deleteProduct:", error);
-        return { error: "Failed to delete product due to a server error." };
-    }
+    return { success: true };
 }
