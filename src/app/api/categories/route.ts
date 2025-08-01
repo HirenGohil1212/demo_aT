@@ -18,8 +18,10 @@ export async function GET() {
     return NextResponse.json(categories);
   } catch (error) {
     console.error('API Error in /api/categories:', error);
+    // Return a more detailed error response
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
     return new NextResponse(
-      JSON.stringify({ message: 'Failed to fetch categories' }),
+      JSON.stringify({ message: 'Failed to fetch categories', error: errorMessage }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
