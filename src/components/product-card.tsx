@@ -18,7 +18,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <Card className="flex flex-col overflow-hidden h-full group transition-all duration-300 ease-in-out hover:shadow-2xl hover:shadow-primary/20 hover:-translate-y-2 border-transparent hover:border-primary/30 bg-card/80 backdrop-blur-sm">
-      <div className="relative">
+      <CardHeader className="p-0">
           <div className="aspect-square relative overflow-hidden bg-transparent">
             <Image
               src={product.image}
@@ -36,7 +36,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.name}
             </CardTitle>
           </div>
-      </div>
+      </CardHeader>
       <CardContent className="p-4 flex-grow flex flex-col justify-end">
         <div className="flex justify-between items-baseline mb-4">
             <p className="text-2xl font-bold text-primary">INR {product.price.toFixed(2)}</p>
