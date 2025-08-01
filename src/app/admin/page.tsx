@@ -75,7 +75,7 @@ export default async function AdminDashboardPage() {
             Jump right into managing your store.
           </CardDescription>
         </CardHeader>
-        <CardContent className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <Button asChild variant="outline">
                 <Link href="/admin/products/new">
                     <PlusCircle className="mr-2" />
