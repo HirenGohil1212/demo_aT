@@ -24,15 +24,10 @@ export default async function Home() {
 
   return (
     <div>
-      <div className="container mx-auto px-4 py-8 md:py-12">
-        {/* Hero Carousel in Card View */}
-        <div className="relative py-8 md:py-12 bg-card/50 rounded-lg shadow-xl overflow-hidden border border-primary/10 mb-12 md:mb-16">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent to-background/50 z-0"></div>
-            <div className="relative z-10 px-4">
-              <HomeCarousel banners={allBanners} key={allBanners.length} />
-            </div>
-        </div>
+      {/* Full-width Hero Carousel */}
+      <HomeCarousel banners={allBanners} key={allBanners.length} />
 
+      <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Featured Products Grid */}
         {featuredProducts.length > 0 && (
           <section className="mb-12 md:mb-16">
