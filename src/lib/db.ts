@@ -6,10 +6,10 @@ import mysql from 'mysql2/promise';
 // For local development with XAMPP, the default user is 'root' with no password.
 // For production, use environment variables.
 const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '', // Default XAMPP password is an empty string
-  database: process.env.DB_NAME || 'luxeliquor',
+  host: process.env.DB_HOST || '127.0.0.1',
+  user: process.env.DB_USER || 'u782359236_Hiren',
+  password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
+  database: process.env.DB_NAME || 'u782359236_demo',
 };
 
 // Create a connection pool. This is more efficient than creating a new
