@@ -68,13 +68,13 @@ export default function CartPage() {
       <div className="grid lg:grid-cols-3 gap-8 md:gap-12 items-start">
         <div className="lg:col-span-2 space-y-6">
           {cartItems.map(({ product, quantity }) => (
-            <Card key={product.id} className="overflow-hidden shadow-lg hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm">
-                <div className="flex flex-col md:flex-row items-center gap-6 p-4">
+            <Card key={product.id} className="w-full max-w-sm mx-auto lg:max-w-none lg:mx-0 overflow-hidden shadow-lg hover:shadow-primary/20 transition-all duration-300 bg-card/80 backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-6 p-4">
                     <div className="w-24 h-24 relative rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-md">
                         <Image src={product.image} alt={product.name} fill className="object-contain p-2" data-ai-hint={`${product.category} bottle`} />
                     </div>
                     
-                    <div className="flex-grow w-full flex flex-col items-center text-center md:items-start md:text-left">
+                    <div className="flex-grow w-full flex flex-col items-center text-center">
                         <span className="font-headline text-xl font-bold text-primary transition-colors">{product.name}</span>
                         <p className="text-lg font-semibold text-primary/90 mt-1">INR {product.price.toFixed(2)}</p>
                     </div>
@@ -89,7 +89,7 @@ export default function CartPage() {
                         </Button>
                     </div>
                     
-                    <div className="text-center md:text-right md:ml-4 flex-shrink-0">
+                    <div className="text-center md:ml-4 flex-shrink-0">
                         <p className="font-bold text-xl">INR {(product.price * quantity).toFixed(2)}</p>
                     </div>
 
