@@ -6,7 +6,7 @@ import mysql from 'mysql2/promise';
 const dbConfig = {
   host: process.env.DB_HOST || 'srv1835.hstgr.io',
   user: process.env.DB_USER || 'u782359236_jay',
-  password: process.env.DB_PASSWORD || 'Jay@998877',
+  password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
   database: process.env.DB_NAME || 'u782359236_jay',
   port: 3306,
   ssl: {
