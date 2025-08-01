@@ -5,28 +5,26 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import type { AppSettings } from '@/types';
 
-// TODO: These settings should be stored in a 'settings' table in MySQL.
-
-const defaultSettings: AppSettings = {
-  allowSignups: false, // Defaulting to false as there's no auth system
-  whatsappNumber: '1234567890',
+// --- SIMULATED DATABASE ---
+let appSettings: AppSettings = {
+  allowSignups: false,
+  whatsappNumber: '911234567890',
   minOrderQuantity: 4,
 };
+// --- END SIMULATED DATABASE ---
 
 /**
  * Fetches application settings from the database.
  * @returns The application settings object.
- * TODO: Implement MySQL fetching logic.
  */
 export async function getSettings(): Promise<AppSettings> {
-  console.log("getSettings called, but not implemented for MySQL yet. Returning default settings.");
-  return defaultSettings;
+  console.log("getSettings called, returning simulated data.");
+  return appSettings;
 }
 
 /**
  * Updates application settings in the database.
  * This is a server action that handles form submission.
- * TODO: Implement MySQL update logic.
  */
 export async function updateSettings(prevState: unknown, formData: FormData) {
   const settingsSchema = z.object({
@@ -41,7 +39,10 @@ export async function updateSettings(prevState: unknown, formData: FormData) {
     return { error: result.error.flatten().fieldErrors };
   }
   
-  console.log("updateSettings called, but not implemented for MySQL yet. Data:", result.data);
+  // Update the in-memory settings
+  appSettings = result.data;
+  console.log("updateSettings called, using simulated data. New settings:", appSettings);
+  
   revalidatePath('/admin/settings');
   revalidatePath('/signup');
   revalidatePath('/ab_login');
