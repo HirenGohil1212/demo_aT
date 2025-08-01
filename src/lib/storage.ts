@@ -19,10 +19,11 @@ async function compressImage(file: File): Promise<File> {
     }
 
     const options = {
-        maxSizeMB: 1,          // Max file size in MB
-        maxWidthOrHeight: 1920, // Max width or height
+        maxSizeMB: 2,          // Increased Max file size in MB for better quality
+        maxWidthOrHeight: 2560, // Increased Max width or height for crisper images
         useWebWorker: true,    // Use web workers for better performance
-        fileType: 'image/webp'
+        fileType: 'image/webp', // Use modern, efficient webp format
+        initialQuality: 0.8,   // Start with a higher quality setting
     };
 
     try {
