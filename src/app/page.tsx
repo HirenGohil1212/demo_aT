@@ -43,8 +43,7 @@ export default async function Home() {
         )}
 
         {/* Products by Category */}
-        <section>
-          <div className="space-y-16">
+        <div className="space-y-4">
             {allCategories.map((category) => {
               const categoryProducts = allProducts.filter((p) => p.category === category.name);
               if (categoryProducts.length === 0) return null;
@@ -53,12 +52,11 @@ export default async function Home() {
                 <CategorySection 
                   key={category.id} 
                   category={category} 
-                  products={categoryProducts.slice(0, 4)} 
+                  products={categoryProducts} 
                 />
               )
             })}
-          </div>
-        </section>
+        </div>
       </div>
     </div>
   );

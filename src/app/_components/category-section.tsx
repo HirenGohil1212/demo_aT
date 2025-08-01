@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import ProductCard from '@/components/product-card';
 import type { Category, Product } from '@/types';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 type CategorySectionProps = {
   category: Category;
@@ -14,9 +21,7 @@ type CategorySectionProps = {
 
 export function CategorySection({ category, products }: CategorySectionProps) {
   return (
-    <div className="relative py-8 md:py-12 bg-card/50 rounded-lg shadow-xl overflow-hidden border border-primary/10">
-      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent to-background/50 z-0"></div>
-      <div className="relative z-10 px-4">
+    <div className="py-8 md:py-12">
         <div className="text-center mb-6 md:mb-8">
           <h2 className="font-headline text-3xl md:text-5xl font-bold text-primary mb-2">
             {category.name}
@@ -27,12 +32,23 @@ export function CategorySection({ category, products }: CategorySectionProps) {
             </Link>
           </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8 max-w-7xl mx-auto">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </div>
+        <Carousel
+          opts={{
+            align: "start",
+            loop: products.length > 4, // Loop only if there are enough products to scroll
+          }}
+          className="w-full max-w-7xl mx-auto"
+        >
+          <CarouselContent className="-ml-4">
+            {products.map((product) => (
+              <CarouselItem key={product.id} className="pl-4 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4">
+                <ProductCard product={product} />
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <CarouselPrevious className="hidden lg:flex" />
+          <CarouselNext className="hidden lg:flex" />
+        </Carousel>
     </div>
   );
 }
