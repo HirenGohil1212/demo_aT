@@ -1,12 +1,12 @@
 
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { updateSettings } from "@/actions/settings-actions";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, Database } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { AppSettings } from "@/types";
@@ -25,6 +25,54 @@ function SubmitButton() {
     </Button>
   );
 }
+
+function TestDbConnection() {
+    const [isTesting, setIsTesting] = useState(false);
+    const { toast } = useToast();
+
+    const handleTestConnection = async () => {
+        setIsTesting(true);
+        try {
+            const res = await fetch('/api/db-test');
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                toast({
+                    title: "Success",
+                    description: data.message,
+                });
+            } else {
+                throw new Error(data.error || "An unknown error occurred.");
+            }
+        } catch (error) {
+            console.error("DB Test Error:", error);
+            const errorMessage = error instanceof Error ? error.message : "Failed to connect.";
+            toast({
+                variant: "destructive",
+                title: "Database Connection Failed",
+                description: errorMessage,
+            });
+        } finally {
+            setIsTesting(false);
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Database Connection</CardTitle>
+                <CardDescription>Verify that the application can connect to the MySQL database.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button variant="outline" onClick={handleTestConnection} disabled={isTesting}>
+                    {isTesting ? <Loader2 className="animate-spin mr-2" /> : <Database className="mr-2" />}
+                    Test Database Connection
+                </Button>
+            </CardContent>
+        </Card>
+    );
+}
+
 
 export function SettingsForm({ settings }: SettingsFormProps) {
   const [state, action] = useActionState(updateSettings, undefined);
@@ -45,6 +93,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
 
   return (
     <form action={action} className="space-y-6">
+      <TestDbConnection />
       <Card>
         <CardHeader>
             <CardTitle>User Settings</CardTitle>
