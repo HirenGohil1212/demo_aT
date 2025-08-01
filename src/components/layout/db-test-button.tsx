@@ -28,13 +28,20 @@ export function DbTestButton() {
             console.error("DB Test Error:", error);
             const errorMessage = error instanceof Error ? error.message : "Failed to connect.";
             
-            // Provide a more helpful message for the most common error
-            if (errorMessage.includes("ETIMEDOUT")) {
+            // Provide more helpful messages for common errors
+            if (errorMessage.includes("ECONNREFUSED")) {
                  toast({
                     variant: "destructive",
-                    title: "Database Connection Failed",
-                    description: "Connection timed out. This is likely a firewall issue. Please whitelist your app's IP address in your database host settings.",
-                    duration: 10000, // Keep toast open longer
+                    title: "Database Connection Refused",
+                    description: "Connection was refused. Is your XAMPP MySQL server running? Please check your XAMPP control panel and ensure the MySQL module is started.",
+                    duration: 10000, 
+                });
+            } else if (errorMessage.includes("ETIMEDOUT")) {
+                 toast({
+                    variant: "destructive",
+                    title: "Database Connection Timed Out",
+                    description: "This is likely a firewall issue with a remote host. Please whitelist your app's IP address in your database host's settings.",
+                    duration: 10000,
                 });
             } else {
                  toast({
