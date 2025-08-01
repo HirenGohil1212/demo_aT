@@ -27,11 +27,22 @@ export function DbTestButton() {
         } catch (error) {
             console.error("DB Test Error:", error);
             const errorMessage = error instanceof Error ? error.message : "Failed to connect.";
-            toast({
-                variant: "destructive",
-                title: "Database Connection Failed",
-                description: errorMessage,
-            });
+            
+            // Provide a more helpful message for the most common error
+            if (errorMessage.includes("ETIMEDOUT")) {
+                 toast({
+                    variant: "destructive",
+                    title: "Database Connection Failed",
+                    description: "Connection timed out. This is likely a firewall issue. Please whitelist your app's IP address in your database host settings.",
+                    duration: 10000, // Keep toast open longer
+                });
+            } else {
+                 toast({
+                    variant: "destructive",
+                    title: "Database Connection Failed",
+                    description: errorMessage,
+                });
+            }
         } finally {
             setIsTesting(false);
         }
