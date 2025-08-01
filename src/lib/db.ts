@@ -5,11 +5,11 @@ import mysql from 'mysql2/promise';
 // Database configuration.
 // It is strongly recommended to use environment variables for these values.
 const dbConfig = {
-  host: process.env.DB_HOST || 'srv1835.hstgr.io',
-  port: process.env.DB_PORT ? parseInt(process.env.DB_PORT, 10) : 3306,
+  host: process.env.DB_HOST || '193.203.184.229',
   user: process.env.DB_USER || 'u782359236_Hiren',
   password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
   database: process.env.DB_NAME || 'u782359236_demo',
+  // port: 3306 // The default MySQL port
 };
 
 // Create a connection pool. This is more efficient than creating a new
@@ -20,7 +20,7 @@ function getPool() {
     if (!pool) {
         try {
             pool = mysql.createPool(dbConfig);
-            console.log("Database connection pool created successfully.");
+            // console.log("Database connection pool created successfully.");
         } catch (error) {
             console.error("CRITICAL: Could not create database pool.", error);
             // In case of a catastrophic error, we ensure the pool remains null.
@@ -28,6 +28,40 @@ function getPool() {
         }
     }
     return pool;
+}
+
+// THIS IS A TEMPORARY CONNECTION TEST.
+// IT WILL BE REPLACED ONCE THE CONNECTION IS VERIFIED.
+export async function testConnection() {
+    const currentPool = getPool();
+    if (!currentPool) {
+        const errorMessage = "Database pool is not available. Cannot execute query.";
+        console.error(errorMessage);
+        throw new Error(errorMessage);
+    }
+    
+    let connection;
+    try {
+        console.log("Attempting to connect to the database...");
+        connection = await currentPool.getConnection();
+        // If we get here, the connection was successful.
+        console.log("Database connection successful!");
+        return { success: true, message: "Database connection successful!" };
+    } catch (error: any) {
+        // This will log the specific MySQL error to the console.
+        console.error('DATABASE_CONNECTION_FAILED:', {
+            message: error.message,
+            code: error.code,
+            errno: error.errno,
+            sqlState: error.sqlState,
+        });
+        throw error; // Re-throw to be caught by the API route.
+    } finally {
+        if (connection) {
+            console.log("Closing database connection.");
+            connection.release();
+        }
+    }
 }
 
 
