@@ -8,12 +8,9 @@ import type { Banner } from '@/types';
 import admin from 'firebase-admin';
 
 // Zod schema for banner validation
-// Image is now validated as a URL string, not a File object.
+// It now only validates the imageUrl.
 const bannerSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }),
-  subtitle: z.string().min(1, { message: "Subtitle is required" }),
   imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }),
-  productId: z.string().optional(), // ProductId is now optional
 });
 
 /**
@@ -34,9 +31,9 @@ export async function addBanner(prevState: unknown, formData: FormData) {
     const createdAt = admin.firestore.FieldValue.serverTimestamp();
     
     const docRef = await db.collection("banners").add({
-      title: data.title,
-      subtitle: data.subtitle,
-      productId: data.productId || '', // Provide a default empty string
+      title: '', // Set to empty string
+      subtitle: '', // Set to empty string
+      productId: '', // Provide a default empty string
       imageUrl: data.imageUrl, // The URL comes directly from the form
       createdAt: createdAt,
       active: true,
@@ -47,9 +44,11 @@ export async function addBanner(prevState: unknown, formData: FormData) {
 
     const newBanner = {
         id: docRef.id,
-        ...data,
+        imageUrl: data.imageUrl,
+        title: '',
+        subtitle: '',
         active: true,
-        productId: data.productId || '',
+        productId: '',
         createdAt: new Date().toISOString(), // Return a serializable date
     }
     

@@ -64,13 +64,14 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
                   <div className="relative aspect-[16/9] md:aspect-[2/1] lg:aspect-[2.5/1] w-full">
                      <Image
                         src={banner.imageUrl}
-                        alt={banner.title}
+                        alt={banner.title || 'Banner image'}
                         fill
                         priority={index === 0}
                         sizes="100vw"
                         className="object-cover"
                         data-ai-hint={`cocktail drink`}
                       />
+                      {/*
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"/>
                       <div className="absolute inset-0 flex flex-col items-start justify-end text-left p-6 sm:p-8 md:p-12 text-white">
                         <h2 
@@ -89,19 +90,8 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
                         >
                             {banner.subtitle}
                         </p>
-                        {/* <Button 
-                          asChild 
-                          size="lg" 
-                          className={cn(
-                            "bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold px-8 py-6 rounded-full shadow-lg hover:scale-105 transition-all duration-700 ease-out delay-[400ms]",
-                            current === index ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-                          )}
-                        >
-                          <Link href={`/products/${banner.productId}`}>
-                            Discover More
-                          </Link>
-                        </Button> */}
                       </div>
+                      */}
                   </div>
                 </CarouselItem>
               ))}

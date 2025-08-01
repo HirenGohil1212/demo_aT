@@ -98,6 +98,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="imageUrl" value={imageUrl} />
+       {/*
       <div className="space-y-2">
         <Label htmlFor="title">Banner Title</Label>
         <Input name="title" id="title" placeholder="e.g. Summer Special" required />
@@ -106,6 +107,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
         <Label htmlFor="subtitle">Banner Subtitle</Label>
         <Input name="subtitle" id="subtitle" placeholder="e.g. The finest spirits for the season" required />
       </div>
+      */}
       <div className="space-y-2">
         <Label htmlFor="imageFile">Banner Image</Label>
         <div className="flex flex-wrap items-center gap-4">
@@ -234,13 +236,13 @@ export function BannersClient({ initialProducts, initialBanners }: { initialProd
                 <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
                     <Image
                         src={banner.imageUrl}
-                        alt={banner.title}
+                        alt={banner.title || 'Banner image'}
                         width={150}
                         height={75}
                         className="rounded-md object-cover aspect-[2/1] flex-shrink-0"
                     />
                     <div className="flex-grow text-center sm:text-left">
-                      <p className="font-bold text-lg">{banner.title}</p>
+                      <p className="font-bold text-lg">{banner.title || 'Banner'}</p>
                       <div className="text-sm text-muted-foreground flex items-center justify-center sm:justify-start gap-2">
                         <LinkIcon className="h-3 w-3"/>
                         <span>{productMap.get(banner.productId) || "N/A"}</span>
