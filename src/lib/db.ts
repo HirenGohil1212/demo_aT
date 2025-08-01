@@ -2,18 +2,14 @@
 // src/lib/db.ts
 import mysql from 'mysql2/promise';
 
-// Database configuration.
-// It is strongly recommended to use environment variables for these values.
+// Database configuration for a local XAMPP server.
+// Ensure your XAMPP MySQL server is running.
 const dbConfig = {
-  host: process.env.DB_HOST || 'srv1835.hstgr.io',
-  user: process.env.DB_USER || 'u782359236_jay',
-  password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
-  database: process.env.DB_NAME || 'u782359236_jay',
-  port: 3306, // Explicitly define the port
-  ssl: {
-    // Required for many remote connections, including Hostinger
-    rejectUnauthorized: false 
-  }
+  host: process.env.DB_HOST || '127.0.0.1', // Standard localhost IP
+  user: process.env.DB_USER || 'root',      // Default XAMPP user
+  password: process.env.DB_PASSWORD || '',  // Default XAMPP password is empty
+  database: process.env.DB_NAME || 'u782359236_jay', // Make sure this database exists in your XAMPP
+  port: 3306, // Default MySQL port
 };
 
 // Create a connection pool. This is more efficient than creating a new
