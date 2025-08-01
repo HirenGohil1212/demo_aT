@@ -1,8 +1,8 @@
 
 // src/app/api/categories/route.ts
-/*
+
 import { NextResponse } from 'next/server';
-import { query, testConnection } from '@/lib/db'; // Import testConnection
+import { query } from '@/lib/db'; 
 import type { Category } from '@/types';
 
 // This ensures that this route is dynamically rendered and not cached.
@@ -10,16 +10,10 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    // We are calling the new connection test function.
-    // This will log the result to the server console.
-    await testConnection();
-    
-    // For now, we will return an empty array to prevent the app from crashing
-    // while we diagnose the connection issue. Once the connection is successful,
-    // we will restore the original query logic here.
-    const categories: Category[] = [];
-
+    // This will now attempt to get the categories from the database.
+    const categories = await query('SELECT id, name FROM categories ORDER BY name ASC') as Category[];
     return NextResponse.json(categories);
+
   } catch (error) {
     // This block will now catch the specific error from testConnection
     // and return it in the response, making it visible.
@@ -31,4 +25,3 @@ export async function GET() {
     );
   }
 }
-*/
