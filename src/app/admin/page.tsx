@@ -14,12 +14,22 @@ import { Button } from '@/components/ui/button';
 import { ShoppingBag, Tag, GalleryHorizontal, PlusCircle } from 'lucide-react';
 
 export default async function AdminDashboardPage() {
-  // Fetch data in parallel for efficiency
-  const [products, categories, banners] = await Promise.all([
-    getProducts(),
-    getCategories(),
-    getBanners()
-  ]);
+  let products = [];
+  let categories = [];
+  let banners = [];
+
+  try {
+    // Fetch data in parallel for efficiency
+    [products, categories, banners] = await Promise.all([
+      getProducts(),
+      getCategories(),
+      getBanners()
+    ]);
+  } catch (error) {
+    console.error("Admin Dashboard Error: Failed to fetch initial data. This is likely due to a database connection issue.", error);
+    // Data will remain as empty arrays, preventing a page crash.
+  }
+
 
   return (
     <div className="space-y-8">
