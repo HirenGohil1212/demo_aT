@@ -55,6 +55,7 @@ export default function LoginPage() {
       console.error("Login failed:", error);
       let description = "An unknown error occurred. Please try again.";
       
+      // Handle specific Firebase auth errors
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         description = "Invalid credentials. Please try again."
       }
