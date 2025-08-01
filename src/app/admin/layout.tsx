@@ -73,35 +73,45 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
   if (user && isAdmin) {
     return (
-      <div className="grid md:grid-cols-[256px_1fr] flex-1">
-        {/* Desktop Sidebar */}
-        <aside className="hidden md:block w-64 border-r bg-card">
-            <SidebarContent />
-        </aside>
-        
-        {/* Mobile Sidebar */}
-        <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-            <SheetContent side="left" className="p-0 w-72">
-                <SheetHeader>
-                  <SheetTitle className="sr-only">Admin Menu</SheetTitle>
-                </SheetHeader>
-                <SidebarContent onLinkClick={() => setIsMobileMenuOpen(false)} />
-            </SheetContent>
-        </Sheet>
+      <div className="flex flex-col">
+        {/* Mobile Header (appears above content on mobile) */}
+        <header className="flex h-14 items-center justify-between border-b px-4 lg:px-6 bg-card md:hidden">
+            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(true)}>
+                <PanelLeft />
+                <span className="sr-only">Open Menu</span>
+            </Button>
+            <div className="flex-1 text-center">
+                <h2 className="text-xl font-semibold">Admin Dashboard</h2>
+            </div>
+        </header>
 
-        <div className="flex flex-col">
-            <header className="flex h-14 items-center justify-between border-b px-4 lg:px-6 bg-card">
-                <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
-                    <PanelLeft />
-                    <span className="sr-only">Open Menu</span>
-                </Button>
-                <div className="flex-1 text-center md:text-left">
-                    <h2 className="text-xl font-semibold">Admin Dashboard</h2>
-                </div>
-            </header>
-            <main className="p-4 sm:p-6 flex-1">
-                {children}
-            </main>
+        {/* Desktop Layout */}
+        <div className="md:grid md:grid-cols-[256px_1fr]">
+            {/* Desktop Sidebar */}
+            <aside className="hidden md:block w-64 border-r bg-card">
+                <SidebarContent />
+            </aside>
+            
+            {/* Mobile Sidebar (Sheet) */}
+            <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                <SheetContent side="left" className="p-0 w-72">
+                    <SheetHeader>
+                    <SheetTitle className="sr-only">Admin Menu</SheetTitle>
+                    </SheetHeader>
+                    <SidebarContent onLinkClick={() => setIsMobileMenuOpen(false)} />
+                </SheetContent>
+            </Sheet>
+
+            <div className="flex flex-col">
+                <header className="hidden md:flex h-14 items-center justify-between border-b px-4 lg:px-6 bg-card">
+                    <div className="flex-1 text-left">
+                        <h2 className="text-xl font-semibold">Admin Dashboard</h2>
+                    </div>
+                </header>
+                <main className="p-4 sm:p-6 flex-1">
+                    {children}
+                </main>
+            </div>
         </div>
       </div>
     );
