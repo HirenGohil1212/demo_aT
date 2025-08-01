@@ -69,7 +69,7 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
                          <h2 className="font-headline text-4xl sm:text-6xl md:text-7xl font-bold text-primary drop-shadow-2xl tracking-tight mb-2 sm:mb-4">
                           {banner.title}
                         </h2>
-                        <p className="text-lg sm:text-xl md:text-2xl max-w-3xl mb-6 sm:mb-8 drop-shadow-lg font-light tracking-wide">
+                        <p className="text-lg sm:text-xl md:text-3xl max-w-4xl mb-6 sm:mb-8 drop-shadow-xl font-light tracking-wider">
                           {banner.subtitle}
                         </p>
                         <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold px-8 py-6 rounded-full shadow-lg hover:scale-105 transition-transform">
