@@ -4,25 +4,21 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import type { Category } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
+import { query } from '@/lib/db';
 
-// --- SIMULATED DATABASE ---
-let categories: Category[] = [
-    { id: '1', name: 'Whiskey' },
-    { id: '2', name: 'Gin' },
-    { id: '3', name: 'Vodka' },
-    { id: '4', name: 'Rum' },
-    { id: '5', name: 'Tequila' },
-];
-// --- END SIMULATED DATABASE ---
 
 /**
  * Fetches all categories from the MySQL database.
  * @returns An array of categories.
  */
 export async function getCategories(): Promise<Category[]> {
-  console.log("getCategories called, returning simulated data.");
-  return categories.sort((a,b) => a.name.localeCompare(b.name));
+    try {
+        const results = await query('SELECT * FROM categories ORDER BY name ASC');
+        return results as Category[];
+    } catch (error) {
+        console.error("Failed to fetch categories:", error);
+        return []; // Return an empty array on error
+    }
 }
 
 /**
@@ -44,16 +40,20 @@ export async function addCategory(prevState: unknown, formData: FormData) {
     };
   }
   
-  if (categories.some(c => c.name.toLowerCase() === validatedFields.data.name.toLowerCase())) {
-      return { error: `Category "${validatedFields.data.name}" already exists.` };
+  const { name } = validatedFields.data;
+
+  try {
+    const existing: any[] = await query('SELECT id FROM categories WHERE LOWER(name) = ?', [name.toLowerCase()]);
+    if (existing.length > 0) {
+        return { error: `Category "${name}" already exists.` };
+    }
+
+    await query('INSERT INTO categories (name) VALUES (?)', [name]);
+
+  } catch (error) {
+      console.error("Failed to add category:", error);
+      return { error: "Database error: Could not add category." };
   }
-  
-  const newCategory: Category = {
-      id: uuidv4(),
-      name: validatedFields.data.name,
-  }
-  
-  categories.push(newCategory);
 
   revalidatePath('/admin/categories');
   revalidatePath('/admin/products/new'); // Revalidate to update category dropdown
@@ -69,9 +69,18 @@ export async function deleteCategory(categoryId: string) {
         return { error: "Invalid category ID." };
     }
     
-    // In a real app, you would check if products are using this category.
-    
-    categories = categories.filter(c => c.id !== categoryId);
+    try {
+        // Optional: Check if any products are using this category before deleting.
+        const products: any[] = await query('SELECT id FROM products WHERE category = (SELECT name FROM categories WHERE id = ?)', [categoryId]);
+        if (products.length > 0) {
+            return { error: "Cannot delete category. It is currently assigned to one or more products." };
+        }
+        
+        await query('DELETE FROM categories WHERE id = ?', [categoryId]);
+    } catch (error) {
+         console.error(`Failed to delete category ${categoryId}:`, error);
+        return { error: "Database error: Could not delete category." };
+    }
     
     revalidatePath('/admin/categories');
     revalidatePath('/admin/products');

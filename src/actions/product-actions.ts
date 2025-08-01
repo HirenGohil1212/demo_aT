@@ -6,77 +6,9 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Product } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
+import { query } from '@/lib/db';
 
-// --- SIMULATED DATABASE ---
-// In-memory array to simulate a database table for products.
-let products: Product[] = [
-    {
-      id: '1',
-      name: 'Glenfiddich 18 Year',
-      category: 'Whiskey',
-      price: 7500,
-      quantity: 750,
-      image: 'https://placehold.co/600x600.png',
-      description: 'A truly exceptional single malt, the result of eighteen years of care and attention. Its complex and seductive character is a testament to the art of whisky making.',
-      featured: true,
-      details: ['18 Year Old', 'Single Malt Scotch Whisky', '40% ABV'],
-      recipe: {
-        name: 'Classic Old Fashioned',
-        ingredients: ['60ml Glenfiddich 18 Year', '1 Sugar Cube', '2 Dashes Angostura Bitters', 'Orange Peel'],
-        instructions: ['Muddle sugar and bitters in a glass.', 'Add a large ice cube and the whisky.', 'Stir well and garnish with an orange peel.']
-      }
-    },
-    {
-      id: '2',
-      name: 'Hendrick\'s Gin',
-      category: 'Gin',
-      price: 3500,
-      quantity: 700,
-      image: 'https://placehold.co/600x600.png',
-      description: 'A gin made with infusions of cucumber and rose petals. The result is an exquisitely balanced gin with a delightfully floral aroma.',
-      featured: true,
-      details: ['Infused with Cucumber & Rose', 'Scottish Gin', '41.4% ABV'],
-      recipe: {
-        name: 'Gin & Tonic',
-        ingredients: ['50ml Hendrick\'s Gin', '150ml Premium Tonic Water', '3 thinly sliced rounds of Cucumber'],
-        instructions: ['Fill a highball glass with cubed ice.', 'Add gin, then tonic.', 'Garnish with cucumber slices.']
-      }
-    },
-    {
-      id: '3',
-      name: 'Belvedere Vodka',
-      category: 'Vodka',
-      price: 2800,
-      quantity: 750,
-      image: 'https://placehold.co/600x600.png',
-      description: 'Crafted from 100% Polish rye and purified water from its own natural well, Belvedere is all-natural, contains zero additives or sugar, and is certified Kosher.',
-      featured: false,
-    },
-    {
-      id: '4',
-      name: 'Diplomático Reserva Exclusiva',
-      category: 'Rum',
-      price: 4200,
-      quantity: 700,
-      image: 'https://placehold.co/600x600.png',
-      description: 'A complex blend of copper pot still rums aged for up to 12 years. Rich, sweet and fruity, as a sipping rum should be.',
-      featured: true,
-    },
-     {
-      id: '5',
-      name: 'Don Julio 1942',
-      category: 'Tequila',
-      price: 15000,
-      quantity: 750,
-      image: 'https://placehold.co/600x600.png',
-      description: 'Celebrated in exclusive cocktail bars, restaurants and nightclubs, the iconic Don Julio 1942 Tequila is the choice of connoisseurs around the globe.',
-      featured: true,
-    },
-];
-// --- END SIMULATED DATABASE ---
-
-
-// Base schema for product fields
+// Zod schema for product validation
 const productSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
   description: z.string().min(1, { message: 'Description is required' }),
@@ -86,7 +18,6 @@ const productSchema = z.object({
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
   imageUrl: z.string().url({ message: "A valid image URL is required." }),
 });
-
 
 /**
  * Adds a new product to the database.
@@ -98,18 +29,17 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
   
-  const newProduct: Product = {
-      id: uuidv4(),
-      name: validatedFields.data.name,
-      description: validatedFields.data.description,
-      price: validatedFields.data.price,
-      quantity: validatedFields.data.quantity,
-      category: validatedFields.data.category,
-      featured: validatedFields.data.featured,
-      image: validatedFields.data.imageUrl
-  };
+  const { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
   
-  products.unshift(newProduct);
+  try {
+    await query(
+        'INSERT INTO products (name, description, price, quantity, category, featured, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [name, description, price, quantity, category, featured ?? false, imageUrl]
+    );
+  } catch (error) {
+    console.error(error);
+    return { error: { _server: ["Database error: Could not add product."]}};
+  }
 
   revalidatePath('/');
   revalidatePath('/products');
@@ -130,24 +60,23 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
   if (!validatedFields.success) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
+    
+  const { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
 
-  const productIndex = products.findIndex(p => p.id === id);
-  if (productIndex === -1) {
-    return { error: { _server: ["Product not found."] } };
+  try {
+     const result: any = await query(
+        'UPDATE products SET name = ?, description = ?, price = ?, quantity = ?, category = ?, featured = ?, image = ? WHERE id = ?',
+        [name, description, price, quantity, category, featured ?? false, imageUrl, id]
+    );
+
+    if (result.affectedRows === 0) {
+        return { error: { _server: ["Product not found or no changes made."] } };
+    }
+
+  } catch (error) {
+    console.error(error);
+    return { error: { _server: ["Database error: Could not update product."]}};
   }
-  
-  const updatedProduct: Product = {
-      ...products[productIndex],
-      name: validatedFields.data.name,
-      description: validatedFields.data.description,
-      price: validatedFields.data.price,
-      quantity: validatedFields.data.quantity,
-      category: validatedFields.data.category,
-      featured: validatedFields.data.featured,
-      image: validatedFields.data.imageUrl
-  };
-
-  products[productIndex] = updatedProduct;
 
   revalidatePath('/');
   revalidatePath(`/products/${id}`);
@@ -161,8 +90,13 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
  * @returns An array of products.
  */
 export async function getProducts(): Promise<Product[]> {
-  console.log("getProducts called, returning simulated data.");
-  return products;
+    try {
+        const results = await query('SELECT * FROM products ORDER BY name ASC');
+        return results as Product[];
+    } catch (error) {
+        console.error("Failed to fetch products:", error);
+        return []; // Return empty array on error
+    }
 }
 
 /**
@@ -171,9 +105,16 @@ export async function getProducts(): Promise<Product[]> {
  * @returns The product object or null if not found.
  */
 export async function getProductById(id: string): Promise<Product | null> {
-  console.log(`getProductById called for ID: ${id}, returning simulated data.`);
-  const product = products.find(p => p.id === id) || null;
-  return product;
+    try {
+        const results: any[] = await query('SELECT * FROM products WHERE id = ?', [id]);
+        if (results.length > 0) {
+            return results[0] as Product;
+        }
+        return null;
+    } catch (error) {
+        console.error(`Failed to fetch product with id ${id}:`, error);
+        return null;
+    }
 }
 
 /**
@@ -184,8 +125,14 @@ export async function deleteProduct(productId: string) {
     if (!productId) {
         return { error: "Invalid product ID." };
     }
-    products = products.filter(p => p.id !== productId);
-    console.log(`deleteProduct called for ID: ${productId}, using simulated data.`);
+    
+    try {
+        await query('DELETE FROM products WHERE id = ?', [productId]);
+    } catch (error) {
+        console.error(`Failed to delete product ${productId}:`, error);
+        return { error: "Database error: Could not delete product." };
+    }
+    
     revalidatePath('/admin/products');
     revalidatePath('/products');
     revalidatePath('/');
