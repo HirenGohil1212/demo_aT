@@ -84,14 +84,6 @@ function AuthCta() {
         )
     }
 
-    if (allowSignups) {
-        return (
-            <Button asChild variant="outline">
-                <Link href="/signup">Sign Up</Link>
-            </Button>
-        )
-    }
-
     return null;
 }
 
@@ -196,9 +188,7 @@ export default function Header() {
                         </>
                         ) : (
                             <>
-                                {allowSignups && (
-                                    <Button asChild variant="outline"><Link href="/signup" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link></Button>
-                                )}
+                                {/* Signup button removed from here */}
                             </>
                         )}
                     </div>
