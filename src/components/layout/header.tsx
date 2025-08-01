@@ -140,7 +140,7 @@ export default function Header() {
                         </>
                         ) : (
                             <>
-                                <Button asChild><Link href="/login" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Login</Link></Button>
+                                <Button asChild><Link href="/ab_login" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Login</Link></Button>
                                 {allowSignups && (
                                     <Button asChild variant="outline"><Link href="/signup" className="w-full block" onClick={() => setIsMobileMenuOpen(false)}>Sign Up</Link></Button>
                                 )}
@@ -193,7 +193,7 @@ export default function Header() {
             ) : (
               <>
                 <Button asChild>
-                  <Link href="/login">Login</Link>
+                  <Link href="/ab_login">Login</Link>
                 </Button>
                 {allowSignups && (
                   <Button asChild variant="outline">

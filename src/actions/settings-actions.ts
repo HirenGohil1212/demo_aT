@@ -58,7 +58,7 @@ export async function updateSettings(prevState: unknown, formData: FormData) {
     await db.collection('settings').doc('config').set(result.data, { merge: true });
     revalidatePath('/admin/settings');
     revalidatePath('/signup');
-    revalidatePath('/login');
+    revalidatePath('/ab_login');
     revalidatePath('/cart'); // Revalidate cart to get new number
     revalidatePath('/api/settings'); // Revalidate the API route
     return { success: true };

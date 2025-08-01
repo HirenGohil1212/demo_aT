@@ -51,7 +51,7 @@ export function AdminClientLayout({ children }: { children: ReactNode }) {
 
     if (!loading) {
       if (!user || !isAdmin) {
-        router.push("/login");
+        router.push("/ab_login");
       }
     }
   }, [user, isAdmin, loading, router, isLoggingOut]);

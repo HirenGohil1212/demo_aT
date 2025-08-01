@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -92,7 +93,7 @@ export default function SignUpForm() {
         </Button>
             <div className="text-sm text-center text-muted-foreground">
             Already have an account?{' '}
-            <Link href="/login" className="underline hover:text-primary">
+            <Link href="/ab_login" className="underline hover:text-primary">
                 Login
             </Link>
         </div>
