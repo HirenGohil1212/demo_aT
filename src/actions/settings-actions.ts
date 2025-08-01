@@ -9,6 +9,7 @@ import type { AppSettings } from '@/types';
 const defaultSettings: AppSettings = {
   allowSignups: true,
   whatsappNumber: '1234567890', // Default placeholder number
+  minOrderQuantity: 4, // Default minimum order
 };
 
 /**
@@ -45,6 +46,7 @@ export async function updateSettings(prevState: unknown, formData: FormData) {
     // We preprocess this to a boolean.
     allowSignups: z.preprocess((val) => val === 'on', z.boolean().default(false)),
     whatsappNumber: z.string().min(10, { message: "WhatsApp number must be at least 10 digits."}).regex(/^\d+$/, { message: "WhatsApp number must contain only digits."}),
+    minOrderQuantity: z.coerce.number().int().positive({ message: "Minimum order quantity must be a positive whole number."}),
   });
 
   const result = settingsSchema.safeParse(Object.fromEntries(formData.entries()));

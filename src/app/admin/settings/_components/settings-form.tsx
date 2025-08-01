@@ -69,10 +69,10 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       
       <Card>
         <CardHeader>
-            <CardTitle>Contact Settings</CardTitle>
-            <CardDescription>Manage contact information for your store.</CardDescription>
+            <CardTitle>Store Settings</CardTitle>
+            <CardDescription>Manage order and contact settings for your store.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="whatsappNumber">WhatsApp Number</Label>
             <Input
@@ -86,6 +86,21 @@ export function SettingsForm({ settings }: SettingsFormProps) {
               Enter the number including country code, without '+' or spaces.
             </p>
             {state?.error?.whatsappNumber && <p className="text-destructive text-sm">{state.error.whatsappNumber[0]}</p>}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="minOrderQuantity">Minimum Order Quantity</Label>
+            <Input
+              id="minOrderQuantity"
+              name="minOrderQuantity"
+              type="number"
+              placeholder="e.g. 4"
+              defaultValue={settings.minOrderQuantity}
+            />
+            <p className="text-xs text-muted-foreground">
+              The minimum total number of items required to place an order.
+            </p>
+            {state?.error?.minOrderQuantity && <p className="text-destructive text-sm">{state.error.minOrderQuantity[0]}</p>}
           </div>
         </CardContent>
       </Card>

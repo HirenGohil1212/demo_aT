@@ -14,18 +14,26 @@ import { useState, useEffect } from 'react';
 import type { AppSettings } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
+const defaultSettings = {
+    allowSignups: true,
+    whatsappNumber: '',
+    minOrderQuantity: 1, // A sensible default if fetch fails
+}
+
 // We fetch settings on the client to get the WhatsApp number
 async function fetchSettings(): Promise<AppSettings> {
     try {
         const res = await fetch('/api/settings');
         if (!res.ok) {
           console.error("Failed to fetch settings, using defaults.");
-          return { allowSignups: true, whatsappNumber: '' };
+          return defaultSettings;
         }
-        return await res.json();
+        const data = await res.json();
+        // Merge with defaults to ensure all properties are present
+        return { ...defaultSettings, ...data };
     } catch {
         console.error("Error fetching settings, using defaults.");
-        return { allowSignups: true, whatsappNumber: '' };
+        return defaultSettings;
     }
 }
 
@@ -46,15 +54,16 @@ export default function CartPage() {
     loadSettings();
   }, []);
 
+  const minOrderQuantity = settings?.minOrderQuantity || 1;
   const isDetailsComplete = fullName.trim() !== '' && shippingAddress.trim() !== '' && contactNumber.trim() !== '';
-  const isMinOrderMet = itemCount >= 4;
+  const isMinOrderMet = itemCount >= minOrderQuantity;
 
   const handleWhatsAppOrder = () => {
     if (!isMinOrderMet) {
       toast({
         variant: "destructive",
         title: "Minimum Order Not Met",
-        description: "You need at least 4 items in your cart to place an order.",
+        description: `You need at least ${minOrderQuantity} item(s) in your cart to place an order.`,
       });
       return;
     }
@@ -198,7 +207,7 @@ export default function CartPage() {
                   className="w-full h-12 font-bold text-lg bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg shadow-lg hover:scale-105 transition-transform disabled:scale-100 disabled:shadow-none" 
                   onClick={handleWhatsAppOrder}
                   disabled={!settings}
-                  title={!isDetailsComplete ? "Please fill in all your details" : "Place Order"}
+                  title={!isDetailsComplete ? "Please fill in all your details" : !isMinOrderMet ? `A minimum of ${minOrderQuantity} items is required` : "Place Order"}
                 >
                   {settings ? <MessageSquareText className="mr-2 h-5 w-5"/> : <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                   Place Order via WhatsApp

@@ -39,4 +39,5 @@ export type Banner = {
 export type AppSettings = {
   allowSignups: boolean;
   whatsappNumber: string;
+  minOrderQuantity: number;
 };
