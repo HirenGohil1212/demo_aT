@@ -49,12 +49,7 @@ export async function testConnection() {
         return { success: true, message: "Database connection successful!" };
     } catch (error: any) {
         // This will log the specific MySQL error to the console.
-        console.error('DATABASE_CONNECTION_FAILED:', {
-            message: error.message,
-            code: error.code,
-            errno: error.errno,
-            sqlState: error.sqlState,
-        });
+        console.error('DATABASE_CONNECTION_FAILED:', error);
         throw error; // Re-throw to be caught by the API route.
     } finally {
         if (connection) {
@@ -81,16 +76,9 @@ export async function query(sql: string, params: any[] = []) {
     return results;
   } catch (error: any) {
     // This is the new, more detailed logging.
-    console.error('DATABASE_QUERY_FAILED:', {
-        message: error.message,
-        code: error.code,
-        errno: error.errno,
-        sqlState: error.sqlState,
-        failingQuery: sql,
-        queryParams: params,
-    });
+    console.error('DATABASE_QUERY_FAILED:', error);
 
-    // Re-throw the error to be caught by the API route.
+    // Re-throw the error to be caught by the server action.
     throw error;
   } finally {
     // Ensure the connection is always released back to the pool.
@@ -99,4 +87,5 @@ export async function query(sql: string, params: any[] = []) {
     }
   }
 }
+
 
