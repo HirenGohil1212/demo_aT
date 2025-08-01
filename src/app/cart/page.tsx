@@ -64,97 +64,117 @@ export default function CartPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="font-headline text-3xl sm:text-4xl font-bold text-center mb-8 text-primary">Your Shopping Cart</h1>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 lg:gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
         
         {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-7 space-y-6">
           {cartItems.map(({ product, quantity }) => (
-            <Card key={product.id} className="overflow-hidden">
-                <CardContent className="p-4 flex gap-4 items-start">
-                    <div className="relative w-24 h-24 sm:w-32 sm:h-32 flex-shrink-0 bg-white rounded-md border p-1">
+            <Card key={product.id} className="overflow-hidden shadow-lg border-primary/10">
+                <CardContent className="p-4 flex gap-4">
+                    <div className="relative w-24 h-24 sm:w-28 sm:h-28 flex-shrink-0 bg-white rounded-md border p-1">
                         <Image src={product.image} alt={product.name} fill className="object-contain" data-ai-hint={`${product.category} bottle`} />
                     </div>
                     
-                    <div className="flex-grow flex flex-col justify-between h-full">
-                        <div>
-                            <Link href={`/products/${product.id}`} className="font-headline text-lg sm:text-xl font-bold text-primary hover:underline transition-colors">{product.name}</Link>
-                            <p className="text-md sm:text-lg font-semibold text-primary/90 mt-1">INR {product.price.toFixed(2)}</p>
+                    <div className="flex-grow flex flex-col sm:flex-row justify-between gap-4">
+                        {/* Details Section */}
+                        <div className="flex-grow space-y-2">
+                           <div className="flex justify-between items-start">
+                             <Link href={`/products/${product.id}`} className="font-headline text-lg font-bold text-primary hover:underline transition-colors pr-2">{product.name}</Link>
+                             <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive h-7 w-7 flex-shrink-0" onClick={() => removeFromCart(product.id)}>
+                                <Trash2 className="h-5 w-5" />
+                             </Button>
+                           </div>
+                           <p className="text-md font-semibold text-primary/90">INR {product.price.toFixed(2)}</p>
+                           
+                           {/* Quantity for Mobile */}
+                           <div className="sm:hidden flex items-center gap-2 pt-2">
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
+                                    <Minus className="h-4 w-4" />
+                                </Button>
+                                <Input type="number" value={quantity} readOnly className="h-9 w-14 text-center font-bold bg-transparent border-x-0 border-t-0 border-b-2 border-primary/50 focus-visible:ring-0" />
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity + 1)}>
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
-                        
-                        <div className="flex items-center gap-2 mt-4">
-                            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
-                                <Minus className="h-4 w-4" />
-                            </Button>
-                            <Input type="number" value={quantity} readOnly className="h-8 w-12 sm:h-9 sm:w-14 text-center font-bold bg-transparent border-x-0 border-t-0 border-b-2 border-primary/50 focus-visible:ring-0" />
-                            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-9 sm:w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity + 1)}>
-                                <Plus className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
 
-                    <div className="text-right flex flex-col justify-between h-full items-end">
-                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => removeFromCart(product.id)}>
-                            <Trash2 className="h-5 w-5" />
-                        </Button>
-                        <p className="font-bold text-lg sm:text-xl mt-4">INR {(product.price * quantity).toFixed(2)}</p>
+                        {/* Quantity & Total for Desktop */}
+                        <div className="hidden sm:flex flex-col items-end justify-between">
+                            <div className="flex items-center gap-2">
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
+                                    <Minus className="h-4 w-4" />
+                                </Button>
+                                <Input type="number" value={quantity} readOnly className="h-9 w-14 text-center font-bold bg-transparent border-x-0 border-t-0 border-b-2 border-primary/50 focus-visible:ring-0" />
+                                <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity + 1)}>
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <p className="font-bold text-lg mt-2">INR {(product.price * quantity).toFixed(2)}</p>
+                        </div>
                     </div>
                 </CardContent>
+                 {/* Total for Mobile */}
+                <div className="sm:hidden border-t p-4 text-right">
+                    <p className="font-bold text-lg">Total: <span className="text-primary">INR {(product.price * quantity).toFixed(2)}</span></p>
+                </div>
             </Card>
           ))}
         </div>
 
         {/* Order Summary & Delivery Details */}
-        <div className="lg:col-span-1 mt-8 lg:mt-0">
-          <Card className="sticky top-24 shadow-xl border-primary/20">
-            <CardHeader>
-              <CardTitle className="font-headline text-2xl text-primary">Delivery Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name" required />
-              </div>
-               <div className="space-y-1">
-                  <Label htmlFor="shippingAddress">Shipping Address</Label>
-                  <Textarea id="shippingAddress" value={shippingAddress} onChange={(e) => setShippingAddress(e.target.value)} placeholder="Enter your full address" required />
-              </div>
-               <div className="space-y-1">
-                  <Label htmlFor="contactNumber">Contact Number</Label>
-                  <Input id="contactNumber" type="tel" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} placeholder="Enter your phone number" required />
-              </div>
-            </CardContent>
+        <div className="lg:col-span-5 mt-8 lg:mt-0">
+          <div className="sticky top-24 space-y-8">
+            <Card className="shadow-xl border-primary/20">
+              <CardHeader>
+                <CardTitle className="font-headline text-2xl text-primary">Delivery Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-1">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Enter your full name" required />
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor="shippingAddress">Shipping Address</Label>
+                    <Textarea id="shippingAddress" value={shippingAddress} onChange={(e) => setShippingAddress(e.target.value)} placeholder="Enter your full address" required />
+                </div>
+                <div className="space-y-1">
+                    <Label htmlFor="contactNumber">Contact Number</Label>
+                    <Input id="contactNumber" type="tel" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} placeholder="Enter your phone number" required />
+                </div>
+              </CardContent>
+            </Card>
 
-            <Separator className="my-4"/>
-            
-            <CardHeader>
-                <CardTitle className="font-headline text-2xl text-primary">Order Summary</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between text-muted-foreground">
-                <span>Subtotal ({itemCount} {itemCount > 1 ? 'items' : 'item'})</span>
-                <span className="font-medium">INR {totalPrice.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-bold text-xl text-primary border-t pt-4 mt-2">
-                <span className="font-headline">Total</span>
-                <span>INR {totalPrice.toFixed(2)}</span>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button 
-                size="lg" 
-                className="w-full h-12 font-bold text-lg bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg shadow-lg hover:scale-105 transition-transform disabled:scale-100 disabled:shadow-none" 
-                onClick={handleWhatsAppOrder}
-                disabled={!isDetailsComplete}
-                title={!isDetailsComplete ? "Please fill in all your details" : "Place Order"}
-              >
-                <MessageSquareText className="mr-2 h-5 w-5"/>
-                Place Order via WhatsApp
-              </Button>
-            </CardFooter>
-          </Card>
+            <Card className="shadow-xl border-primary/20">
+              <CardHeader>
+                  <CardTitle className="font-headline text-2xl text-primary">Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Subtotal ({itemCount} {itemCount > 1 ? 'items' : 'item'})</span>
+                  <span className="font-medium">INR {totalPrice.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-xl text-primary border-t pt-4 mt-2">
+                  <span className="font-headline">Total</span>
+                  <span>INR {totalPrice.toFixed(2)}</span>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  size="lg" 
+                  className="w-full h-12 font-bold text-lg bg-accent text-accent-foreground hover:bg-accent/90 rounded-lg shadow-lg hover:scale-105 transition-transform disabled:scale-100 disabled:shadow-none" 
+                  onClick={handleWhatsAppOrder}
+                  disabled={!isDetailsComplete}
+                  title={!isDetailsComplete ? "Please fill in all your details" : "Place Order"}
+                >
+                  <MessageSquareText className="mr-2 h-5 w-5"/>
+                  Place Order via WhatsApp
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
