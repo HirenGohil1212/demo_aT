@@ -104,7 +104,7 @@ export function ProductsClient({ initialProducts, categories }: { initialProduct
   return (
     <div>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-4 w-full">
                 <div className="relative flex-grow">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                     <Input
@@ -129,7 +129,7 @@ export function ProductsClient({ initialProducts, categories }: { initialProduct
                     </SelectContent>
                 </Select>
             </div>
-             <Button asChild className="w-full sm:w-auto">
+             <Button asChild className="w-full sm:w-auto flex-shrink-0">
                 <Link href="/admin/products/new">
                     <PlusCircle className="mr-2 h-4 w-4" /> Add New Product
                 </Link>

@@ -92,12 +92,14 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         </Sheet>
 
         <div className="flex-1 flex flex-col">
-            <header className="flex h-14 items-center justify-between border-b px-4 lg:justify-end bg-card">
+            <header className="flex h-14 items-center justify-between border-b px-4 lg:px-6 bg-card">
                 <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
                     <PanelLeft />
                     <span className="sr-only">Open Menu</span>
                 </Button>
-                <h2 className="text-xl font-semibold">Admin Dashboard</h2>
+                <div className="flex-1 text-center md:text-right">
+                    <h2 className="text-xl font-semibold">Admin Dashboard</h2>
+                </div>
             </header>
             <main className="p-4 sm:p-6 flex-1">
                 {children}

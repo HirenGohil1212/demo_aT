@@ -221,12 +221,12 @@ export function BannersClient({ initialProducts, initialBanners }: { initialProd
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-      <div>
-        <h3 className="text-lg font-medium mb-4">Add New Banner</h3>
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Add New Banner</h3>
         <BannerForm products={products} onBannerAdded={handleBannerAdded} />
       </div>
       <div className="space-y-4">
-        <h3 className="text-lg font-medium mb-4">Existing Banners</h3>
+        <h3 className="text-lg font-medium">Existing Banners</h3>
         {banners.length === 0 ? (
             <p className="text-muted-foreground text-center p-8 border rounded-md">No banners have been created yet.</p>
         ) : (

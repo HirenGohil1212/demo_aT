@@ -81,7 +81,7 @@ export function ProductForm({ categories }: ProductFormProps) {
         {state?.error?.name && <div className="text-destructive text-sm">{state.error.name[0]}</div>}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-2">
             <Label htmlFor="price">Price (INR)</Label>
             <Input type="number" step="0.01" id="price" name="price" required />
