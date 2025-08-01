@@ -68,14 +68,14 @@ export default function CartPage() {
       <div className="grid lg:grid-cols-3 gap-8 md:gap-12 items-start">
         <div className="lg:col-span-2 space-y-6">
           {cartItems.map(({ product, quantity }) => (
-            <Card key={product.id} className="flex items-start p-4 shadow-lg hover:shadow-primary/20 transition-all duration-300 bg-card/80 flex-col sm:flex-row gap-4 backdrop-blur-sm">
-              <div className="w-28 h-28 relative rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-md self-center sm:self-start">
+            <Card key={product.id} className="flex items-center p-4 shadow-lg hover:shadow-primary/20 transition-all duration-300 bg-card/80 flex-col md:flex-row gap-4 backdrop-blur-sm text-center md:text-left">
+              <div className="w-28 h-28 relative rounded-lg overflow-hidden flex-shrink-0 bg-white shadow-md">
                 <Image src={product.image} alt={product.name} fill className="object-contain p-2" data-ai-hint={`${product.category} bottle`} />
               </div>
               <div className="flex-grow w-full">
                 <Link href={`/products/${product.id}`} className="font-headline text-xl font-bold hover:text-primary transition-colors">{product.name}</Link>
                 <p className="text-lg font-semibold text-primary/90 mt-1">INR {product.price.toFixed(2)}</p>
-                <div className="flex items-center gap-2 mt-4">
+                <div className="flex items-center justify-center md:justify-start gap-2 mt-4">
                   <Button variant="outline" size="icon" className="h-9 w-9 rounded-full" onClick={() => updateQuantity(product.id, quantity - 1)}>
                     <Minus className="h-4 w-4" />
                   </Button>
@@ -85,7 +85,7 @@ export default function CartPage() {
                   </Button>
                 </div>
               </div>
-              <div className="text-right ml-auto sm:ml-4 flex flex-col items-start sm:items-end justify-between self-stretch pt-2 sm:pt-0">
+              <div className="text-right ml-auto flex flex-col items-center md:items-end justify-between self-stretch pt-2 md:pt-0">
                 <p className="font-bold text-xl mb-2 sm:mb-0">INR {(product.price * quantity).toFixed(2)}</p>
                 <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive mt-auto" onClick={() => removeFromCart(product.id)}>
                   <Trash2 className="h-5 w-5" />
