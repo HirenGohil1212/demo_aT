@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ShoppingCart, Menu, User as UserIcon } from 'lucide-react';
+import { ShoppingCart, Menu, User as UserIcon, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { Badge } from '@/components/ui/badge';
@@ -22,8 +22,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { DbTestButton } from './db-test-button';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
 function AuthCta() {
     const router = useRouter();
@@ -61,6 +63,46 @@ function AuthCta() {
     return (
         <Button onClick={() => router.push('/ab_login')}>Login</Button>
     )
+}
+
+function DbInitButton() {
+    const [isPending, startTransition] = useTransition();
+    const { toast } = useToast();
+
+    const handleInitDb = async () => {
+        startTransition(async () => {
+            try {
+                const res = await fetch('/api/db-init', { method: 'POST' });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'An unknown error occurred.');
+                
+                toast({
+                    title: "Database Initialized",
+                    description: data.message,
+                });
+            } catch (error) {
+                const errorMessage = error instanceof Error ? error.message : "Failed to initialize.";
+                toast({
+                    variant: "destructive",
+                    title: "Initialization Failed",
+                    description: errorMessage,
+                });
+            }
+        });
+    }
+    
+    return (
+        <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={handleInitDb} 
+            disabled={isPending}
+            title="Setup Database Tables"
+        >
+            {isPending ? <Loader2 className="animate-spin" /> : <Wrench />}
+            <span className="sr-only">Setup Database Tables</span>
+        </Button>
+    );
 }
 
 
@@ -164,6 +206,7 @@ export default function Header() {
 
 
         <div className="flex flex-1 items-center justify-end gap-2 md:gap-4">
+          <DbInitButton />
           <DbTestButton />
           <Button asChild variant="outline" size="icon" className="relative border-accent text-accent hover:bg-accent hover:text-accent-foreground">
             <Link href="/cart">
