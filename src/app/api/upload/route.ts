@@ -1,7 +1,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import { stat } from 'fs/promises';
 
 // This disables the default Next.js body parser to allow FormData to be processed.
 export const config = {
@@ -9,6 +10,20 @@ export const config = {
     bodyParser: false,
   },
 };
+
+// Helper function to check if a directory exists
+async function directoryExists(dirPath: string) {
+    try {
+        await stat(dirPath);
+        return true;
+    } catch (e: any) {
+        if (e.code === 'ENOENT') {
+            return false;
+        }
+        throw e;
+    }
+}
+
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,26 +39,24 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // --- IMPORTANT ---
-    // In production on Hostinger, you will change this path to the absolute path
-    // of your `public_html/uploads` directory.
-    // Example: const serverUploadDir = '/home/u123456789/domains/yourdomain.com/public_html/uploads';
-    // For local development, we use the /tmp directory which is generally available.
+    // For local development, we use the /tmp directory.
+    // On a real server, this would be an absolute path to a public directory.
+    // e.g., '/home/user/public_html/uploads'
     const serverUploadDir = path.join('/tmp', 'uploads');
-
+    
     // Create the full path including the subdirectory ('products' or 'banners')
     const finalUploadPath = path.join(serverUploadDir, uploadPath);
     
-    // Ensure the directory exists (this would require 'fs/promises' `mkdir` in a real scenario,
-    // but for /tmp it's usually not needed. On a server, you must ensure the dir exists).
-    // For simplicity in this example, we assume the base /tmp/uploads directory exists.
+    // Ensure the target directory exists, create it if it doesn't.
+    if (!await directoryExists(finalUploadPath)) {
+        console.log(`Directory ${finalUploadPath} does not exist, creating it...`);
+        await mkdir(finalUploadPath, { recursive: true });
+    }
     
     const newFilename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
     const filePath = path.join(finalUploadPath, newFilename);
 
     // Write the file to the filesystem
-    // NOTE: This requires 'fs/promises'. In a real server, ensure directory permissions are correct.
-    // await mkdir(finalUploadPath, { recursive: true }); // Uncomment this if you need to create subdirectories
     await writeFile(filePath, buffer);
     console.log(`File saved to: ${filePath}`);
 
@@ -54,6 +67,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, url: publicUrl });
   } catch (error) {
     console.error('Upload API Error:', error);
-    return NextResponse.json({ error: 'Failed to upload file.' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown server error occurred.';
+    return NextResponse.json({ error: `Failed to upload file: ${errorMessage}` }, { status: 500 });
   }
 }
