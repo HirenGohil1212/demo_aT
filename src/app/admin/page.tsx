@@ -19,12 +19,10 @@ export default async function AdminDashboardPage() {
   let banners = [];
 
   try {
-    // Fetch data in parallel for efficiency
-    [products, categories, banners] = await Promise.all([
-      getProducts(),
-      getCategories(),
-      getBanners()
-    ]);
+    // Fetch data sequentially to avoid overwhelming the database connection limit.
+    products = await getProducts();
+    categories = await getCategories();
+    banners = await getBanners();
   } catch (error) {
     console.error("Admin Dashboard Error: Failed to fetch initial data.", error);
     // Data will remain as empty arrays, preventing a page crash.
