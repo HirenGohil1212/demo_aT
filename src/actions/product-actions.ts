@@ -15,7 +15,7 @@ const productSchema = z.object({
   quantity: z.coerce.number().positive({ message: 'Quantity must be a positive number' }),
   category: z.string().min(1, { message: 'Category is required' }),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
-  image: z.string().url({ message: "A valid image URL is required. Please upload an image." }).optional().or(z.literal('')),
+  image: z.string().url({ message: "A valid image URL is required if provided." }).optional().or(z.literal('')),
 });
 
 /**
