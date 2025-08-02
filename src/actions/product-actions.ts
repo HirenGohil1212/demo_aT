@@ -6,7 +6,32 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Product } from '@/types';
 import { v4 as uuidv4 } from 'uuid';
-import { query } from '@/lib/db';
+
+// --- SIMULATED DATABASE ---
+let products: Product[] = [
+    {
+        id: '1',
+        name: 'Classic Single Malt',
+        description: 'A smooth and smoky single malt whiskey.',
+        price: 4500,
+        quantity: 750,
+        category: 'Whiskey',
+        featured: true,
+        image: 'https://placehold.co/600x600.png',
+    },
+    {
+        id: '2',
+        name: 'Botanical Gin',
+        description: 'A refreshing gin with hints of juniper and citrus.',
+        price: 3200,
+        quantity: 750,
+        category: 'Gin',
+        featured: true,
+        image: 'https://placehold.co/600x600.png',
+    }
+];
+// --- END SIMULATED DATABASE ---
+
 
 // Zod schema for product validation
 const productSchema = z.object({
@@ -35,15 +60,18 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     imageUrl = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
   }
 
-  try {
-    await query(
-        'INSERT INTO products (name, description, price, quantity, category, featured, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [name, description, price, quantity, category, featured ?? false, imageUrl]
-    );
-  } catch (error) {
-    console.error(error);
-    return { error: { _server: ["Database error: Could not add product."]}};
-  }
+  const newProduct: Product = {
+      id: uuidv4(),
+      name,
+      description,
+      price,
+      quantity,
+      category,
+      featured: featured ?? false,
+      image: imageUrl
+  };
+
+  products.unshift(newProduct);
 
   revalidatePath('/');
   revalidatePath('/products');
@@ -71,19 +99,23 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
     imageUrl = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
   }
 
-  try {
-     const result: any = await query(
-        'UPDATE products SET name = ?, description = ?, price = ?, quantity = ?, category = ?, featured = ?, image = ? WHERE id = ?',
-        [name, description, price, quantity, category, featured ?? false, imageUrl, id]
-    );
+  const productIndex = products.findIndex(p => p.id === id);
 
-    if (result.affectedRows === 0) {
-        return { error: { _server: ["Product not found or no changes made."] } };
-    }
-  } catch (error) {
-    console.error(error);
-    return { error: { _server: ["Database error: Could not update product."]}};
+  if (productIndex === -1) {
+    return { error: { _server: ["Product not found or no changes made."] } };
   }
+
+  products[productIndex] = {
+      ...products[productIndex],
+      name,
+      description,
+      price,
+      quantity,
+      category,
+      featured: featured ?? false,
+      image: imageUrl,
+  };
+
 
   revalidatePath('/');
   revalidatePath(`/products/${id}`);
@@ -97,13 +129,8 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
  * @returns An array of products.
  */
 export async function getProducts(): Promise<Product[]> {
-    try {
-        const results = await query('SELECT * FROM products ORDER BY name ASC');
-        return results as Product[];
-    } catch (error) {
-        console.error("Failed to fetch products:", error);
-        return []; 
-    }
+    console.log("getProducts called, returning simulated data.");
+    return products;
 }
 
 /**
@@ -112,16 +139,9 @@ export async function getProducts(): Promise<Product[]> {
  * @returns The product object or null if not found.
  */
 export async function getProductById(id: string): Promise<Product | null> {
-    try {
-        const results: any[] = await query('SELECT * FROM products WHERE id = ?', [id]);
-        if (results.length > 0) {
-            return results[0] as Product;
-        }
-        return null;
-    } catch (error) {
-        console.error(`Failed to fetch product with id ${id}:`, error);
-        return null;
-    }
+    console.log(`getProductById called for ID: ${id}, using simulated data.`);
+    const product = products.find(p => p.id === id);
+    return product || null;
 }
 
 /**
@@ -133,12 +153,7 @@ export async function deleteProduct(productId: string) {
         return { error: "Invalid product ID." };
     }
     
-    try {
-        await query('DELETE FROM products WHERE id = ?', [productId]);
-    } catch (error) {
-        console.error(`Failed to delete product ${productId}:`, error);
-        return { error: "Database error: Could not delete product." };
-    }
+    products = products.filter(p => p.id !== productId);
     
     revalidatePath('/admin/products');
     revalidatePath('/products');
