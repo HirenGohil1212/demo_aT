@@ -4,29 +4,24 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import type { Category } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
-
-// --- SIMULATED DATABASE ---
-let categories: Category[] = [
-    { id: '1', name: 'Whiskey' },
-    { id: '2', name: 'Gin' },
-    { id: '3', name: 'Vodka' },
-];
-// --- END SIMULATED DATABASE ---
-
+import { query } from '@/lib/db';
 
 /**
- * Fetches all categories from the simulated database.
+ * Fetches all categories from the database.
  * @returns An array of categories.
  */
 export async function getCategories(): Promise<Category[]> {
-    console.log("getCategories called, returning simulated data.");
-    // Sort alphabetically for consistent order
-    return [...categories].sort((a, b) => a.name.localeCompare(b.name));
+    try {
+        const categories = await query('SELECT id, name FROM categories ORDER BY name ASC');
+        return categories as Category[];
+    } catch (error) {
+        console.error("Failed to fetch categories:", error);
+        return [];
+    }
 }
 
 /**
- * Adds a new category to the simulated database.
+ * Adds a new category to the database.
  * This is a server action that handles form submission.
  */
 export async function addCategory(prevState: unknown, formData: FormData) {
@@ -46,25 +41,29 @@ export async function addCategory(prevState: unknown, formData: FormData) {
   
   const { name } = validatedFields.data;
 
-  const existing = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
-  if (existing) {
-      return { error: `Category "${name}" already exists.` };
+  try {
+    const existing: any[] = await query('SELECT id FROM categories WHERE LOWER(name) = ?', [name.toLowerCase()]);
+    if (existing.length > 0) {
+        return { error: `Category "${name}" already exists.` };
+    }
+
+    const result: any = await query('INSERT INTO categories (name) VALUES (?)', [name]);
+    
+    if (result.insertId) {
+        revalidatePath('/admin/categories');
+        revalidatePath('/admin/products/new');
+        return { success: true, category: { id: result.insertId.toString(), name } };
+    } else {
+        return { error: "Failed to create category." };
+    }
+  } catch (error) {
+    console.error("addCategory Error:", error);
+    return { error: "A database error occurred." };
   }
-
-  const newCategory: Category = {
-      id: uuidv4(),
-      name,
-  }
-
-  categories.push(newCategory);
-
-  revalidatePath('/admin/categories');
-  revalidatePath('/admin/products/new'); // Revalidate to update category dropdown
-  return { success: true, category: newCategory };
 }
 
 /**
- * Deletes a category from the simulated database.
+ * Deletes a category from the database.
  * @param categoryId The ID of the category to delete.
  */
 export async function deleteCategory(categoryId: string) {
@@ -72,18 +71,25 @@ export async function deleteCategory(categoryId: string) {
         return { error: "Invalid category ID." };
     }
     
-    // In a real app, you'd check if products are using this category.
-    // We'll skip that for the simulation.
-    
-    const initialLength = categories.length;
-    categories = categories.filter(c => c.id !== categoryId);
+    try {
+        // In a real app, you'd check if products are using this category.
+        const productsInCategory: any[] = await query('SELECT id FROM products WHERE category = (SELECT name FROM categories WHERE id = ?)', [categoryId]);
+        if (productsInCategory.length > 0) {
+            return { error: "Cannot delete category. It is currently being used by products." };
+        }
 
-    if (categories.length === initialLength) {
-        return { error: "Category not found." };
+        const result: any = await query('DELETE FROM categories WHERE id = ?', [categoryId]);
+        
+        if (result.affectedRows === 0) {
+            return { error: "Category not found." };
+        }
+        
+        revalidatePath('/admin/categories');
+        revalidatePath('/admin/products');
+
+        return { success: true };
+    } catch (error) {
+        console.error("deleteCategory Error:", error);
+        return { error: "A database error occurred." };
     }
-    
-    revalidatePath('/admin/categories');
-    revalidatePath('/admin/products');
-
-    return { success: true };
 }

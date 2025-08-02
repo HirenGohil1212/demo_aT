@@ -4,32 +4,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import type { Banner } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
-
-
-// --- SIMULATED DATABASE ---
-let banners: Banner[] = [
-    {
-        id: '1',
-        imageUrl: 'https://placehold.co/1200x600.png',
-        title: 'Summer Specials',
-        subtitle: 'The finest spirits for the season',
-        active: true,
-        productId: '1',
-        createdAt: new Date().toISOString(),
-    },
-    {
-        id: '2',
-        imageUrl: 'https://placehold.co/1200x600.png',
-        title: 'New Arrivals',
-        subtitle: 'Discover the latest additions',
-        active: true,
-        productId: '2',
-        createdAt: new Date().toISOString(),
-    }
-];
-// --- END SIMULATED DATABASE ---
-
+import { query } from '@/lib/db';
 
 // Zod schema for banner validation
 const bannerSchema = z.object({
@@ -38,7 +13,6 @@ const bannerSchema = z.object({
 
 /**
  * Adds a new banner to the database.
- * This is a server action that handles form submission.
  */
 export async function addBanner(prevState: unknown, formData: FormData) {
   const validatedFields = bannerSchema.safeParse(Object.fromEntries(formData.entries()));
@@ -49,26 +23,40 @@ export async function addBanner(prevState: unknown, formData: FormData) {
 
   let { imageUrl } = validatedFields.data;
   const title = formData.get('title') as string || 'New Banner';
+  const subtitle = formData.get('subtitle') as string || '';
+  const productId = formData.get('productId') as string || '';
   
   if (!imageUrl) {
     imageUrl = `https://placehold.co/1200x600.png?text=${encodeURIComponent(title)}`;
   }
+  
+  try {
+    const result: any = await query(
+      'INSERT INTO banners (imageUrl, title, subtitle, productId) VALUES (?, ?, ?, ?)',
+      [imageUrl, title, subtitle, productId]
+    );
 
-  const newBanner: Banner = {
-      id: uuidv4(),
-      imageUrl: imageUrl,
-      title: title,
-      subtitle: formData.get('subtitle') as string || '',
-      active: true,
-      productId: formData.get('productId') as string || '',
-      createdAt: new Date().toISOString(),
+    if (result.insertId) {
+        const newBanner: Banner = {
+            id: result.insertId.toString(),
+            imageUrl: imageUrl,
+            title: title,
+            subtitle: subtitle,
+            active: true,
+            productId: productId,
+            createdAt: new Date().toISOString(),
+        }
+        revalidatePath("/admin/banners");
+        revalidatePath("/");
+        return { success: true, banner: newBanner };
+    } else {
+        return { error: { _server: ["Failed to create banner."] } };
+    }
+
+  } catch (error) {
+    console.error("addBanner Error:", error);
+    return { error: { _server: ["A database error occurred."] } };
   }
-  
-  banners.unshift(newBanner);
-  
-  revalidatePath("/admin/banners");
-  revalidatePath("/");
-  return { success: true, banner: newBanner };
 }
 
 /**
@@ -76,20 +64,34 @@ export async function addBanner(prevState: unknown, formData: FormData) {
  * @returns An array of banners.
  */
 export async function getBanners(): Promise<Banner[]> {
-  console.log("getBanners called, returning simulated data.");
-  return banners.filter(b => b.active);
+    try {
+        const banners = await query('SELECT * FROM banners WHERE active = TRUE ORDER BY createdAt DESC');
+        return banners as Banner[];
+    } catch (error) {
+        console.error("Failed to fetch banners:", error);
+        return [];
+    }
 }
 
 /**
- * Deletes a banner from the database and its image from Storage.
+ * Deletes a banner from the database.
  * @param bannerId The ID of the banner to delete.
  */
 export async function deleteBanner(bannerId: string) {
     if (!bannerId) {
         return { error: "Invalid banner ID." };
     }
-    banners = banners.filter(b => b.id !== bannerId);
-    console.log(`deleteBanner called for ID: ${bannerId}, using simulated data.`);
+
+    try {
+        const result: any = await query('DELETE FROM banners WHERE id = ?', [bannerId]);
+        if (result.affectedRows === 0) {
+            return { error: "Banner not found." };
+        }
+    } catch (error) {
+        console.error("deleteBanner Error:", error);
+        return { error: "A database error occurred." };
+    }
+    
     revalidatePath("/admin/banners");
     revalidatePath("/");
     return { success: true };

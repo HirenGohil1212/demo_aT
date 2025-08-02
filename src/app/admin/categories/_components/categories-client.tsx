@@ -110,8 +110,7 @@ function DeleteCategoryButton({
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. You can only delete a category if no
-              products are assigned to it.
+              This action cannot be undone. This will permanently delete the category.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -5,33 +5,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import type { Product } from '@/types';
-import { v4 as uuidv4 } from 'uuid';
-
-// --- SIMULATED DATABASE ---
-let products: Product[] = [
-    {
-        id: '1',
-        name: 'Classic Single Malt',
-        description: 'A smooth and smoky single malt whiskey.',
-        price: 4500,
-        quantity: 750,
-        category: 'Whiskey',
-        featured: true,
-        image: 'https://placehold.co/600x600.png',
-    },
-    {
-        id: '2',
-        name: 'Botanical Gin',
-        description: 'A refreshing gin with hints of juniper and citrus.',
-        price: 3200,
-        quantity: 750,
-        category: 'Gin',
-        featured: true,
-        image: 'https://placehold.co/600x600.png',
-    }
-];
-// --- END SIMULATED DATABASE ---
-
+import { query } from '@/lib/db';
 
 // Zod schema for product validation
 const productSchema = z.object({
@@ -41,7 +15,7 @@ const productSchema = z.object({
   quantity: z.coerce.number().positive({ message: 'Quantity must be a positive number' }),
   category: z.string().min(1, { message: 'Category is required' }),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
-  imageUrl: z.string().url({ message: "A valid image URL is required." }).optional().or(z.literal('')),
+  image: z.string().url({ message: "A valid image URL is required. Please upload an image." }).optional().or(z.literal('')),
 });
 
 /**
@@ -54,24 +28,31 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
   
-  let { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
+  let { name, description, price, quantity, category, featured, image } = validatedFields.data;
   
-  if (!imageUrl) {
-    imageUrl = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
+  if (!image) {
+    image = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
   }
 
-  const newProduct: Product = {
-      id: uuidv4(),
+  const newProduct = {
       name,
       description,
       price,
       quantity,
       category,
       featured: featured ?? false,
-      image: imageUrl
+      image
   };
 
-  products.unshift(newProduct);
+  try {
+    await query(
+      'INSERT INTO products (name, description, price, quantity, category, featured, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [name, description, price, quantity, category, featured ?? false, image]
+    );
+  } catch (error) {
+    console.error("addProduct Error:", error);
+    return { error: { _server: ["A database error occurred while creating the product."] } };
+  }
 
   revalidatePath('/');
   revalidatePath('/products');
@@ -93,29 +74,24 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
     return { error: validatedFields.error.flatten().fieldErrors };
   }
     
-  let { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
+  let { name, description, price, quantity, category, featured, image } = validatedFields.data;
 
-  if (!imageUrl) {
-    imageUrl = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
+  if (!image) {
+    image = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
   }
-
-  const productIndex = products.findIndex(p => p.id === id);
-
-  if (productIndex === -1) {
-    return { error: { _server: ["Product not found or no changes made."] } };
+  
+  try {
+     const result: any = await query(
+      'UPDATE products SET name = ?, description = ?, price = ?, quantity = ?, category = ?, featured = ?, image = ? WHERE id = ?',
+      [name, description, price, quantity, category, featured ?? false, image, id]
+    );
+    if (result.affectedRows === 0) {
+        return { error: { _server: ["Product not found or no changes made."] } };
+    }
+  } catch (error) {
+    console.error("updateProduct Error:", error);
+    return { error: { _server: ["A database error occurred while updating the product."] } };
   }
-
-  products[productIndex] = {
-      ...products[productIndex],
-      name,
-      description,
-      price,
-      quantity,
-      category,
-      featured: featured ?? false,
-      image: imageUrl,
-  };
-
 
   revalidatePath('/');
   revalidatePath(`/products/${id}`);
@@ -123,14 +99,18 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
   redirect('/admin/products');
 }
 
-
 /**
  * Fetches all products from the database.
  * @returns An array of products.
  */
 export async function getProducts(): Promise<Product[]> {
-    console.log("getProducts called, returning simulated data.");
-    return products;
+    try {
+        const products = await query('SELECT * FROM products ORDER BY createdAt DESC');
+        return products as Product[];
+    } catch (error) {
+        console.error("Failed to fetch products:", error);
+        return [];
+    }
 }
 
 /**
@@ -139,13 +119,17 @@ export async function getProducts(): Promise<Product[]> {
  * @returns The product object or null if not found.
  */
 export async function getProductById(id: string): Promise<Product | null> {
-    console.log(`getProductById called for ID: ${id}, using simulated data.`);
-    const product = products.find(p => p.id === id);
-    return product || null;
+    try {
+        const products: any[] = await query('SELECT * FROM products WHERE id = ?', [id]);
+        return (products[0] as Product) || null;
+    } catch (error) {
+        console.error(`Failed to fetch product ${id}:`, error);
+        return null;
+    }
 }
 
 /**
- * Deletes a product from the database and its image from Storage.
+ * Deletes a product from the database.
  * @param productId The ID of the product to delete.
  */
 export async function deleteProduct(productId: string) {
@@ -153,7 +137,12 @@ export async function deleteProduct(productId: string) {
         return { error: "Invalid product ID." };
     }
     
-    products = products.filter(p => p.id !== productId);
+    try {
+        await query('DELETE FROM products WHERE id = ?', [productId]);
+    } catch (error) {
+        console.error("deleteProduct Error:", error);
+        return { error: "A database error occurred." };
+    }
     
     revalidatePath('/admin/products');
     revalidatePath('/products');
