@@ -72,7 +72,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
 
   return (
     <form action={formAction} className="space-y-6">
-      <input type="hidden" name="imageUrl" value={imageUrl} />
+      <input type="hidden" name="image" value={imageUrl} />
       <div className="space-y-2">
         <Label htmlFor="name">Name</Label>
         <Input type="text" id="name" name="name" required defaultValue={product.name} />
@@ -110,7 +110,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">Product Image</Label>
+        <Label htmlFor="imageFile">Product Image</Label>
         <div className="flex items-center gap-4">
           <div className="w-32 h-32 border rounded-md flex items-center justify-center bg-muted/30">
             {imagePreview ? (
@@ -124,7 +124,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
               {isUploading ? <><Loader2 className="animate-spin mr-2"/> Uploading...</> : <><Upload className="mr-2"/>Change Image</>}
             </Button>
             <Input 
-              id="image" 
+              id="imageFile" 
               name="imageFile"
               type="file" 
               accept="image/*"
@@ -135,7 +135,7 @@ export function EditProductForm({ categories, product }: EditProductFormProps) {
             <p className="text-xs text-muted-foreground">Recommended: 600x600px (1:1)</p>
           </div>
         </div>
-        {state?.error?.imageUrl && <div className="text-destructive text-sm">{state.error.imageUrl[0]}</div>}
+        {state?.error?.image && <div className="text-destructive text-sm">{state.error.image[0]}</div>}
       </div>
 
       <div className="space-y-2">

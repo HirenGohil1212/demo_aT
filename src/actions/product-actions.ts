@@ -76,8 +76,10 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
     
   let { name, description, price, quantity, category, featured, image } = validatedFields.data;
 
+  // Use existing image if a new one isn't provided.
   if (!image) {
-    image = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
+      const existingProduct = await getProductById(id);
+      image = existingProduct?.image || `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
   }
   
   try {
@@ -105,8 +107,9 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
  */
 export async function getProducts(): Promise<Product[]> {
     try {
-        const products = await query('SELECT * FROM products ORDER BY createdAt DESC');
-        return products as Product[];
+        const products: any[] = await query('SELECT * FROM products ORDER BY createdAt DESC');
+        // The price is returned as a string from the DB, so we must convert it.
+        return products.map(p => ({ ...p, price: Number(p.price) })) as Product[];
     } catch (error) {
         console.error("Failed to fetch products:", error);
         return [];
@@ -121,7 +124,12 @@ export async function getProducts(): Promise<Product[]> {
 export async function getProductById(id: string): Promise<Product | null> {
     try {
         const products: any[] = await query('SELECT * FROM products WHERE id = ?', [id]);
-        return (products[0] as Product) || null;
+        if (products.length === 0) {
+            return null;
+        }
+        const product = products[0];
+        // The price is returned as a string from the DB, so we must convert it.
+        return { ...product, price: Number(product.price) } as Product;
     } catch (error) {
         console.error(`Failed to fetch product ${id}:`, error);
         return null;
