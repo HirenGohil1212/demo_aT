@@ -76,7 +76,7 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
     
   let { name, description, price, quantity, category, featured, image } = validatedFields.data;
 
-  // Use existing image if a new one isn't provided.
+  // Use existing image if a new one isn't provided during an update.
   if (!image) {
       const existingProduct = await getProductById(id);
       image = existingProduct?.image || `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;

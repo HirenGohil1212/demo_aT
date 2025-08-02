@@ -8,7 +8,7 @@ import { query } from '@/lib/db';
 
 // Zod schema for banner validation
 const bannerSchema = z.object({
-  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }),
+  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }).optional().or(z.literal('')),
 });
 
 /**
@@ -21,10 +21,10 @@ export async function addBanner(prevState: unknown, formData: FormData) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
 
-  const { imageUrl } = validatedFields.data;
+  let { imageUrl } = validatedFields.data;
   
   if (!imageUrl) {
-     return { error: { imageUrl: ["Image URL is required after upload."] } };
+     imageUrl = `https://placehold.co/1200x600.png?text=New+Banner`;
   }
   
   try {

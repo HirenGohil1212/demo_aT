@@ -139,11 +139,11 @@ export function ProductsClient({ initialProducts, categories }: { initialProduct
             <Table>
             <TableHeader>
                 <TableRow>
-                <TableHead className="hidden sm:table-cell">Image</TableHead>
+                <TableHead className="hidden sm:table-cell w-[70px]">Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead className="hidden md:table-cell">Category</TableHead>
                 <TableHead className="hidden sm:table-cell">Price</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="text-right w-[100px]">Actions</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -164,7 +164,7 @@ export function ProductsClient({ initialProducts, categories }: { initialProduct
                     <TableCell className="hidden md:table-cell">
                     <Badge variant="outline">{product.category}</Badge>
                     </TableCell>
-                    <TableCell className="hidden sm:table-cell">INR {product.price.toFixed(2)}</TableCell>
+                    <TableCell className="hidden sm:table-cell">INR {Number(product.price).toFixed(2)}</TableCell>
                     <TableCell className="text-right">
                         <div className="flex justify-end items-center gap-2">
                             <Button asChild variant="outline" size="icon" className="h-8 w-8">
