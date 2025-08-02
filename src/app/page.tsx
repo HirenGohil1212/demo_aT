@@ -16,10 +16,19 @@ const HomeCarousel = dynamic(
 );
 
 export default async function Home() {
-  // Fetch data sequentially to avoid overwhelming the database connection limit.
-  const allProducts = await getProducts();
-  const allCategories = await getCategories();
-  const allBanners = await getBanners();
+  let allProducts = [];
+  let allCategories = [];
+  let allBanners = [];
+
+  try {
+    // Fetch data sequentially to avoid overwhelming the database connection limit.
+    allProducts = await getProducts();
+    allCategories = await getCategories();
+    allBanners = await getBanners();
+  } catch (error) {
+    console.error("Homepage data fetching failed:", error);
+    // Data will remain as empty arrays, allowing the page to render without crashing.
+  }
 
   const featuredProducts = allProducts.filter((p) => p.featured);
 
