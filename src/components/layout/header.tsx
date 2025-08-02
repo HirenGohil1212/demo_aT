@@ -69,6 +69,45 @@ function DbInitButton() {
     );
 }
 
+function AdminMenuCta() {
+    const { user, isAdmin, logout } = useUser();
+    const router = useRouter();
+
+    const handleLogout = () => {
+        logout();
+        router.push('/');
+    };
+
+    if (isAdmin && user) {
+        return (
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                        <UserIcon />
+                        <span className="sr-only">Admin Menu</span>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
+                    <DropdownMenuItem disabled>
+                        {user.email}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push('/admin')}>
+                        <Wrench className="mr-2" /> Admin Dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2" /> Logout
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        )
+    }
+
+    // Return null if not an admin, effectively hiding the button
+    return null;
+}
+
 
 export default function Header() {
   const { itemCount } = useCart();
@@ -173,7 +212,7 @@ export default function Header() {
               <span className="sr-only">Shopping Cart</span>
             </Link>
           </Button>
-
+          <AdminMenuCta />
         </div>
       </div>
     </header>
