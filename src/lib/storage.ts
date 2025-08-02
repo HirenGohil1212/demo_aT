@@ -27,7 +27,8 @@ async function compressImage(file: File): Promise<File> {
         console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
         const compressedFile = await imageCompression(file, options);
         console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
-        return compressedFile;
+        // Return a new File object with a .webp extension
+        return new File([compressedFile], `${path.parse(file.name).name}.webp`, { type: 'image/webp' });
     } catch (error) {
         console.error("Image compression failed:", error);
         return file;
@@ -41,7 +42,7 @@ async function compressImage(file: File): Promise<File> {
  * @param path The folder path for organization (e.g., 'banners', 'products').
  * @returns A promise that resolves with the public download URL of the uploaded file.
  */
-export const uploadFile = async (file: File, path: string): Promise<string> => {
+export const uploadFile = async (file: File, uploadPath: string): Promise<string> => {
     if (!file) {
         throw new Error("No file provided for upload.");
     }
@@ -51,7 +52,7 @@ export const uploadFile = async (file: File, path: string): Promise<string> => {
     // Use FormData to send the file to the API endpoint
     const formData = new FormData();
     formData.append('file', processedFile, processedFile.name);
-    formData.append('path', path);
+    formData.append('path', uploadPath);
 
     try {
         const response = await fetch('/api/upload', {
@@ -74,4 +75,3 @@ export const uploadFile = async (file: File, path: string): Promise<string> => {
         return `https://placehold.co/600x400.png?text=Upload+Failed`;
     }
 };
-

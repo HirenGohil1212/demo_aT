@@ -34,9 +34,9 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // The base directory where all uploads are stored on the server's temporary filesystem
-    const serverUploadDir = path.join('/tmp', 'uploads');
-    // The specific subdirectory for this upload type (e.g., /tmp/uploads/products)
+    // The base directory where all uploads are stored in the public folder
+    const serverUploadDir = path.join(process.cwd(), 'public', 'uploads');
+    // The specific subdirectory for this upload type (e.g., /public/uploads/products)
     const finalUploadPath = path.join(serverUploadDir, uploadPath);
 
     // Create the directory if it doesn't exist
@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
     // Write the file to the server's filesystem
     await writeFile(filePath, buffer);
 
-    // This is the key change: Return a URL that points to our new image-serving API
-    const publicUrl = `/api/images/${uploadPath}/${newFilename}`;
+    // This is the key change: Return a public URL that points directly to the file
+    const publicUrl = `/uploads/${uploadPath}/${newFilename}`;
 
     return NextResponse.json({ success: true, url: publicUrl });
 
