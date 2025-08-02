@@ -41,3 +41,9 @@ export type AppSettings = {
   whatsappNumber: string;
   minOrderQuantity: number;
 };
+
+export type User = {
+  id: number;
+  email: string;
+  role: 'user' | 'admin';
+}
