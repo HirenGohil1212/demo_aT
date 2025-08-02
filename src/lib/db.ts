@@ -2,18 +2,13 @@
 // src/lib/db.ts
 import mysql from 'mysql2/promise';
 
-// Database configuration for the remote Hostinger server.
+// Database configuration for the remote freesqldatabase.com server.
 const dbConfig = {
-  host: process.env.DB_HOST || 'srv1835.hstgr.io',
-  user: process.env.DB_USER || 'u782359236_jay',
-  password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
-  database: process.env.DB_NAME || 'u782359236_jay',
-  port: 3306,
-  ssl: {
-    // Hostinger may require SSL, but we will not enforce rejection of unauthorized connections.
-    // This is often necessary for shared hosting environments.
-    rejectUnauthorized: false 
-  }
+  host: process.env.DB_HOST || 'sql12.freesqldatabase.com',
+  user: process.env.DB_USER || 'sql12793195',
+  password: process.env.DB_PASSWORD || 'QIdmgcuWYH',
+  database: process.env.DB_NAME || 'sql12793195',
+  port: 3306
 };
 
 // Create a connection pool. This is more efficient than creating a new
