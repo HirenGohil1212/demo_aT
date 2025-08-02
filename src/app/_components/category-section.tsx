@@ -20,8 +20,14 @@ type CategorySectionProps = {
 }
 
 export function CategorySection({ category, products }: CategorySectionProps) {
+  if (products.length === 0) {
+    return null;
+  }
+  
   return (
-    <div>
+    <div className="relative py-8 md:py-12 bg-card/50 rounded-lg shadow-xl overflow-hidden border border-primary/10">
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent to-background/50 z-0"></div>
+      <div className="relative z-10 px-4">
         <div className="text-center mb-6 md:mb-8">
           <h2 className="font-headline text-3xl md:text-5xl font-bold text-primary mb-2">
             {category.name}
@@ -49,6 +55,7 @@ export function CategorySection({ category, products }: CategorySectionProps) {
           <CarouselPrevious className="hidden lg:flex" />
           <CarouselNext className="hidden lg:flex" />
         </Carousel>
+      </div>
     </div>
   );
 }

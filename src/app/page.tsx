@@ -6,7 +6,7 @@ import { getCategories } from '@/actions/category-actions';
 import { getBanners } from '@/actions/banner-actions';
 import ProductCard from '@/components/product-card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CategorySection } from './_components/category-section';
+import { CategoryList } from './_components/category-list';
 
 const HomeCarousel = dynamic(
     () => import('./_components/home-carousel').then(mod => mod.HomeCarousel),
@@ -57,24 +57,7 @@ export default async function Home() {
         )}
 
         {/* Products by Category */}
-        <div className="space-y-16">
-            {allCategories.map((category: any) => {
-              const categoryProducts = allProducts.filter((p: any) => p.category === category.name);
-              if (categoryProducts.length === 0) return null;
-              
-              return (
-                <div key={category.id} className="relative py-8 md:py-12 bg-card/50 rounded-lg shadow-xl overflow-hidden border border-primary/10">
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-transparent to-background/50 z-0"></div>
-                    <div className="relative z-10 px-4">
-                        <CategorySection 
-                            category={category} 
-                            products={categoryProducts} 
-                        />
-                    </div>
-                </div>
-              )
-            })}
-        </div>
+        <CategoryList allCategories={allCategories} allProducts={allProducts} />
       </div>
     </div>
   );
