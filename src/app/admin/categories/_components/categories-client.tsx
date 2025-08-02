@@ -37,8 +37,7 @@ function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: (newCategory: C
             const nameInput = formRef.current?.elements.namedItem('name') as HTMLInputElement;
             if (nameInput?.value) {
                 toast({ title: "Success", description: `Category "${nameInput.value}" has been added.`});
-                // We don't have the real ID from the DB yet without another fetch,
-                // so we create an optimistic entry. Revalidation will fix it later.
+                // Optimistically add to UI. Revalidation will sync with DB.
                 onCategoryAdded({ id: `temp-${Date.now()}`, name: nameInput.value });
                 formRef.current?.reset();
             }
@@ -118,7 +117,9 @@ function DeleteCategoryButton({ category, onDelete }: { category: Category, onDe
 export function CategoriesClient({ initialCategories }: { initialCategories: Category[] }) {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
 
+  // This function is now passed to the form to update the state here.
   const handleCategoryAdded = useCallback((newCategory: Category) => {
+    // Optimistically update the UI. Revalidation from the server action will ensure consistency.
     setCategories(prev => [...prev, newCategory].sort((a,b) => a.name.localeCompare(b.name)));
   }, []);
 
