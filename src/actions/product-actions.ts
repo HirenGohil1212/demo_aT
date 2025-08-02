@@ -15,7 +15,8 @@ const productSchema = z.object({
   quantity: z.coerce.number().positive({ message: 'Quantity must be a positive number' }),
   category: z.string().min(1, { message: 'Category is required' }),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
-  image: z.string().url({ message: "A valid image URL is required if provided." }).optional().or(z.literal('')),
+  // The image is now just a string. The server action will handle logic.
+  image: z.string().optional(),
 });
 
 /**
@@ -30,6 +31,8 @@ export async function addProduct(prevState: unknown, formData: FormData) {
   
   let { name, description, price, quantity, category, featured, image } = validatedFields.data;
   
+  // If the 'image' field from the form is empty, it means no file was uploaded.
+  // In this case, we create a placeholder. Otherwise, we use the URL provided by the upload.
   if (!image) {
     image = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
   }
@@ -76,10 +79,16 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
     
   let { name, description, price, quantity, category, featured, image } = validatedFields.data;
 
-  // Use existing image if a new one isn't provided during an update.
+  // If the image field is empty during an update, it means the user did not upload a new one.
+  // We should preserve the existing image in this case.
   if (!image) {
       const existingProduct = await getProductById(id);
-      image = existingProduct?.image || `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
+      if (existingProduct) {
+        image = existingProduct.image;
+      } else {
+        // Fallback if the existing product can't be found for some reason.
+        image = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
+      }
   }
   
   try {
