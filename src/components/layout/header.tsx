@@ -31,6 +31,7 @@ import { useUser } from '@/hooks/use-user';
 function AuthCta() {
     const router = useRouter();
     const { user, isAdmin, logout } = useUser();
+    const { toast } = useToast();
 
     const handleLogout = () => {
       logout();
@@ -113,6 +114,7 @@ export default function Header() {
   const { itemCount } = useCart();
   const { user, isAdmin, logout } = useUser();
   const router = useRouter();
+  const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
