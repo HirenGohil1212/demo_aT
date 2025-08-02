@@ -28,48 +28,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { useUser } from '@/hooks/use-user';
 
-function AuthCta() {
-    const router = useRouter();
-    const { user, isAdmin, logout } = useUser();
-    const { toast } = useToast();
-
-    const handleLogout = () => {
-      logout();
-      router.push('/');
-      toast({
-          title: "Logged Out",
-          description: "You have been successfully logged out."
-      })
-    }
-    
-    if (user) {
-        return (
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="rounded-full">
-                        <UserIcon className="h-5 w-5" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled>
-                      {String(user.email)}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Logout
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        )
-    }
-
-    return (
-        <Button onClick={() => router.push('/ab_login')}>Login</Button>
-    )
-}
 
 function DbInitButton() {
     const [isPending, startTransition] = useTransition();
@@ -114,9 +72,7 @@ function DbInitButton() {
 
 export default function Header() {
   const { itemCount } = useCart();
-  const { user, isAdmin, logout } = useUser();
-  const router = useRouter();
-  const { toast } = useToast();
+  const { isAdmin } = useUser();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -124,15 +80,6 @@ export default function Header() {
     { href: '/products', label: 'All Products' },
   ];
 
-  const handleMobileLogout = () => {
-    logout();
-    setIsMobileMenuOpen(false);
-    router.push('/');
-    toast({
-        title: "Logged Out",
-        description: "You have been successfully logged out."
-    })
-  }
 
   const MobileNavLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
     <Link href={href} onClick={() => setIsMobileMenuOpen(false)} className="text-lg font-medium hover:text-primary transition-colors">
@@ -200,16 +147,6 @@ export default function Header() {
                         Admin
                         </MobileNavLink>
                     )}
-                    <div className="flex flex-col gap-4 mt-4 border-t pt-6">
-                        {user ? (
-                           <Button onClick={handleMobileLogout} variant="outline">
-                               <LogOut className="mr-2 h-4 w-4" />
-                               Logout
-                           </Button>
-                        ) : (
-                           <Button onClick={() => { router.push('/ab_login'); setIsMobileMenuOpen(false); }}>Login</Button>
-                        )}
-                    </div>
                     </div>
                 </SheetContent>
             </Sheet>
@@ -236,10 +173,6 @@ export default function Header() {
               <span className="sr-only">Shopping Cart</span>
             </Link>
           </Button>
-
-          <div className="hidden md:flex items-center gap-2">
-            <AuthCta />
-          </div>
 
         </div>
       </div>
