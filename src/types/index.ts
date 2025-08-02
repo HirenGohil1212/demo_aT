@@ -39,7 +39,7 @@ export type AppSettings = {
 };
 
 export type User = {
-  id: number;
+  id: string;
   email: string;
   role: 'user' | 'admin';
 }

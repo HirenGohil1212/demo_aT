@@ -29,3 +29,4 @@ export function ProductDisplay({ allCategories, allProducts }: ProductDisplayPro
         </div>
     )
 }
+

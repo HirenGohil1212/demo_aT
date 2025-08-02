@@ -76,7 +76,13 @@ export async function loginUser(prevState: unknown, formData: FormData) {
         // Don't send the password back to the client.
         const { password: _, ...userWithoutPassword } = user;
         
-        return { success: true, user: userWithoutPassword };
+        // Ensure the ID is a string to match client-side state expectations
+        const finalUser = {
+            ...userWithoutPassword,
+            id: String(userWithoutPassword.id)
+        }
+        
+        return { success: true, user: finalUser };
 
     } catch (error) {
         console.error('Login Error:', error);
