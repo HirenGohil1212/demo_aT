@@ -34,16 +34,21 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    // The base directory where all uploads are stored on the server's temporary filesystem
     const serverUploadDir = path.join('/tmp', 'uploads');
+    // The specific subdirectory for this upload type (e.g., /tmp/uploads/products)
     const finalUploadPath = path.join(serverUploadDir, uploadPath);
 
+    // Create the directory if it doesn't exist
     if (!await directoryExists(finalUploadPath)) {
       await mkdir(finalUploadPath, { recursive: true });
     }
     
+    // Create a unique filename
     const newFilename = `${Date.now()}-${file.name.replace(/\s+/g, '_')}`;
     const filePath = path.join(finalUploadPath, newFilename);
 
+    // Write the file to the server's filesystem
     await writeFile(filePath, buffer);
 
     // This is the key change: Return a URL that points to our new image-serving API
