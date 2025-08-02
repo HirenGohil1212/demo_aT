@@ -41,5 +41,6 @@ export type AppSettings = {
 export type User = {
   id: string;
   email: string;
+  password?: string; // Optional because it's not always selected or sent to the client
   role: 'user' | 'admin';
 }

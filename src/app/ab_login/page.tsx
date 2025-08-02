@@ -53,7 +53,9 @@ export default function LoginPage() {
         title: 'Login Successful',
         description: 'Welcome back!',
       });
-      login(state.user);
+      // The `state.user` object from the action now correctly matches
+      // the type expected by the `login` function in the useUser hook.
+      login(state.user); 
       router.push('/admin');
     }
     if (state?.message) {

@@ -5,6 +5,7 @@ import { z } from 'zod';
 import bcrypt from 'bcrypt';
 import { query } from '@/lib/db';
 import { redirect } from 'next/navigation';
+import type { User } from '@/types';
 
 const signupSchema = z.object({
   email: z.string().email({ message: 'Invalid email address.' }),
@@ -48,7 +49,10 @@ const loginSchema = z.object({
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
-export async function loginUser(prevState: unknown, formData: FormData) {
+// Define the type for the user object that this action returns
+type ClientUser = Omit<User, 'password'>;
+
+export async function loginUser(prevState: unknown, formData: FormData): Promise<{ success?: boolean; user?: ClientUser; message?: string; }> {
     const validatedFields = loginSchema.safeParse(Object.fromEntries(formData.entries()));
 
     if (!validatedFields.success) {
@@ -72,14 +76,13 @@ export async function loginUser(prevState: unknown, formData: FormData) {
         if (!passwordsMatch) {
             return { message: 'Incorrect password.' };
         }
-
-        // Don't send the password back to the client.
-        const { password: _, ...userWithoutPassword } = user;
         
-        // Ensure the ID is a string to match client-side state expectations
-        const finalUser = {
-            ...userWithoutPassword,
-            id: String(userWithoutPassword.id)
+        // This is the object that will be sent to the client.
+        // It must match what the useUser hook expects.
+        const finalUser: ClientUser = {
+            id: String(user.id),
+            email: user.email,
+            role: user.role,
         }
         
         return { success: true, user: finalUser };
