@@ -9,11 +9,8 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from '@/components/ui/carousel';
-import { cn } from '@/lib/utils';
 
 type HomeCarouselProps = {
     banners: Banner[];
@@ -71,8 +68,6 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="hidden sm:flex left-4 text-white bg-black/30 hover:bg-primary hover:text-primary-foreground border-white/50" />
-            <CarouselNext className="hidden sm:flex right-4 text-white bg-black/30 hover:bg-primary hover:text-primary-foreground border-white/50" />
           </Carousel>
         </section>
     )

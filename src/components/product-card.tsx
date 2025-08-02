@@ -33,12 +33,12 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         </CardHeader>
         
-        <CardContent className="p-4 flex-grow flex flex-col justify-between">
+        <CardContent className="p-4 flex-grow">
           <div>
-              <Badge variant="secondary" className="mb-2 w-fit bg-black/30 border-white/20 backdrop-blur-lg">{product.category}</Badge>
-              <CardTitle className="font-headline text-xl leading-tight text-white group-hover:text-primary transition-colors">
-                {product.name}
-              </CardTitle>
+            <Badge variant="secondary" className="mb-2 w-fit bg-black/30 border-white/20 backdrop-blur-lg">{product.category}</Badge>
+            <CardTitle className="font-headline text-xl leading-tight text-white group-hover:text-primary transition-colors">
+              {product.name}
+            </CardTitle>
           </div>
         </CardContent>
       </Link>

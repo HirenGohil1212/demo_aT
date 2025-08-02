@@ -52,8 +52,6 @@ export function CategorySection({ category, products }: CategorySectionProps) {
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious className="hidden lg:flex" />
-          <CarouselNext className="hidden lg:flex" />
         </Carousel>
       </div>
     </div>
