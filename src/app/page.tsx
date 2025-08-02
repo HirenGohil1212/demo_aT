@@ -6,7 +6,7 @@ import { getCategories } from '@/actions/category-actions';
 import { getBanners } from '@/actions/banner-actions';
 import ProductCard from '@/components/product-card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CategoryList } from './_components/category-list';
+import { ProductDisplay } from './_components/product-display';
 
 const HomeCarousel = dynamic(
     () => import('./_components/home-carousel').then(mod => mod.HomeCarousel),
@@ -58,7 +58,7 @@ export default async function Home() {
         )}
 
         {/* Products by Category */}
-        <CategoryList allCategories={allCategories} allProducts={allProducts} />
+        <ProductDisplay allCategories={allCategories} allProducts={allProducts} />
       </div>
     </div>
   );
