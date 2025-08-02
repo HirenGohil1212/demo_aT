@@ -3,23 +3,16 @@
 import mysql from 'mysql2/promise';
 
 // Database configuration for the remote freesqldatabase.com server.
-// const dbConfig = {
-//   host: process.env.DB_HOST || 'sql12.freesqldatabase.com',
-//   user: process.env.DB_USER || 'sql12793195',
-//   password: process.env.DB_PASSWORD || 'QIdmgcuWYH',
-//   database: process.env.DB_NAME || 'sql12793195',
-//   port: 3306,
-//   connectionLimit: 1, // Explicitly limit connections to 1 for this free tier.
-// };
-
 const dbConfig = {
-  host: process.env.DB_HOST || 'srv1835.hstgr.io',
-  user: process.env.DB_USER || 'u782359236_jay	',
-  password: process.env.DB_PASSWORD || 'Hiren@amtics@017',
-  database: process.env.DB_NAME || 'u782359236_jay',
+  host: process.env.DB_HOST || 'sql12.freesqldatabase.com',
+  user: process.env.DB_USER || 'sql12793195',
+  password: process.env.DB_PASSWORD || 'QIdmgcuWYH',
+  database: process.env.DB_NAME || 'sql12793195',
   port: 3306,
   connectionLimit: 1, // Explicitly limit connections to 1 for this free tier.
 };
+
+
 
 // Create a single, persistent connection pool.
 const pool = mysql.createPool(dbConfig);
