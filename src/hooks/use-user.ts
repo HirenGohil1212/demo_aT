@@ -5,11 +5,12 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { User } from '@/types';
 
+type ClientUser = Omit<User, 'password'>;
 
 interface UserState {
-  user: (Omit<User, 'password'> & { id: string }) | null;
+  user: ClientUser | null;
   isAdmin: boolean;
-  login: (user: Omit<User, 'password'> & { id: string }) => void;
+  login: (user: ClientUser) => void;
   logout: () => void;
 }
 

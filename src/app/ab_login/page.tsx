@@ -29,6 +29,8 @@ async function fetchSettings(): Promise<Pick<AppSettings, 'allowSignups'>> {
     }
 }
 
+type ClientUser = Omit<User, 'password'>;
+
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginUser, undefined);
   const router = useRouter();
@@ -53,7 +55,7 @@ export default function LoginPage() {
         title: 'Login Successful',
         description: 'Welcome back!',
       });
-      login(state.user as User); 
+      login(state.user as ClientUser); 
       router.push('/admin');
     }
     if (state?.message) {
