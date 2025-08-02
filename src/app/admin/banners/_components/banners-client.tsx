@@ -86,13 +86,13 @@ function BannerForm({ onBannerAdded }: { onBannerAdded: (newBanner: Banner) => v
     }
   };
   
-  const isSubmitDisabled = isUploading || isPending || !imageUrl;
+  const isSubmitDisabled = isUploading || isPending;
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="imageUrl" value={imageUrl} />
       <div className="space-y-2">
-        <Label htmlFor="imageFile">Banner Image</Label>
+        <Label htmlFor="imageFile">Banner Image (Optional)</Label>
         <div className="flex flex-wrap items-center gap-4">
           <div className="w-48 h-24 border rounded-md flex items-center justify-center bg-muted/30 flex-shrink-0">
             {imagePreview ? (
@@ -114,7 +114,7 @@ function BannerForm({ onBannerAdded }: { onBannerAdded: (newBanner: Banner) => v
               onChange={handleImageChange}
               className="hidden"
             />
-            <p className="text-xs text-muted-foreground">Recommended: 1200x600px</p>
+            <p className="text-xs text-muted-foreground">Recommended: 1200x600px. If no image is selected, a default banner will be created.</p>
           </div>
         </div>
       </div>

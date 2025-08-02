@@ -8,7 +8,7 @@ import { query } from '@/lib/db';
 
 // Zod schema for banner validation
 const bannerSchema = z.object({
-  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }).optional().or(z.literal('')),
+  imageUrl: z.string().optional(),
 });
 
 /**
