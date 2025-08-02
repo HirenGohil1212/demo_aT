@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
-function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: (newCategoryName: string) => void }) {
+function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: (newCategory: Category) => void }) {
     const formRef = useRef<HTMLFormElement>(null);
     const [state, formAction, isPending] = useActionState(addCategory, undefined);
     const { toast } = useToast();
@@ -35,9 +35,11 @@ function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: (newCategoryNam
     useEffect(() => {
         if (state?.success) {
             const nameInput = formRef.current?.elements.namedItem('name') as HTMLInputElement;
-            if (nameInput && nameInput.value) {
+            if (nameInput?.value) {
                 toast({ title: "Success", description: `Category "${nameInput.value}" has been added.`});
-                onCategoryAdded(nameInput.value);
+                // We don't have the real ID from the DB yet without another fetch,
+                // so we create an optimistic entry. Revalidation will fix it later.
+                onCategoryAdded({ id: `temp-${Date.now()}`, name: nameInput.value });
                 formRef.current?.reset();
             }
         } else if (state?.error) {
@@ -58,7 +60,6 @@ function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: (newCategoryNam
             <Button type="submit" disabled={isPending}>
               {isPending ? <><Loader2 className="animate-spin mr-2" /> Adding...</> : "Add Category"}
             </Button>
-            {/* The toast in useEffect now handles showing the error */}
         </form>
     )
 }
@@ -117,11 +118,8 @@ function DeleteCategoryButton({ category, onDelete }: { category: Category, onDe
 export function CategoriesClient({ initialCategories }: { initialCategories: Category[] }) {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
 
-  const handleCategoryAdded = useCallback((newCategoryName: string) => {
-    // This is an optimistic update. We don't have the ID yet, but we can add it.
-    // The revalidation will sync the real data from the server.
-    const optimisticCategory: Category = { id: `temp-${Date.now()}`, name: newCategoryName };
-    setCategories(prev => [...prev, optimisticCategory].sort((a,b) => a.name.localeCompare(b.name)));
+  const handleCategoryAdded = useCallback((newCategory: Category) => {
+    setCategories(prev => [...prev, newCategory].sort((a,b) => a.name.localeCompare(b.name)));
   }, []);
 
   const handleCategoryDeleted = useCallback((deletedCategoryId: string) => {
