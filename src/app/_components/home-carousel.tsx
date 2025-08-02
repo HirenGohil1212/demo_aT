@@ -60,7 +60,7 @@ export function HomeCarousel({ banners }: HomeCarouselProps) {
                   <div className="relative aspect-[16/9] md:aspect-[2/1] lg:aspect-[2.5/1] w-full">
                      <Image
                         src={banner.imageUrl}
-                        alt={banner.title || 'Banner image'}
+                        alt={'Banner image'}
                         fill
                         priority={index === 0}
                         sizes="100vw"

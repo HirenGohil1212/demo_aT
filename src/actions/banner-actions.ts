@@ -8,7 +8,7 @@ import { query } from '@/lib/db';
 
 // Zod schema for banner validation
 const bannerSchema = z.object({
-  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }).optional().or(z.literal('')),
+  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }),
 });
 
 /**
@@ -21,29 +21,22 @@ export async function addBanner(prevState: unknown, formData: FormData) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
 
-  let { imageUrl } = validatedFields.data;
-  const title = formData.get('title') as string || 'New Banner';
-  const subtitle = formData.get('subtitle') as string || '';
-  const productId = formData.get('productId') as string || '';
+  const { imageUrl } = validatedFields.data;
   
   if (!imageUrl) {
-    imageUrl = `https://placehold.co/1200x600.png?text=${encodeURIComponent(title)}`;
+     return { error: { imageUrl: ["Image URL is required after upload."] } };
   }
   
   try {
     const result: any = await query(
-      'INSERT INTO banners (imageUrl, title, subtitle, productId) VALUES (?, ?, ?, ?)',
-      [imageUrl, title, subtitle, productId]
+      'INSERT INTO banners (imageUrl) VALUES (?)',
+      [imageUrl]
     );
 
     if (result.insertId) {
         const newBanner: Banner = {
             id: result.insertId.toString(),
             imageUrl: imageUrl,
-            title: title,
-            subtitle: subtitle,
-            active: true,
-            productId: productId,
             createdAt: new Date().toISOString(),
         }
         revalidatePath("/admin/banners");
@@ -65,7 +58,7 @@ export async function addBanner(prevState: unknown, formData: FormData) {
  */
 export async function getBanners(): Promise<Banner[]> {
     try {
-        const banners = await query('SELECT * FROM banners WHERE active = TRUE ORDER BY createdAt DESC');
+        const banners = await query('SELECT * FROM banners ORDER BY createdAt DESC');
         return banners as Banner[];
     } catch (error) {
         console.error("Failed to fetch banners:", error);

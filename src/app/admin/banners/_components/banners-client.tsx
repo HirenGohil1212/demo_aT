@@ -7,13 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -21,7 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, Image as ImageIcon, Trash2, Upload, Link as LinkIcon } from "lucide-react";
+import { Loader2, Image as ImageIcon, Trash2, Upload } from "lucide-react";
 import { useState, useRef, useTransition, useActionState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import {
@@ -38,7 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { uploadFile } from "@/lib/storage";
 import { Card, CardContent } from "@/components/ui/card";
 
-function BannerForm({ products, onBannerAdded }: { products: Product[], onBannerAdded: (newBanner: Banner) => void }) {
+function BannerForm({ onBannerAdded }: { onBannerAdded: (newBanner: Banner) => void }) {
   const [state, formAction, isPending] = useActionState(addBanner, undefined);
   const formRef = useRef<HTMLFormElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -98,16 +91,6 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="imageUrl" value={imageUrl} />
-       {/*
-      <div className="space-y-2">
-        <Label htmlFor="title">Banner Title</Label>
-        <Input name="title" id="title" placeholder="e.g. Summer Special" required />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="subtitle">Banner Subtitle</Label>
-        <Input name="subtitle" id="subtitle" placeholder="e.g. The finest spirits for the season" required />
-      </div>
-      */}
       <div className="space-y-2">
         <Label htmlFor="imageFile">Banner Image</Label>
         <div className="flex flex-wrap items-center gap-4">
@@ -135,23 +118,7 @@ function BannerForm({ products, onBannerAdded }: { products: Product[], onBanner
           </div>
         </div>
       </div>
-      {/*
-      <div className="space-y-2">
-        <Label htmlFor="productId">Link to Product</Label>
-        <Select name="productId" required>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a product to link" />
-          </SelectTrigger>
-          <SelectContent>
-            {products.map((product) => (
-              <SelectItem key={product.id} value={product.id}>
-                {product.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      */}
+      
        <Button type="submit" disabled={isSubmitDisabled}>
           {isPending && <Loader2 className="animate-spin mr-2" />}
           {isUploading ? "Waiting for upload..." : "Add Banner"}
@@ -205,8 +172,7 @@ function DeleteBannerButton({ bannerId, onDelete }: { bannerId: string, onDelete
     )
 }
 
-export function BannersClient({ initialProducts, initialBanners }: { initialProducts: Product[], initialBanners: Banner[] }) {
-  const [products] = useState<Product[]>(initialProducts);
+export function BannersClient({ initialBanners }: { initialBanners: Banner[] }) {
   const [banners, setBanners] = useState<Banner[]>(initialBanners);
 
   const handleBannerAdded = useCallback((newBanner: Banner) => {
@@ -217,13 +183,11 @@ export function BannersClient({ initialProducts, initialBanners }: { initialProd
     setBanners(prevBanners => prevBanners.filter(banner => banner.id !== deletedBannerId));
   }, []);
 
-  const productMap = new Map(products.map((p) => [p.id, p.name]));
-
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Add New Banner</h3>
-        <BannerForm products={products} onBannerAdded={handleBannerAdded} />
+        <BannerForm onBannerAdded={handleBannerAdded} />
       </div>
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Existing Banners</h3>
@@ -236,17 +200,14 @@ export function BannersClient({ initialProducts, initialBanners }: { initialProd
                 <CardContent className="p-4 flex flex-col sm:flex-row items-center gap-4">
                     <Image
                         src={banner.imageUrl}
-                        alt={banner.title || 'Banner image'}
+                        alt={'Banner image'}
                         width={150}
                         height={75}
                         className="rounded-md object-cover aspect-[2/1] flex-shrink-0"
                     />
                     <div className="flex-grow text-center sm:text-left">
-                      <p className="font-bold text-lg">{banner.title || 'Banner'}</p>
-                      <div className="text-sm text-muted-foreground flex items-center justify-center sm:justify-start gap-2">
-                        <LinkIcon className="h-3 w-3"/>
-                        <span>{productMap.get(banner.productId) || "N/A"}</span>
-                      </div>
+                      <p className="font-bold text-lg">Banner</p>
+                      <p className="text-sm text-muted-foreground">ID: {banner.id}</p>
                     </div>
                     <div className="flex-shrink-0 self-center">
                       <DeleteBannerButton bannerId={banner.id} onDelete={() => handleBannerDeleted(banner.id)} />

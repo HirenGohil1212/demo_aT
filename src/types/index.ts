@@ -28,11 +28,7 @@ export type Category = {
 
 export type Banner = {
   id: string;
-  title: string;
-  subtitle: string;
   imageUrl: string;
-  productId: string;
-  active: boolean;
   createdAt: string; // Changed to string for serializability
 }
 

@@ -2,7 +2,6 @@
 "use server";
 
 import { getBanners } from "@/actions/banner-actions";
-import { getProducts } from "@/actions/product-actions";
 import {
   Card,
   CardContent,
@@ -14,10 +13,7 @@ import { BannersClient } from "./_components/banners-client";
 
 
 export default async function BannersPage() {
-  const [initialBanners, initialProducts] = await Promise.all([
-    getBanners(),
-    getProducts(),
-  ]);
+  const initialBanners = await getBanners();
 
   return (
     <div className="grid gap-6">
@@ -25,11 +21,11 @@ export default async function BannersPage() {
         <CardHeader>
           <CardTitle>Manage Banners</CardTitle>
           <CardDescription>
-            Create, view, and delete banners for your home page carousel.
+            Upload, view, and delete banners for your home page carousel.
           </CardDescription>
         </CardHeader>
         <CardContent>
-            <BannersClient initialBanners={initialBanners} initialProducts={initialProducts} />
+            <BannersClient initialBanners={initialBanners} />
         </CardContent>
       </Card>
     </div>
