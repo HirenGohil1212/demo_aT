@@ -27,8 +27,14 @@ async function compressImage(file: File): Promise<File> {
         console.log(`Original file size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
         const compressedFile = await imageCompression(file, options);
         console.log(`Compressed file size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
+        
+        // Use string manipulation to change the extension, avoiding the 'path' module.
+        const originalFileName = file.name;
+        const fileNameWithoutExtension = originalFileName.substring(0, originalFileName.lastIndexOf('.'));
+        const newFileName = `${fileNameWithoutExtension}.webp`;
+
         // Return a new File object with a .webp extension
-        return new File([compressedFile], `${path.parse(file.name).name}.webp`, { type: 'image/webp' });
+        return new File([compressedFile], newFileName, { type: 'image/webp' });
     } catch (error) {
         console.error("Image compression failed:", error);
         return file;
