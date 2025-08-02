@@ -1,9 +1,9 @@
 
 "use server";
 import dynamic from 'next/dynamic';
-// import { getProducts } from '@/actions/product-actions';
-// import { getCategories } from '@/actions/category-actions';
-// import { getBanners } from '@/actions/banner-actions';
+import { getProducts } from '@/actions/product-actions';
+import { getCategories } from '@/actions/category-actions';
+import { getBanners } from '@/actions/banner-actions';
 import ProductCard from '@/components/product-card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CategorySection } from './_components/category-section';
@@ -16,16 +16,25 @@ const HomeCarousel = dynamic(
 );
 
 export default async function Home() {
-  // const allProducts = await getProducts();
-  // const allCategories = await getCategories();
-  // const allBanners = await getBanners();
+  const allProducts = await getProducts();
+  const allCategories = await getCategories();
+  const allBanners = await getBanners();
 
-  // const featuredProducts = allProducts.filter((p) => p.featured);
+  const featuredProducts = allProducts.filter((p) => p.featured);
 
-  const allProducts = [];
-  const allCategories = [];
-  const allBanners = [];
-  const featuredProducts = [];
+  if (allProducts.length === 0 && allCategories.length === 0) {
+      return (
+         <div>
+            <HomeCarousel banners={allBanners} key={allBanners.length} />
+            <div className="container mx-auto px-4 py-8 md:py-12">
+                 <div className="text-center py-16">
+                    <h1 className="font-headline text-4xl font-bold text-primary mb-4">Welcome to LuxeLiquor</h1>
+                    <p className="text-muted-foreground">Database connected. Please use the Admin panel to add categories and products to the store.</p>
+                </div>
+            </div>
+         </div>
+      )
+  }
 
   return (
     <div>
@@ -33,10 +42,6 @@ export default async function Home() {
       <HomeCarousel banners={allBanners} key={allBanners.length} />
 
       <div className="container mx-auto px-4 py-8 md:py-12">
-         <div className="text-center py-16">
-            <h1 className="font-headline text-4xl font-bold text-primary mb-4">Welcome to LuxeLiquor</h1>
-            <p className="text-muted-foreground">Database connected. Site content is temporarily disabled while we set up your products and categories.</p>
-        </div>
         {/* Featured Products Grid */}
         {featuredProducts.length > 0 && (
           <section className="mb-12 md:mb-16">

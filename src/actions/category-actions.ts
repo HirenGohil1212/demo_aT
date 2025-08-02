@@ -13,12 +13,11 @@ import { query } from '@/lib/db';
  */
 export async function getCategories(): Promise<Category[]> {
     try {
-        // const results = await query('SELECT * FROM categories ORDER BY name ASC');
-        // return results as Category[];
-        return []; // Return empty array until table exists
+        const results = await query('SELECT * FROM categories ORDER BY name ASC');
+        return results as Category[];
     } catch (error) {
-        console.error("Failed to fetch categories (table might not exist yet):", error);
-        return []; // Return an empty array on error
+        console.error("Failed to fetch categories:", error);
+        return []; 
     }
 }
 
@@ -44,13 +43,12 @@ export async function addCategory(prevState: unknown, formData: FormData) {
   const { name } = validatedFields.data;
 
   try {
-    // const existing: any[] = await query('SELECT id FROM categories WHERE LOWER(name) = ?', [name.toLowerCase()]);
-    // if (existing.length > 0) {
-    //     return { error: `Category "${name}" already exists.` };
-    // }
+    const existing: any[] = await query('SELECT id FROM categories WHERE LOWER(name) = ?', [name.toLowerCase()]);
+    if (existing.length > 0) {
+        return { error: `Category "${name}" already exists.` };
+    }
 
-    // await query('INSERT INTO categories (name) VALUES (?)', [name]);
-    console.log("Database not ready: Skipping addCategory");
+    await query('INSERT INTO categories (name) VALUES (?)', [name]);
 
   } catch (error) {
       console.error("Failed to add category:", error);
@@ -73,13 +71,12 @@ export async function deleteCategory(categoryId: string) {
     
     try {
         // Optional: Check if any products are using this category before deleting.
-        // const products: any[] = await query('SELECT id FROM products WHERE category = (SELECT name FROM categories WHERE id = ?)', [categoryId]);
-        // if (products.length > 0) {
-        //     return { error: "Cannot delete category. It is currently assigned to one or more products." };
-        // }
+        const products: any[] = await query('SELECT id FROM products WHERE category = (SELECT name FROM categories WHERE id = ?)', [categoryId]);
+        if (products.length > 0) {
+            return { error: "Cannot delete category. It is currently assigned to one or more products." };
+        }
         
-        // await query('DELETE FROM categories WHERE id = ?', [categoryId]);
-        console.log("Database not ready: Skipping deleteCategory");
+        await query('DELETE FROM categories WHERE id = ?', [categoryId]);
     } catch (error) {
          console.error(`Failed to delete category ${categoryId}:`, error);
         return { error: "Database error: Could not delete category." };

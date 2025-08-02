@@ -32,11 +32,10 @@ export async function addProduct(prevState: unknown, formData: FormData) {
   const { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
   
   try {
-    // await query(
-    //     'INSERT INTO products (name, description, price, quantity, category, featured, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    //     [name, description, price, quantity, category, featured ?? false, imageUrl]
-    // );
-    console.log("Database not ready: Skipping addProduct");
+    await query(
+        'INSERT INTO products (name, description, price, quantity, category, featured, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [name, description, price, quantity, category, featured ?? false, imageUrl]
+    );
   } catch (error) {
     console.error(error);
     return { error: { _server: ["Database error: Could not add product."]}};
@@ -65,15 +64,14 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
   const { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
 
   try {
-    //  const result: any = await query(
-    //     'UPDATE products SET name = ?, description = ?, price = ?, quantity = ?, category = ?, featured = ?, image = ? WHERE id = ?',
-    //     [name, description, price, quantity, category, featured ?? false, imageUrl, id]
-    // );
+     const result: any = await query(
+        'UPDATE products SET name = ?, description = ?, price = ?, quantity = ?, category = ?, featured = ?, image = ? WHERE id = ?',
+        [name, description, price, quantity, category, featured ?? false, imageUrl, id]
+    );
 
-    // if (result.affectedRows === 0) {
-    //     return { error: { _server: ["Product not found or no changes made."] } };
-    // }
-    console.log("Database not ready: Skipping updateProduct");
+    if (result.affectedRows === 0) {
+        return { error: { _server: ["Product not found or no changes made."] } };
+    }
   } catch (error) {
     console.error(error);
     return { error: { _server: ["Database error: Could not update product."]}};
@@ -92,12 +90,11 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
  */
 export async function getProducts(): Promise<Product[]> {
     try {
-        // const results = await query('SELECT * FROM products ORDER BY name ASC');
-        // return results as Product[];
-        return []; // Return empty array until table exists
+        const results = await query('SELECT * FROM products ORDER BY name ASC');
+        return results as Product[];
     } catch (error) {
-        console.error("Failed to fetch products (table might not exist yet):", error);
-        return []; // Return empty array on error
+        console.error("Failed to fetch products:", error);
+        return []; 
     }
 }
 
@@ -108,13 +105,13 @@ export async function getProducts(): Promise<Product[]> {
  */
 export async function getProductById(id: string): Promise<Product | null> {
     try {
-        // const results: any[] = await query('SELECT * FROM products WHERE id = ?', [id]);
-        // if (results.length > 0) {
-        //     return results[0] as Product;
-        // }
-        return null; // Return null until table exists
+        const results: any[] = await query('SELECT * FROM products WHERE id = ?', [id]);
+        if (results.length > 0) {
+            return results[0] as Product;
+        }
+        return null;
     } catch (error) {
-        console.error(`Failed to fetch product with id ${id} (table might not exist yet):`, error);
+        console.error(`Failed to fetch product with id ${id}:`, error);
         return null;
     }
 }
@@ -129,8 +126,7 @@ export async function deleteProduct(productId: string) {
     }
     
     try {
-        // await query('DELETE FROM products WHERE id = ?', [productId]);
-        console.log("Database not ready: Skipping deleteProduct");
+        await query('DELETE FROM products WHERE id = ?', [productId]);
     } catch (error) {
         console.error(`Failed to delete product ${productId}:`, error);
         return { error: "Database error: Could not delete product." };

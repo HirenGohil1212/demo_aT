@@ -26,7 +26,7 @@ export default async function AdminDashboardPage() {
       getBanners()
     ]);
   } catch (error) {
-    console.error("Admin Dashboard Error: Failed to fetch initial data. This is likely due to a database connection issue.", error);
+    console.error("Admin Dashboard Error: Failed to fetch initial data.", error);
     // Data will remain as empty arrays, preventing a page crash.
   }
 
