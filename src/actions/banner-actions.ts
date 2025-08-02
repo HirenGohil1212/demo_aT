@@ -33,7 +33,7 @@ let banners: Banner[] = [
 
 // Zod schema for banner validation
 const bannerSchema = z.object({
-  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }),
+  imageUrl: z.string().url({ message: "A valid image URL is required. Please upload an image." }).optional().or(z.literal('')),
 });
 
 /**
@@ -47,10 +47,17 @@ export async function addBanner(prevState: unknown, formData: FormData) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
 
+  let { imageUrl } = validatedFields.data;
+  const title = formData.get('title') as string || 'New Banner';
+  
+  if (!imageUrl) {
+    imageUrl = `https://placehold.co/1200x600.png?text=${encodeURIComponent(title)}`;
+  }
+
   const newBanner: Banner = {
       id: uuidv4(),
-      imageUrl: validatedFields.data.imageUrl,
-      title: formData.get('title') as string || 'New Banner',
+      imageUrl: imageUrl,
+      title: title,
       subtitle: formData.get('subtitle') as string || '',
       active: true,
       productId: formData.get('productId') as string || '',

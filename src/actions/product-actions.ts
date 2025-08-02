@@ -16,7 +16,7 @@ const productSchema = z.object({
   quantity: z.coerce.number().positive({ message: 'Quantity must be a positive number' }),
   category: z.string().min(1, { message: 'Category is required' }),
   featured: z.preprocess((val) => val === 'on', z.boolean().optional()),
-  imageUrl: z.string().url({ message: "A valid image URL is required." }),
+  imageUrl: z.string().url({ message: "A valid image URL is required." }).optional().or(z.literal('')),
 });
 
 /**
@@ -29,8 +29,12 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     return { error: validatedFields.error.flatten().fieldErrors };
   }
   
-  const { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
+  let { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
   
+  if (!imageUrl) {
+    imageUrl = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
+  }
+
   try {
     await query(
         'INSERT INTO products (name, description, price, quantity, category, featured, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
@@ -61,7 +65,11 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
     return { error: validatedFields.error.flatten().fieldErrors };
   }
     
-  const { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
+  let { name, description, price, quantity, category, featured, imageUrl } = validatedFields.data;
+
+  if (!imageUrl) {
+    imageUrl = `https://placehold.co/600x600.png?text=${encodeURIComponent(name)}`;
+  }
 
   try {
      const result: any = await query(
