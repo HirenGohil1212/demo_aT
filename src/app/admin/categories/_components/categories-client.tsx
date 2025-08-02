@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useActionState, useRef, useTransition, useCallback } from "react";
+import { useState, useActionState, useRef, useTransition, useCallback, useEffect } from "react";
 import { addCategory, deleteCategory } from "@/actions/category-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,16 +30,21 @@ import { useToast } from "@/hooks/use-toast";
 function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: (newCategoryName: string) => void }) {
     const formRef = useRef<HTMLFormElement>(null);
     const [state, formAction, isPending] = useActionState(addCategory, undefined);
+    const { toast } = useToast();
 
-    if (state?.success) {
-        const nameInput = formRef.current?.elements.namedItem('name') as HTMLInputElement;
-        if (nameInput) {
-            onCategoryAdded(nameInput.value);
-            formRef.current?.reset();
-            // Reset the state to prevent re-triggering
-            state.success = false; 
+    useEffect(() => {
+        if (state?.success) {
+            const nameInput = formRef.current?.elements.namedItem('name') as HTMLInputElement;
+            if (nameInput && nameInput.value) {
+                toast({ title: "Success", description: `Category "${nameInput.value}" has been added.`});
+                onCategoryAdded(nameInput.value);
+                formRef.current?.reset();
+            }
+        } else if (state?.error) {
+            toast({ variant: "destructive", title: "Failed to Add", description: state.error });
         }
-    }
+    }, [state, onCategoryAdded, toast]);
+
 
     return (
         <form ref={formRef} action={formAction} className="flex gap-4 mb-8">
@@ -53,7 +58,7 @@ function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: (newCategoryNam
             <Button type="submit" disabled={isPending}>
               {isPending ? <><Loader2 className="animate-spin mr-2" /> Adding...</> : "Add Category"}
             </Button>
-            {state?.error && <p className="text-destructive text-sm self-center">{state.error as string}</p>}
+            {/* The toast in useEffect now handles showing the error */}
         </form>
     )
 }
