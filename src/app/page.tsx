@@ -38,7 +38,7 @@ export default async function Home() {
             <HomeCarousel banners={allBanners} key={allBanners.length} />
             <div className="container mx-auto px-4 py-8 md:py-12">
                  <div className="text-center py-16">
-                    <h1 className="font-headline text-4xl font-bold text-primary mb-4">Welcome to LuxeLiquor</h1>
+                    <h1 className="font-headline text-4xl font-bold text-primary mb-4">Welcome to aTown</h1>
                     <p className="text-muted-foreground">Database connected. Please use the Admin panel to add categories and products to the store.</p>
                 </div>
             </div>

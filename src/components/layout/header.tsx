@@ -133,7 +133,7 @@ export default function Header() {
         {/* Desktop Logo & Nav */}
         <div className="hidden md:flex flex-1 justify-start">
              <Link href="/" className="font-headline text-2xl md:text-3xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
-                LuxeLiquor
+                aTown
             </Link>
         </div>
         
@@ -171,7 +171,7 @@ export default function Header() {
                     <SheetHeader>
                         <SheetTitle asChild>
                           <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="font-headline text-2xl font-bold text-primary text-left">
-                            LuxeLiquor
+                            aTown
                           </Link>
                         </SheetTitle>
                     </SheetHeader>
@@ -193,7 +193,7 @@ export default function Header() {
 
         <div className="flex-1 flex justify-center md:hidden">
             <Link href="/" className="font-headline text-2xl font-bold text-primary tracking-wider" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
-                LuxeLiquor
+                aTown
             </Link>
         </div>
 

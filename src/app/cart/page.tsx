@@ -88,7 +88,7 @@ export default function CartPage() {
 
     const adminPhoneNumber = settings.whatsappNumber;
     
-    let message = 'Hello LuxeLiquor, I would like to place an order for the following items:\n\n';
+    let message = 'Hello aTown, I would like to place an order for the following items:\n\n';
     
     cartItems.forEach(item => {
       message += `*${item.quantity}x* ${item.product.name} (@ INR ${item.product.price.toFixed(2)} each)\n`;

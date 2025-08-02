@@ -20,7 +20,7 @@ const ptSans = PT_Sans({
 
 
 export const metadata: Metadata = {
-  title: 'LuxeLiquor',
+  title: 'aTown',
   description: 'Premium spirits and cocktail recipes',
 };
 
