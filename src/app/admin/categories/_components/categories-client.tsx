@@ -27,25 +27,17 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
-function AddCategoryForm({ onCategoryAdded }: { onCategoryAdded: (newCategory: Category) => void }) {
+function AddCategoryForm({ formAction, isPending }: { formAction: (data: FormData) => void, isPending: boolean }) {
     const formRef = useRef<HTMLFormElement>(null);
-    const [state, formAction, isPending] = useActionState(addCategory, undefined);
-    const { toast } = useToast();
-
+    
+    // This effect will run after the server action is complete.
+    // If the server action was successful, the parent component's state will change,
+    // which will cause a re-render with a cleared form.
     useEffect(() => {
-        if (state?.success) {
-            const nameInput = formRef.current?.elements.namedItem('name') as HTMLInputElement;
-            if (nameInput?.value) {
-                toast({ title: "Success", description: `Category "${nameInput.value}" has been added.`});
-                // Optimistically add to UI. Revalidation will sync with DB.
-                onCategoryAdded({ id: `temp-${Date.now()}`, name: nameInput.value });
-                formRef.current?.reset();
-            }
-        } else if (state?.error) {
-            toast({ variant: "destructive", title: "Failed to Add", description: state.error });
+        if (!isPending) {
+            formRef.current?.reset();
         }
-    }, [state, onCategoryAdded, toast]);
-
+    }, [isPending]);
 
     return (
         <form ref={formRef} action={formAction} className="flex gap-4 mb-8">
@@ -116,21 +108,33 @@ function DeleteCategoryButton({ category, onDelete }: { category: Category, onDe
 
 export function CategoriesClient({ initialCategories }: { initialCategories: Category[] }) {
   const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [state, formAction, isPending] = useActionState(addCategory, undefined);
+  const { toast } = useToast();
+  const nameInputRef = useRef<string | null>(null);
 
-  // This function is now passed to the form to update the state here.
-  const handleCategoryAdded = useCallback((newCategory: Category) => {
-    // Optimistically update the UI. Revalidation from the server action will ensure consistency.
-    setCategories(prev => [...prev, newCategory].sort((a,b) => a.name.localeCompare(b.name)));
-  }, []);
+  const wrappedFormAction = (formData: FormData) => {
+    nameInputRef.current = formData.get('name') as string;
+    formAction(formData);
+  };
+  
+  useEffect(() => {
+      if (state?.success && nameInputRef.current) {
+          toast({ title: "Success", description: `Category "${nameInputRef.current}" has been added.`});
+          // Optimistically add to UI. Revalidation will sync with DB.
+          setCategories(prev => [...prev, { id: `temp-${Date.now()}`, name: nameInputRef.current! }].sort((a,b) => a.name.localeCompare(b.name)));
+          nameInputRef.current = null; 
+      } else if (state?.error) {
+          toast({ variant: "destructive", title: "Failed to Add", description: state.error });
+      }
+  }, [state, toast]);
 
   const handleCategoryDeleted = useCallback((deletedCategoryId: string) => {
     setCategories(prev => prev.filter(cat => cat.id !== deletedCategoryId));
   }, []);
 
-
   return (
     <div>
-        <AddCategoryForm onCategoryAdded={handleCategoryAdded} />
+        <AddCategoryForm formAction={wrappedFormAction} isPending={isPending} />
 
         <div className="border rounded-md">
             <Table>
