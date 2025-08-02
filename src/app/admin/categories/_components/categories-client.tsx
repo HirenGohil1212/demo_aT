@@ -36,8 +36,6 @@ function AddCategoryForm({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
 
-  // This effect will run after the server action is complete.
-  // The parent component will manage clearing the form by watching the `isPending` state.
   useEffect(() => {
     if (!isPending) {
       formRef.current?.reset();
@@ -133,37 +131,22 @@ export function CategoriesClient({
 }: {
   initialCategories: Category[];
 }) {
-  const [categories, setCategories] =
-    useState<Category[]>(initialCategories);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [state, formAction, isPending] = useActionState(addCategory, undefined);
   const { toast } = useToast();
-  const nameInputRef = useRef<string | null>(null);
-
-  const wrappedFormAction = (formData: FormData) => {
-    const name = formData.get("name") as string;
-    // Store the name optimistically
-    if (name) {
-      nameInputRef.current = name;
-    }
-    formAction(formData);
-  };
 
   useEffect(() => {
-    if (state?.success && nameInputRef.current) {
+    if (state?.success && state.category) {
       toast({
         title: "Success",
-        description: `Category "${nameInputRef.current}" has been added.`,
+        description: `Category "${state.category.name}" has been added.`,
       });
-      // Optimistically add the new category to the UI.
-      // A proper solution might use the ID from the server, but for now, this provides instant feedback.
-      // Revalidation from the server action will eventually sync the correct state.
+      // Add the new category from the server action's response to the list
       setCategories((prev) =>
-        [
-          ...prev,
-          { id: `temp-${Date.now()}`, name: nameInputRef.current! },
-        ].sort((a, b) => a.name.localeCompare(b.name))
+        [...prev, state.category as Category].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        )
       );
-      nameInputRef.current = null; // Clear the ref
     } else if (state?.error) {
       toast({
         variant: "destructive",
@@ -179,7 +162,7 @@ export function CategoriesClient({
 
   return (
     <div>
-      <AddCategoryForm formAction={wrappedFormAction} isPending={isPending} />
+      <AddCategoryForm formAction={formAction} isPending={isPending} />
 
       <div className="border rounded-md">
         <Table>
