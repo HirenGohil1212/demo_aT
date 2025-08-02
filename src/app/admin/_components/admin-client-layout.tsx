@@ -20,26 +20,6 @@ function NavLink({ href, children, onLinkClick }: { href: string; children: Reac
   );
 }
 
-function LogoutButton({ onLinkClick }: { onLinkClick?: () => void }) {
-    const router = useRouter();
-
-    const handleLogout = async () => {
-        // In a real app, you'd call a server action to clear the session/cookie.
-        console.log("Logout functionality to be implemented.");
-        router.push('/');
-        if (onLinkClick) {
-            onLinkClick();
-        }
-    }
-
-    return (
-        <Button onClick={handleLogout} variant="ghost" className="w-full justify-start">
-            <LogOut className="mr-2" />
-            Logout
-        </Button>
-    )
-}
-
 function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
     return (
         <div className="flex flex-col h-full">
@@ -49,8 +29,6 @@ function SidebarContent({ onLinkClick }: { onLinkClick?: () => void }) {
                     <NavLink href="/admin/categories" onLinkClick={onLinkClick}><Tag className="mr-2"/>Categories</NavLink>
                     <NavLink href="/admin/banners" onLinkClick={onLinkClick}><GalleryHorizontal className="mr-2"/>Banners</NavLink>
                     <NavLink href="/admin/settings" onLinkClick={onLinkClick}><Settings className="mr-2"/>Settings</NavLink>
-                    {/* For now, we will keep a simple logout button. This can be enhanced later. */}
-                    <LogoutButton onLinkClick={onLinkClick} />
                 </nav>
             </div>
         </div>
