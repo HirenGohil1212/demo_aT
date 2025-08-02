@@ -16,6 +16,7 @@ const HomeCarousel = dynamic(
 );
 
 export default async function Home() {
+  // Fetch data sequentially to avoid overwhelming the database connection limit.
   const allProducts = await getProducts();
   const allCategories = await getCategories();
   const allBanners = await getBanners();
