@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { ShoppingCart, Menu, User as UserIcon, Wrench } from 'lucide-react';
+import { ShoppingCart, Menu, User as UserIcon, Wrench, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/hooks/use-cart';
 import { Badge } from '@/components/ui/badge';
@@ -22,21 +22,23 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { DbTestButton } from './db-test-button';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { useUser } from '@/hooks/use-user';
 
 function AuthCta() {
     const router = useRouter();
+    const { user, isAdmin, logout } = useUser();
 
-    // This is a placeholder for the new auth system.
-    const user = null; // No user logged in by default
-    const isAdmin = false; // No admin by default
-
-    const handleLogout = async () => {
-      // Logic to clear session/cookie will go here
+    const handleLogout = () => {
+      logout();
       router.push('/');
+      toast({
+          title: "Logged Out",
+          description: "You have been successfully logged out."
+      })
     }
     
     if (user) {
@@ -44,15 +46,16 @@ function AuthCta() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="icon" className="rounded-full">
-                        <UserIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <UserIcon className="h-5 w-5" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled>{"user-email@example.com"}</DropdownMenuItem>
+                    <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
                         Logout
                     </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -108,20 +111,23 @@ function DbInitButton() {
 
 export default function Header() {
   const { itemCount } = useCart();
+  const { user, isAdmin, logout } = useUser();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
-  // This is a placeholder. A real implementation will need a proper way to check admin status.
-  const isAdmin = true;
 
   const navLinks = [
     { href: '/', label: 'Home' },
     { href: '/products', label: 'All Products' },
   ];
 
-  const handleLogout = async () => {
-    // Logic for new auth system will go here
+  const handleMobileLogout = () => {
+    logout();
+    setIsMobileMenuOpen(false);
     router.push('/');
+    toast({
+        title: "Logged Out",
+        description: "You have been successfully logged out."
+    })
   }
 
   const MobileNavLink = ({ href, children }: { href: string, children: React.ReactNode }) => (
@@ -191,7 +197,14 @@ export default function Header() {
                         </MobileNavLink>
                     )}
                     <div className="flex flex-col gap-4 mt-4 border-t pt-6">
-                        <Button onClick={() => { router.push('/ab_login'); setIsMobileMenuOpen(false); }}>Login</Button>
+                        {user ? (
+                           <Button onClick={handleMobileLogout} variant="outline">
+                               <LogOut className="mr-2 h-4 w-4" />
+                               Logout
+                           </Button>
+                        ) : (
+                           <Button onClick={() => { router.push('/ab_login'); setIsMobileMenuOpen(false); }}>Login</Button>
+                        )}
                     </div>
                     </div>
                 </SheetContent>

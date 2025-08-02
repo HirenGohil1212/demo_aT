@@ -43,6 +43,20 @@ CREATE TABLE IF NOT EXISTS banners (
 );
 `;
 
+const createSettingsTable = `
+CREATE TABLE IF NOT EXISTS settings (
+    id INT PRIMARY KEY DEFAULT 1,
+    allowSignups BOOLEAN DEFAULT FALSE,
+    whatsappNumber VARCHAR(20) DEFAULT '911234567890',
+    minOrderQuantity INT DEFAULT 4
+);
+`;
+
+const insertDefaultSettings = `
+INSERT IGNORE INTO settings (id, allowSignups, whatsappNumber, minOrderQuantity)
+VALUES (1, FALSE, '911234567890', 4);
+`;
+
 
 export async function initializeDatabase() {
   try {
@@ -57,6 +71,13 @@ export async function initializeDatabase() {
     
     await query(createBannersTable);
     console.log("Banners table created or already exists.");
+    
+    await query(createSettingsTable);
+    console.log("Settings table created or already exists.");
+
+    await query(insertDefaultSettings);
+    console.log("Default settings inserted or already exist.");
+
 
     return { success: true, message: "All database tables initialized successfully." };
   } catch (error) {

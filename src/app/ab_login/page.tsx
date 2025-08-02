@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { AppSettings } from '@/types';
+import { useUser } from '@/hooks/use-user';
 
 async function fetchSettings(): Promise<Pick<AppSettings, 'allowSignups'>> {
     try {
@@ -32,6 +33,7 @@ export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginUser, undefined);
   const router = useRouter();
   const { toast } = useToast();
+  const { login } = useUser();
   const [allowSignups, setAllowSignups] = useState(true);
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
@@ -46,15 +48,22 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
-    if (state?.success) {
+    if (state?.success && state.user) {
       toast({
         title: 'Login Successful',
         description: 'Welcome back!',
       });
-      // Redirect to admin dashboard on successful login
+      login(state.user);
       router.push('/admin');
     }
-  }, [state, router, toast]);
+    if (state?.message) {
+        toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: state.message,
+        });
+    }
+  }, [state, router, toast, login]);
 
   return (
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)] bg-background p-4">
@@ -73,7 +82,7 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" name="password" type="password" required />
             </div>
-            {state?.message && <p className="text-destructive text-sm">{state.message}</p>}
+            {/* Server-side message is now handled by toast */}
             <Button type="submit" className="w-full" disabled={isPending}>
               {isPending && <Loader2 className="animate-spin mr-2" />}
               Login
