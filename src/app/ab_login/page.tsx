@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import type { AppSettings } from '@/types';
+import type { AppSettings, User } from '@/types';
 import { useUser } from '@/hooks/use-user';
 
 async function fetchSettings(): Promise<Pick<AppSettings, 'allowSignups'>> {
@@ -53,9 +53,7 @@ export default function LoginPage() {
         title: 'Login Successful',
         description: 'Welcome back!',
       });
-      // The `state.user` object from the action now correctly matches
-      // the type expected by the `login` function in the useUser hook.
-      login(state.user); 
+      login(state.user as User); 
       router.push('/admin');
     }
     if (state?.message) {
