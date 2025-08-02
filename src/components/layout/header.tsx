@@ -53,7 +53,9 @@ function AuthCta() {
                 <DropdownMenuContent align="end">
                     <DropdownMenuLabel>My Account</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem disabled>{user.email}</DropdownMenuItem>
+                    <DropdownMenuItem disabled>
+                      {user.email}
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>
                         <LogOut className="mr-2 h-4 w-4" />
@@ -65,7 +67,7 @@ function AuthCta() {
     }
 
     return (
-        {/* <Button onClick={() => router.push('/ab_login')}>Login</Button> */}
+        <Button onClick={() => router.push('/ab_login')}>Login</Button>
     )
 }
 
@@ -205,8 +207,7 @@ export default function Header() {
                                Logout
                            </Button>
                         ) : (
-                          null
-                           // <Button onClick={() => { router.push('/ab_login'); setIsMobileMenuOpen(false); }}>Login</Button>
+                           <Button onClick={() => { router.push('/ab_login'); setIsMobileMenuOpen(false); }}>Login</Button>
                         )}
                     </div>
                     </div>
