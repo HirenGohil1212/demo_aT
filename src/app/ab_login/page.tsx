@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useActionState, useEffect } from 'react';
+import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { loginUser } from '@/actions/user-actions';
@@ -11,11 +11,39 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import type { AppSettings } from '@/types';
+
+async function fetchSettings(): Promise<Pick<AppSettings, 'allowSignups'>> {
+    try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) {
+          console.error("Failed to fetch settings, defaulting to allow signups.");
+          return { allowSignups: true };
+        }
+        const data = await res.json();
+        return { allowSignups: data.allowSignups };
+    } catch {
+        console.error("Error fetching settings, defaulting to allow signups.");
+        return { allowSignups: true };
+    }
+}
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginUser, undefined);
   const router = useRouter();
   const { toast } = useToast();
+  const [allowSignups, setAllowSignups] = useState(true);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+
+  useEffect(() => {
+    async function loadSettings() {
+      setIsLoadingSettings(true);
+      const { allowSignups } = await fetchSettings();
+      setAllowSignups(allowSignups);
+      setIsLoadingSettings(false);
+    }
+    loadSettings();
+  }, []);
 
   useEffect(() => {
     if (state?.success) {
@@ -52,14 +80,16 @@ export default function LoginPage() {
             </Button>
           </form>
         </CardContent>
-        <CardFooter className="flex flex-col items-center">
-            <div className="text-center text-sm">
-                Don't have an account?{' '}
-                <Link href="/signup" className="underline text-primary">
-                Sign up
-                </Link>
-            </div>
-        </CardFooter>
+        {!isLoadingSettings && allowSignups && (
+            <CardFooter className="flex flex-col items-center">
+                <div className="text-center text-sm">
+                    Don't have an account?{' '}
+                    <Link href="/signup" className="underline text-primary">
+                    Sign up
+                    </Link>
+                </div>
+            </CardFooter>
+        )}
       </Card>
     </div>
   );
